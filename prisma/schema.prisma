@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Platform {
+  LEETCODE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProblemStatus {
+  ACTIVE
+  MASTERED
+  RETIRED
+}
+
+enum Confidence {
+  CLEAN
+  SHAKY
+  STRUGGLED
+}
+
+enum RevisionType {
+  REGULAR
+  RECHECK
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  password  String?
+  createdAt DateTime  @default(now())
+
+  problems  Problem[]
+}
+
+model Problem {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform        Platform      @default(LEETCODE)
+  problemNumber   Int
+  title           String
+  url             String
+  difficulty      Difficulty
+  topic           String
+
+  dateSolved      DateTime
+  notes           String?       @db.Text
+
+  status          ProblemStatus @default(ACTIVE)
+  currentStep     Int           @default(0)
+  nextRevisionAt  DateTime
+  revisionCount   Int           @default(0)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  revisions       Revision[]
+
+  @@unique([userId, platform, problemNumber])
+  @@index([userId, status, nextRevisionAt])
+  @@index([userId, topic])
+}
+
+model Revision {
+  id            String       @id @default(cuid())
+  problemId     String
+  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  revisedAt     DateTime     @default(now())
+  confidence    Confidence
+  type          RevisionType @default(REGULAR)
+  stepBefore    Int
+  stepAfter     Int
+
+  @@index([problemId])
+}
+
+model StreakLog {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime @db.Date
+  completed   Boolean  @default(false)
+
+  @@unique([userId, date])
+}
