@@ -59,6 +59,7 @@ model Problem {
 
   dateSolved      DateTime
   notes           String?       @db.Text
+  customFields    Json?         @default("{}")
 
   status          ProblemStatus @default(ACTIVE)
   currentStep     Int           @default(0)
@@ -96,4 +97,14 @@ model StreakLog {
   completed   Boolean  @default(false)
 
   @@unique([userId, date])
+}
+
+model UserColumnConfig {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  order     Int
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
