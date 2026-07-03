@@ -1,197 +1,278 @@
-# Task: Write the scheduling logic — pure TypeScript functions + unit tests
+# Task: LeetCode metadata resolver — dataset + resolver module + live fallback
 
-This is the core brain of the app. Write this as pure functions with zero dependencies on Next.js, Prisma, or any database. Functions take plain data in, return plain data out. The API routes will call these functions later — for now, just the logic and its tests.
+This step builds the module that powers auto-fill when a user types a LeetCode problem number. Two parts: (1) download and process the dataset, (2) write the resolver with a live GraphQL fallback for missing problems.
 
 ## Hard constraints
 
-- Pure TypeScript only — no imports from Next.js, Prisma, React, or any DB layer
-- No database calls anywhere in this file
-- Do NOT create any API routes, components, or pages in this task
-- Do NOT modify the Prisma schema
-- If anything is unclear, STOP and ask me — do not guess or improvise the logic
-- Write the functions EXACTLY as specced below — the logic rules are not suggestions
-
-## File to create
-
-Create one file: `src/lib/scheduling.ts`
-Create one test file: `src/lib/scheduling.test.ts`
+- Do NOT touch the Prisma schema
+- Do NOT create any UI components or pages
+- Do NOT make live API calls at module load time — local JSON only for the primary lookup
+- Live GraphQL fallback runs ONLY from a Next.js API route (server-side), never client-side
+- If anything fails, STOP and report the exact error — do not work around it
+- Keep the resolver as a standalone module — no Next.js-specific imports inside it
 
 ---
 
-## Part 1 — `src/lib/scheduling.ts`
+## Step 1 — Download and process the dataset
 
-### Constants
+Download the dataset from HuggingFace:
+https://huggingface.co/datasets/kaysss/leetcode-problem-set
 
-```typescript
-export const LADDER_DAYS = [3, 7, 14, 30] as const;
-export type LadderStep = 0 | 1 | 2 | 3;
-```
+Get the raw data file (parquet or JSON, whichever is directly accessible). Process it into a clean JSON file at `src/data/leetcode-problems.json` with this exact structure — an array of objects:
 
-### Types
-
-```typescript
-export type ProblemStatus = 'ACTIVE' | 'MASTERED' | 'RETIRED';
-export type Confidence = 'CLEAN' | 'SHAKY' | 'STRUGGLED';
-export type RevisionType = 'REGULAR' | 'RECHECK';
-
-export type SchedulingInput = {
-  currentStep: number;
-  status: ProblemStatus;
-  confidence: Confidence;
-  revisionType: RevisionType;
-  today: Date;
-};
-
-export type SchedulingResult = {
-  newStep: number;
-  newStatus: ProblemStatus;
-  nextRevisionAt: Date | null; // null when MASTERED or RETIRED
-};
-```
-
-### Function 1 — `addDays`
-
-Simple date utility. Takes a date and a number of days, returns a new Date that many days in the future. Do not mutate the input date.
-
-```typescript
-export function addDays(date: Date, days: number): Date
-```
-
-### Function 2 — `applyRevision`
-
-This is the main scheduling function. Apply the rules below EXACTLY — do not add extra logic, smoothing, or "improvements."
-
-**Rules:**
-
-**If `revisionType` is `RECHECK`** (problem was Mastered, user pulled it back):
-- `CLEAN` on a RECHECK → `newStep = 3`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + 30 days`
-  (fast-forward back up — don't crawl through the full ladder again)
-- `SHAKY` on a RECHECK → `newStep = 1`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + 7 days`
-  (not confident enough to fast-forward, but not a full reset either)
-- `STRUGGLED` on a RECHECK → `newStep = 0`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + 3 days`
-  (full reset — mastery wasn't real)
-
-**If `revisionType` is `REGULAR`:**
-- `STRUGGLED` (any step) → `newStep = 0`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + 3 days`
-- `SHAKY` (any step) → `newStep = currentStep` (unchanged), `newStatus = 'ACTIVE'`, `nextRevisionAt = today + LADDER_DAYS[currentStep]`
-  (repeat the same interval — not ready to advance)
-- `CLEAN` at steps 0, 1, or 2 → `newStep = currentStep + 1`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + LADDER_DAYS[currentStep + 1]`
-- `CLEAN` at step 3 (the final step) → `newStep = 3`, `newStatus = 'MASTERED'`, `nextRevisionAt = null`
-  (problem exits active rotation)
-
-```typescript
-export function applyRevision(input: SchedulingInput): SchedulingResult
-```
-
-### Function 3 — `retireProblem`
-
-User manually retires a problem from any state. Always returns the same thing.
-
-```typescript
-export function retireProblem(): Pick<SchedulingResult, 'newStatus' | 'nextRevisionAt'> {
-  return { newStatus: 'RETIRED', nextRevisionAt: null };
-}
-```
-
-### Function 4 — `reviseAgainFromMastered`
-
-User clicks "Revise again" on a Mastered problem. Pulls it back into rotation as a RECHECK.
-
-```typescript
-export function reviseAgainFromMastered(today: Date): {
-  newStep: 0;
-  newStatus: 'ACTIVE';
-  nextRevisionAt: Date;
-  revisionType: 'RECHECK';
-}
-```
-
-Returns: `newStep = 0`, `newStatus = 'ACTIVE'`, `nextRevisionAt = today + 3 days`, `revisionType = 'RECHECK'`
-
-### Function 5 — `getInitialSchedule`
-
-Called when a new problem is first added to the tracker. Returns the first scheduled revision date.
-
-```typescript
-export function getInitialSchedule(createdAt: Date): {
-  currentStep: 0;
-  nextRevisionAt: Date;
-  status: 'ACTIVE';
-} {
-  return {
-    currentStep: 0,
-    nextRevisionAt: addDays(createdAt, LADDER_DAYS[0]), // +3 days
-    status: 'ACTIVE',
-  };
-}
-```
-
-### Function 6 — `isDueToday`
-
-Returns true if a problem should appear in today's Daily Revision list. Includes overdue problems.
-
-```typescript
-export function isDueToday(nextRevisionAt: Date, today: Date): boolean
-```
-
-Logic: return true if `nextRevisionAt` is on or before `today` (same day counts as due, past days are overdue and also count).
-
----
-
-## Part 2 — `src/lib/scheduling.test.ts`
-
-Use vitest for testing. Install vitest if not already present: `npm install vitest --save-dev`
-
-Add this to `package.json` scripts if not present:
 ```json
-"test": "vitest run"
+[
+  {
+    "id": 1,
+    "title": "Two Sum",
+    "slug": "two-sum",
+    "difficulty": "EASY",
+    "topic": "Array",
+    "url": "https://leetcode.com/problems/two-sum/"
+  },
+  ...
+]
 ```
 
-Write tests covering ALL of the following cases — do not skip any:
+Processing rules:
+- `id` = `frontendQuestionId` parsed as integer
+- `title` = `title` as-is
+- `slug` = `titleSlug` as-is
+- `difficulty` = uppercased version of source difficulty (`Easy` → `EASY`, `Medium` → `MEDIUM`, `Hard` → `HARD`)
+- `topic` = first tag from `topicTags` array as a plain string (e.g. `"Array"`, not `["Array", "Hash Table"]`). If topicTags is empty, use `"General"`
+- `url` = `https://leetcode.com/problems/{slug}/`
+- Skip any problems where `paidOnly` is true — we can't link users to premium problems
+- Skip any problems where `id` is null or not a valid integer
 
-### addDays tests
-- Adding 3 days to a date returns the correct date
-- Adding 0 days returns the same date
-- Does not mutate the input date
+After processing, confirm how many problems are in the final JSON (should be roughly 3,000-3,500).
 
-### applyRevision — REGULAR tests
-- STRUGGLED at step 0 → resets to step 0, ACTIVE, +3 days
-- STRUGGLED at step 2 → resets to step 0, ACTIVE, +3 days (regardless of where it was)
-- STRUGGLED at step 3 → resets to step 0, ACTIVE, +3 days
-- SHAKY at step 0 → stays step 0, ACTIVE, +3 days
-- SHAKY at step 2 → stays step 2, ACTIVE, +14 days
-- CLEAN at step 0 → advances to step 1, ACTIVE, +7 days
-- CLEAN at step 1 → advances to step 2, ACTIVE, +14 days
-- CLEAN at step 2 → advances to step 3, ACTIVE, +30 days
-- CLEAN at step 3 → stays step 3, becomes MASTERED, nextRevisionAt is null
+---
 
-### applyRevision — RECHECK tests
-- CLEAN on RECHECK → step 3, ACTIVE, +30 days (fast-forward)
-- SHAKY on RECHECK → step 1, ACTIVE, +7 days
-- STRUGGLED on RECHECK → step 0, ACTIVE, +3 days (full reset)
+## Step 2 — Platform resolver types (if not already created)
 
-### retireProblem tests
-- Always returns RETIRED status and null nextRevisionAt
+If `src/lib/platforms/types.ts` doesn't exist yet, create it:
 
-### reviseAgainFromMastered tests
-- Returns step 0, ACTIVE, +3 days from today, revisionType RECHECK
+```typescript
+export type ProblemMeta = {
+  title: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  topic: string;
+  url: string;
+};
 
-### getInitialSchedule tests
-- Returns step 0, ACTIVE, nextRevisionAt = createdAt + 3 days
+export type ResolveResult =
+  | { found: true; data: ProblemMeta }
+  | { found: false };
 
-### isDueToday tests
-- Problem due today → true
-- Problem due yesterday (overdue) → true
-- Problem due 5 days ago (overdue) → true
-- Problem due tomorrow → false
-- Problem due 3 days from now → false
+export interface PlatformResolver {
+  resolve(identifier: string): ResolveResult;
+}
+```
+
+---
+
+## Step 3 — LeetCode local resolver
+
+Create `src/lib/platforms/leetcode.ts`:
+
+- On module load, import `src/data/leetcode-problems.json` and build an in-memory `Map<number, ProblemMeta>` keyed by problem id. Build this map ONCE at module level.
+- `resolve(identifier: string): ResolveResult`:
+  - Parse identifier as integer
+  - Look up in the Map
+  - If found → return `{ found: true, data: ProblemMeta }`
+  - If not found or invalid integer → return `{ found: false }`
+- Export a singleton: `export const leetcodeResolver: PlatformResolver`
+
+```typescript
+import type { PlatformResolver, ResolveResult, ProblemMeta } from './types';
+import problems from '../../data/leetcode-problems.json';
+
+// build lookup map once at module load
+const problemMap = new Map<number, ProblemMeta>(
+  (problems as any[]).map((p) => [p.id, {
+    title: p.title,
+    difficulty: p.difficulty,
+    topic: p.topic,
+    url: p.url,
+  }])
+);
+
+class LeetCodeResolver implements PlatformResolver {
+  resolve(identifier: string): ResolveResult {
+    const id = parseInt(identifier, 10);
+    if (isNaN(id)) return { found: false };
+    const data = problemMap.get(id);
+    if (!data) return { found: false };
+    return { found: true, data };
+  }
+}
+
+export const leetcodeResolver = new LeetCodeResolver();
+```
+
+---
+
+## Step 4 — Live GraphQL fallback API route
+
+Create `src/app/api/leetcode/lookup/route.ts`:
+
+This is called ONLY when the local resolver returns `{ found: false }` — i.e. a brand new problem not yet in the dataset. It takes a problem number, constructs a slug guess OR requires the user to provide a URL with the slug embedded, then queries LeetCode's GraphQL.
+
+```typescript
+// POST /api/leetcode/lookup
+// Body: { titleSlug: string }
+// Returns: ProblemMeta | { error: string }
+
+import { NextRequest, NextResponse } from 'next/server';
+
+const LEETCODE_GRAPHQL = 'https://leetcode.com/graphql';
+
+const query = `
+  query questionData($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      questionFrontendId
+      title
+      titleSlug
+      difficulty
+      topicTags { name }
+      isPaidOnly
+    }
+  }
+`;
+
+export async function POST(req: NextRequest) {
+  try {
+    const { titleSlug } = await req.json();
+    if (!titleSlug || typeof titleSlug !== 'string') {
+      return NextResponse.json({ error: 'titleSlug required' }, { status: 400 });
+    }
+
+    const res = await fetch(LEETCODE_GRAPHQL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Referer': 'https://leetcode.com',
+      },
+      body: JSON.stringify({ query, variables: { titleSlug } }),
+    });
+
+    const json = await res.json();
+    const q = json?.data?.question;
+
+    if (!q || q.isPaidOnly) {
+      return NextResponse.json({ error: 'Problem not found or is premium' }, { status: 404 });
+    }
+
+    const difficulty = (q.difficulty as string).toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD';
+    const topic = q.topicTags?.[0]?.name ?? 'General';
+
+    return NextResponse.json({
+      title: q.title,
+      difficulty,
+      topic,
+      url: `https://leetcode.com/problems/${q.titleSlug}/`,
+    });
+  } catch (e) {
+    return NextResponse.json({ error: 'Failed to fetch from LeetCode' }, { status: 500 });
+  }
+}
+```
+
+---
+
+## Step 5 — Resolver registry
+
+Create `src/lib/platforms/index.ts`:
+
+```typescript
+import { leetcodeResolver } from './leetcode';
+import type { PlatformResolver } from './types';
+
+export const resolvers: Record<string, PlatformResolver> = {
+  LEETCODE: leetcodeResolver,
+};
+
+export function getResolver(platform: string): PlatformResolver | null {
+  return resolvers[platform] ?? null;
+}
+```
+
+---
+
+## Step 6 — Tests
+
+Create `src/lib/platforms/leetcode.test.ts` using vitest:
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { leetcodeResolver } from './leetcode';
+
+describe('LeetCode resolver', () => {
+  it('resolves problem 1 (Two Sum)', () => {
+    const result = leetcodeResolver.resolve('1');
+    expect(result.found).toBe(true);
+    if (result.found) {
+      expect(result.data.title).toBe('Two Sum');
+      expect(result.data.difficulty).toBe('EASY');
+      expect(result.data.url).toContain('https://leetcode.com/problems/');
+      expect(result.data.topic).toBeTruthy();
+    }
+  });
+
+  it('resolves problem 234 (Palindrome Linked List)', () => {
+    const result = leetcodeResolver.resolve('234');
+    expect(result.found).toBe(true);
+    if (result.found) {
+      expect(result.data.title).toBe('Palindrome Linked List');
+      expect(result.data.difficulty).toBe('EASY');
+    }
+  });
+
+  it('resolves a Medium problem with correct difficulty', () => {
+    const result = leetcodeResolver.resolve('2');
+    expect(result.found).toBe(true);
+    if (result.found) {
+      expect(result.data.difficulty).toBe('MEDIUM');
+    }
+  });
+
+  it('returns found: false for invalid number', () => {
+    const result = leetcodeResolver.resolve('99999');
+    expect(result.found).toBe(false);
+  });
+
+  it('returns found: false for non-numeric input', () => {
+    const result = leetcodeResolver.resolve('abc');
+    expect(result.found).toBe(false);
+  });
+
+  it('topic is a non-empty string', () => {
+    const result = leetcodeResolver.resolve('1');
+    if (result.found) {
+      expect(typeof result.data.topic).toBe('string');
+      expect(result.data.topic.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('url starts with https://leetcode.com/problems/', () => {
+    const result = leetcodeResolver.resolve('1');
+    if (result.found) {
+      expect(result.data.url).toMatch(/^https:\/\/leetcode\.com\/problems\//);
+    }
+  });
+});
+```
 
 ---
 
 ## Definition of done
 
-- `src/lib/scheduling.ts` exists with all 6 functions exported
-- `src/lib/scheduling.test.ts` exists with all tests listed above
-- Running `npm test` passes ALL tests with zero failures
-- Show me the full test output confirming all pass
-- Stop here — do not create API routes, components, or any other files
+- `src/data/leetcode-problems.json` exists, contains 3000+ problems, each with id/title/slug/difficulty/topic/url
+- `src/lib/platforms/types.ts` exists
+- `src/lib/platforms/leetcode.ts` exists with working local resolver
+- `src/lib/platforms/index.ts` exists with registry
+- `src/app/api/leetcode/lookup/route.ts` exists (live GraphQL fallback)
+- `src/lib/platforms/leetcode.test.ts` exists
+- `npm test` passes ALL tests — both scheduling tests and resolver tests
+- Tell me the total problem count in the JSON and show full test output
+- Stop here — do not build any UI or API routes beyond the lookup route above
