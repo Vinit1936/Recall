@@ -60,6 +60,7 @@ model Problem {
   dateSolved      DateTime
   notes           String?       @db.Text
   customFields    Json?         @default("{}")
+  isFavorite      Boolean       @default(false)
 
   status          ProblemStatus @default(ACTIVE)
   currentStep     Int           @default(0)
