@@ -1,44 +1,34 @@
 // PATCH /api/problems/[id]/revise — submit a revision for a problem
 
 import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { applyRevision } from '@/lib/scheduling';
 import type { Confidence } from '@/lib/scheduling';
-
-// TODO: Replace with real auth — hardcoded dev user for now
-const DEV_USER_ID = 'dev-user-1';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
     const { id } = await params;
     const body = await request.json();
     const { confidence } = body as { confidence: Confidence };
 
     if (!confidence || !['CLEAN', 'SHAKY', 'STRUGGLED'].includes(confidence)) {
-      return Response.json(
-        { error: 'confidence must be one of: CLEAN, SHAKY, STRUGGLED' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'confidence must be one of: CLEAN, SHAKY, STRUGGLED' }, { status: 400 });
     }
 
-    // Fetch problem and verify it belongs to this user
-    const problem = await prisma.problem.findFirst({
-      where: { id, userId: DEV_USER_ID }, // TODO: replace with real userId from auth
-    });
+    const problem = await prisma.problem.findFirst({ where: { id, userId } });
+    if (!problem) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
-    if (!problem) {
-      return Response.json({ error: 'Problem not found' }, { status: 404 });
-    }
-
-    // Determine revisionType based on current status
     const revisionType = problem.status === 'MASTERED' ? 'RECHECK' : 'REGULAR';
-
     const today = new Date();
 
-    // Apply the scheduling logic — delegates entirely to the pure function
     const { newStep, newStatus, nextRevisionAt } = applyRevision({
       currentStep: problem.currentStep,
       status: problem.status as any,
@@ -47,9 +37,7 @@ export async function PATCH(
       today,
     });
 
-    // Run problem update + revision insert in a single transaction
     const updatedProblem = await prisma.$transaction(async (tx) => {
-      // 1. Create the Revision record
       await tx.revision.create({
         data: {
           problemId: id,
@@ -59,8 +47,6 @@ export async function PATCH(
           stepAfter: newStep,
         },
       });
-
-      // 2. Update the Problem
       return tx.problem.update({
         where: { id },
         data: {
@@ -72,22 +58,16 @@ export async function PATCH(
       });
     });
 
-    // After the revision, check if all due problems for today are now done.
-    // "Done" means no ACTIVE problems remain with nextRevisionAt <= now.
+    // Mark today's streak complete if all due problems are now done
     const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const remainingDue = await prisma.problem.count({
-      where: {
-        userId: DEV_USER_ID, // TODO: replace with real userId from auth
-        status: 'ACTIVE',
-        nextRevisionAt: { lte: today },
-      },
+      where: { userId, status: 'ACTIVE', nextRevisionAt: { lte: today } },
     });
 
     if (remainingDue === 0) {
-      // All done for today — upsert today's StreakLog as completed
       await prisma.streakLog.upsert({
-        where: { userId_date: { userId: DEV_USER_ID, date: todayMidnight } }, // TODO: real userId
-        create: { userId: DEV_USER_ID, date: todayMidnight, completed: true }, // TODO: real userId
+        where: { userId_date: { userId, date: todayMidnight } },
+        create: { userId, date: todayMidnight, completed: true },
         update: { completed: true },
       });
     }

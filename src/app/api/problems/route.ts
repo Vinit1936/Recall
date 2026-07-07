@@ -2,22 +2,24 @@
 // POST /api/problems — add a new problem to the tracker
 
 import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { getResolver } from '@/lib/platforms';
 import { getInitialSchedule } from '@/lib/scheduling';
 
-// TODO: Replace with real auth — hardcoded dev user for now
-const DEV_USER_ID = 'dev-user-1';
-
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
     const { searchParams } = request.nextUrl;
     const status = searchParams.get('status') ?? undefined;
     const topic = searchParams.get('topic') ?? undefined;
 
     const problems = await prisma.problem.findMany({
       where: {
-        userId: DEV_USER_ID, // TODO: replace with real userId from auth
+        userId,
         ...(status ? { status: status as any } : {}),
         ...(topic ? { topic } : {}),
       },
@@ -33,6 +35,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
     const body = await request.json();
     const { platform, problemNumber, notes, dateSolved } = body;
 
@@ -41,7 +47,6 @@ export async function POST(request: NextRequest) {
     }
 
     const resolver = getResolver(platform);
-
     let meta: { title: string; difficulty: string; topic: string; url: string };
 
     if (resolver) {
@@ -49,21 +54,16 @@ export async function POST(request: NextRequest) {
       if (result.found) {
         meta = result.data;
       } else {
-        // Resolver didn't find it — require manual override fields
         const { title, difficulty, topic, url } = body;
         if (!title || !difficulty || !topic || !url) {
           return Response.json(
-            {
-              error:
-                'Problem not found in local dataset. Provide title, difficulty, topic, and url manually.',
-            },
+            { error: 'Problem not found in local dataset. Provide title, difficulty, topic, and url manually.' },
             { status: 422 }
           );
         }
         meta = { title, difficulty, topic, url };
       }
     } else {
-      // Unknown platform — require all fields manually
       const { title, difficulty, topic, url } = body;
       if (!title || !difficulty || !topic || !url) {
         return Response.json(
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     try {
       const problem = await prisma.problem.create({
         data: {
-          userId: DEV_USER_ID, // TODO: replace with real userId from auth
+          userId,
           platform: platform as any,
           problemNumber: parseInt(String(problemNumber), 10),
           title: meta.title,
@@ -94,15 +94,10 @@ export async function POST(request: NextRequest) {
           status: schedule.status,
         },
       });
-
       return Response.json(problem, { status: 201 });
     } catch (e: any) {
-      // Prisma unique constraint violation (platform + problemNumber already exists for user)
       if (e?.code === 'P2002') {
-        return Response.json(
-          { error: 'This problem already exists in your tracker.' },
-          { status: 409 }
-        );
+        return Response.json({ error: 'This problem already exists in your tracker.' }, { status: 409 });
       }
       throw e;
     }

@@ -1,7 +1,10 @@
+// Root layout — html/body/fonts/TooltipProvider only.
+// App shell (sidebar + main) is in (app)/layout.tsx
+// Auth pages have their own layout at auth/layout.tsx
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Sidebar } from '@/components/sidebar';
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -15,23 +18,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
-      <body style={{ background: '#0a0a0a', color: '#fff', minHeight: '100vh', display: 'flex' }}>
-        <TooltipProvider>
-          <Sidebar />
-          {/* Main content — offset by sidebar width */}
-          <main
-            style={{
-              marginLeft: 240,
-              flex: 1,
-              minHeight: '100vh',
-              background: '#0a0a0a',
-              padding: '32px 40px',
-              overflowY: 'auto',
-            }}
-          >
-            {children}
-          </main>
-        </TooltipProvider>
+      <body style={{ background: '#0a0a0a', color: '#fff', minHeight: '100vh' }}>
+        <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
   );

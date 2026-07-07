@@ -1,29 +1,24 @@
-// PATCH /api/problems/[id] — generic partial update for a problem
-// Used for isFavorite toggle and other single-field updates.
+// PATCH /api/problems/[id] — generic partial update (isFavorite, notes, topic)
 
 import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-
-// TODO: Replace with real auth — hardcoded dev user for now
-const DEV_USER_ID = 'dev-user-1';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
     const { id } = await params;
     const body = await request.json();
 
-    // Verify ownership
-    const existing = await prisma.problem.findFirst({
-      where: { id, userId: DEV_USER_ID }, // TODO: replace with real userId from auth
-    });
-    if (!existing) {
-      return Response.json({ error: 'Problem not found' }, { status: 404 });
-    }
+    const existing = await prisma.problem.findFirst({ where: { id, userId } });
+    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
-    // Whitelist updatable fields to prevent accidental overwrites
     const allowed = ['isFavorite', 'notes', 'topic'] as const;
     const data: Record<string, unknown> = {};
     for (const key of allowed) {

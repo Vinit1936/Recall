@@ -1,35 +1,28 @@
-// PATCH /api/problems/[id]/custom-fields — update customFields JSON for a problem
+// PATCH /api/problems/[id]/custom-fields — update customFields JSON
 
 import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-
-// TODO: Replace with real auth — hardcoded dev user for now
-const DEV_USER_ID = 'dev-user-1';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
     const { id } = await params;
     const body = await request.json();
 
-    // Verify ownership
-    const existing = await prisma.problem.findFirst({
-      where: { id, userId: DEV_USER_ID }, // TODO: replace with real userId from auth
-    });
-    if (!existing) {
-      return Response.json({ error: 'Problem not found' }, { status: 404 });
-    }
+    const existing = await prisma.problem.findFirst({ where: { id, userId } });
+    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
-    // Merge new fields into existing customFields
     const current = (existing.customFields as Record<string, string>) ?? {};
     const merged = { ...current, ...body };
 
-    const updated = await prisma.problem.update({
-      where: { id },
-      data: { customFields: merged },
-    });
+    const updated = await prisma.problem.update({ where: { id }, data: { customFields: merged } });
     return Response.json(updated);
   } catch (e) {
     console.error('[PATCH /api/problems/[id]/custom-fields]', e);
