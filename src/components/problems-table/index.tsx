@@ -113,7 +113,8 @@ function AddColumnPopover({ onSave, columns }: { onSave: (name: string) => void;
 
 export function ProblemsTable() {
   const { data: allProblems, isLoading, mutate } = useSWR<any[]>('/api/problems', fetcher);
-  const { data: columns = [], mutate: mutateColumns } = useSWR<any[]>('/api/columns', fetcher);
+  const { data: rawColumns, mutate: mutateColumns } = useSWR('/api/columns', fetcher);
+  const columns: any[] = Array.isArray(rawColumns) ? rawColumns : [];
 
   const [activeTab, setActiveTab] = useState<'all' | 'status' | 'topic'>('all');
   const [search, setSearch] = useState('');
