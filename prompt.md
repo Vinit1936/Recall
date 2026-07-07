@@ -1,294 +1,399 @@
-# Task: Build the Daily Revision page
 
-Read `ui.md` in the project root before writing any UI code. This page shares the same app shell (sidebar + layout) already built in Phase 5 — do not modify the sidebar or layout.tsx.
 
----
+Phase 7 - NextAuth authentication prompt
+bash
 
-## 0. Route
-Page lives at `src/app/daily/page.tsx`
-Accessible via the "Daily Revision" nav link in the sidebar (already links to `/daily`).
+cat > /mnt/user-data/outputs/phase7-prompt.md << 'ENDOFFILE'
+# Task: Add authentication with NextAuth.js (Auth.js)
 
----
-
-## 1. Page layout — top to bottom
-
-```
-[ Stats strip ]
-[ Page title + date ]
-[ Overdue section — if any overdue problems ]
-[ Due today section ]
-[ All done state — if everything is marked ]
-[ Contribution heatmap ]
-```
-
-No sidebar modifications needed — this page uses the same shell.
-Page horizontal padding: same as problems table (`40px`).
-Page top padding: `32px`.
+Read `ui.md` before writing any UI. This phase wires real authentication into the app. After this phase, the hardcoded `dev-user-1` is gone and every route uses the real logged-in user.
 
 ---
 
-## 2. Stats strip — very top of page
+## 0. Before anything else — read this fully
 
-A single horizontal row showing three numbers:
-
-```
-🔥 [streak]     [total] problems     [mastered] mastered     [due] due today
-```
-
-- Flame emoji + streak number: white, monospace font, `20px`. If streak is 0, show `🔥 0` in muted gray instead of white.
-- Separator between stats: a single `·` character in muted gray `#444`
-- "X problems": total problem count across all statuses
-- "X mastered": count of problems with status MASTERED
-- "X due today": count from the due problems list
-- All numbers: white, monospace. Labels: muted gray `#888`, normal font, `13px`
-- Strip background: none — sits directly on page background
-- Bottom margin below strip: `32px`
-
-Fetch streak from `GET /api/streak`. Fetch problem counts from `GET /api/problems` (already fetched for the due list anyway — derive counts from that).
+This phase touches: Prisma schema, all API routes, middleware, and the login/signup UI. Do each step in order. Do not skip ahead. If any step fails, stop and report.
 
 ---
 
-## 3. Page title
+## 1. Install packages
 
-```
-⌈ Daily Revision ⌋          Monday, July 7
+```bash
+npm install next-auth@beta @auth/prisma-adapter
+npm install bcryptjs
+npm install --save-dev @types/bcryptjs
 ```
 
-- Left: section title wrapped in bracket accents `⌈ Daily Revision ⌋` — use actual Unicode characters `⌈` (U+2308) and `⌋` (U+230B). White text, `22px`, slightly bold.
-- Right: today's date formatted as `"Weekday, Month Day"` (e.g. "Monday, July 7"). Monospace, muted gray `#666`, `14px`.
-- These sit on the same line, space-between.
-- Bottom margin: `24px`
+We are using `next-auth@beta` (Auth.js v5) which is built for Next.js App Router. Do not install the older `next-auth@4`.
 
 ---
 
-## 4. Problem list — the core of the page
+## 2. Prisma schema additions
 
-Fetch problems from `GET /api/problems/due` — returns ACTIVE problems where `nextRevisionAt <= now()`.
+Add the following models to `prisma/schema.prisma`. Do NOT modify any existing models — only add these new ones at the bottom:
 
-Split the returned list into two groups:
-- **Overdue**: `nextRevisionAt` is before today's date (not just before now — before the start of today)
-- **Due today**: `nextRevisionAt` is today (same calendar date as today)
+```prisma
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-### Overdue section (only render if overdue.length > 0)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-Header:
-```
-Overdue (3)
-```
-- Text: `#f87171` (red), `12px`, uppercase, monospace, with a small warning icon before it
-- Bottom margin below header: `8px`
+  @@unique([provider, providerAccountId])
+}
 
-Render overdue problems first, before due-today problems.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-### Due today section
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-Header:
-```
-Today (2)
-```
-- Text: muted gray `#888`, `12px`, uppercase, monospace
-- Bottom margin below header: `8px`
-
-### Problem row structure
-
-Each problem is a compact list row — NOT a card. Think of it like a table row but without the full table chrome.
-
-```
-[ Platform icon ]  [ Number ] Problem Title  [ Difficulty pill ]  [ Topic pill ]  [ Clean ] [ Shaky ] [ Struggled ]  [ Link icon ]
-```
-
-Row specs:
-- Height: `52px`
-- Background: `#111111`
-- Border: `1px solid #1e1e1e`
-- Border radius: `8px`
-- Margin between rows: `6px`
-- Horizontal padding: `16px`
-- On hover: background shifts to `#161616` — instant, no animation
-
-Left side of row (flex, gap `12px`, align center):
-- Platform icon: same LeetCode logo used in the table, `20px`
-- Problem number: monospace, `#666`, `12px`
-- Problem title: white, `14px`, normal weight, max-width `320px`, truncate with ellipsis if longer
-
-Right side of row (flex, gap `8px`, align center, pushed to the right with `margin-left: auto`):
-- Difficulty pill: same colors as the main table (dark muted green/amber/red)
-- Topic pill: same deterministic color system as the main table — import and reuse the same color utility function, do not re-implement it
-- Three confidence buttons: `Clean`, `Shaky`, `Struggled`
-- Link icon button: opens problem URL in new tab, muted gray, becomes white on hover. If URL is null, hide this button.
-
-### Confidence buttons
-
-Three buttons side by side. Before a problem is marked:
-- `Clean`: outline button, border `#2a2a2a`, text `#888`, `12px`
-- `Shaky`: same style
-- `Struggled`: same style
-
-When user clicks one:
-1. Immediately show a loading state on the clicked button (spinner or subtle pulse)
-2. Call `PATCH /api/problems/[id]/revise` with `{ confidence }`
-3. On success:
-   - The row gets a "done" state: title gets a strikethrough, all three buttons are replaced by a single colored badge showing which confidence was selected (e.g. a green "Clean ✓" badge)
-   - Row background shifts to `#0d0d0d` (slightly dimmer to signal it's done)
-   - Use a subtle fade transition (Motion, ~200ms opacity) for the button → badge swap
-4. On error: show a brief toast, revert to normal state
-
-Once ALL problems in the list are marked (both overdue + due today):
-- The problem list area is replaced by an "all done" state (see section 5)
-- The streak number in the stats strip updates (re-fetch from `/api/streak`)
-
-### Empty state (no problems due today)
-
-If `GET /api/problems/due` returns an empty array:
-
-```
-⌈ You're all caught up ⌋
-
-No problems due today. Come back tomorrow,
-or add new problems from the table.
-
-[ Go to problems table →]
+  @@unique([identifier, token])
+}
 ```
 
-- Centered vertically in the space where the list would be
-- Title: bracket accent style, white, `18px`
-- Subtitle: muted gray, `14px`, `line-height: 1.6`
-- Button: ghost style, links to `/`
+Also add these relations to the existing `User` model (add only these two lines, do not touch other User fields):
+```prisma
+accounts Account[]
+sessions Session[]
+```
+
+Then run:
+```bash
+npx prisma migrate dev --name add_nextauth_tables
+npx prisma generate
+```
 
 ---
 
-## 5. All done state
+## 3. Auth.js configuration
 
-When all due problems are marked (after the last one is submitted):
-
-Animate the problem list out (Motion: fade + slight upward translate, ~300ms), then show:
-
-```
-        ✓
-
-  All done for today
-
-  Come back tomorrow to keep your streak alive.
-
-  🔥 [streak] day streak
-```
-
-- Checkmark: large, `#4ade80` (green), `48px`
-- Title: white, `20px`, slightly bold
-- Subtitle: muted gray `#888`, `14px`
-- Streak line: flame + streak number, monospace, white, `16px`
-- Everything centered, with generous vertical padding
-- Animate in with Motion: fade + slight scale from 0.95 → 1.0, ~300ms
-
----
-
-## 6. Contribution heatmap — full width, bottom of page
-
-### What it shows
-A GitHub-style calendar heatmap. Each square = one calendar day. Color intensity = number of revisions done that day.
-
-### Data source
-Fetch revision activity from a new API route: `GET /api/activity`
-
-Create this route: returns an array of `{ date: string (YYYY-MM-DD), count: number }` for the last 365 days. Query the `Revision` table grouped by date:
+Create `src/auth.ts` at the project root level (not inside src/app):
 
 ```typescript
-// Pseudocode for the query
-SELECT DATE(revisedAt) as date, COUNT(*) as count
-FROM Revision
-WHERE problemId IN (SELECT id FROM Problem WHERE userId = devUserId)
-  AND revisedAt >= NOW() - INTERVAL '365 days'
-GROUP BY DATE(revisedAt)
+import NextAuth from 'next-auth'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import Credentials from 'next-auth/providers/credentials'
+import Google from 'next-auth/providers/google'
+import GitHub from 'next-auth/providers/github'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: 'jwt' },
+  pages: {
+    signIn: '/auth/login',
+  },
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
+    Credentials({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+        })
+
+        if (!user || !user.password) return null
+
+        const passwordMatch = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        )
+
+        if (!passwordMatch) return null
+
+        return user
+      },
+    }),
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+      }
+      return session
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id
+      }
+      return token
+    },
+  },
+})
 ```
-
-Use Prisma's `groupBy` or a raw query — whichever is cleaner.
-
-### Heatmap rendering
-- 53 columns × 7 rows = ~371 squares (52 full weeks + partial current week)
-- Each square: `12px × 12px`, `2px` gap between squares, `2px` border radius
-- Color scale (5 levels):
-  - 0 revisions: `#1a1a1a` (empty, very dark)
-  - 1 revision: `#1a3a2a`
-  - 2-3 revisions: `#1e5c3a`
-  - 4-6 revisions: `#22c55e` at 60% opacity
-  - 7+ revisions: `#22c55e` (full green)
-- Month labels above the grid: `Jan`, `Feb` etc. in monospace `#555`, `11px`
-- Day labels to the left: `Mon`, `Wed`, `Fri` in monospace `#555`, `11px`
-- Tooltip on hover: show `"3 revisions on Jul 7"` using shadcn Tooltip
-- Today's square: subtle white border `1px solid #444` to highlight it
-
-### Heatmap layout
-- Full width of the content area
-- Section header above it: `⌈ Activity ⌋` — same bracket accent style, `16px`, `#888`
-- Top margin above heatmap section: `48px`
-- Bottom padding below heatmap: `48px`
-
-Build the heatmap as a standalone component `src/components/heatmap/index.tsx`. Do not use any external heatmap library — build it as a simple CSS grid of divs. It's ~50 lines of straightforward rendering logic.
 
 ---
 
-## 7. Data fetching
+## 4. Environment variables
+
+Add these to `.env`. Leave the values as placeholders — the developer will fill them in:
+
+```env
+# NextAuth
+NEXTAUTH_SECRET="generate-a-random-secret-run-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google OAuth (get from console.cloud.google.com)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# GitHub OAuth (get from github.com/settings/applications/new)
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+```
+
+Add a comment in the code and here: `NEXTAUTH_SECRET` can be generated by running `openssl rand -base64 32` in terminal.
+
+---
+
+## 5. API route handler for NextAuth
+
+Create `src/app/api/auth/[...nextauth]/route.ts`:
 
 ```typescript
-// On page mount, fetch in parallel:
-const { data: dueProblems } = useSWR('/api/problems/due', fetcher)
-const { data: allProblems } = useSWR('/api/problems', fetcher)  // for counts
-const { data: streak } = useSWR('/api/streak', fetcher)
-const { data: activity } = useSWR('/api/activity', fetcher)
+import { handlers } from '@/auth'
+export const { GET, POST } = handlers
 ```
-
-After submitting a revision, call `mutate('/api/problems/due')` and `mutate('/api/streak')` to revalidate those two.
 
 ---
 
-## 8. New API route needed
+## 6. Middleware — protect all routes
 
-`GET /api/activity` — returns revision activity for the last 365 days for the hardcoded dev user. Add `// TODO: replace hardcoded userId with session user` comment. Returns:
+Create `src/middleware.ts` at the project root:
 
-```json
-[
-  { "date": "2026-07-01", "count": 3 },
-  { "date": "2026-07-02", "count": 1 },
-  ...
-]
+```typescript
+import { auth } from '@/auth'
+import { NextResponse } from 'next/server'
+
+export default auth((req) => {
+  const isLoggedIn = !!req.auth
+  const isAuthPage = req.nextUrl.pathname.startsWith('/auth')
+  const isApiAuth = req.nextUrl.pathname.startsWith('/api/auth')
+
+  // Allow auth pages and NextAuth API routes through
+  if (isAuthPage || isApiAuth) return NextResponse.next()
+
+  // Redirect unauthenticated users to login
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL('/auth/login', req.url))
+  }
+
+  return NextResponse.next()
+})
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+}
 ```
-
-Only include dates that have at least 1 revision — the frontend fills in zeros for missing dates.
 
 ---
 
-## 9. File structure expected
+## 7. Signup API route
 
+Create `src/app/api/auth/signup/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+
+export async function POST(req: NextRequest) {
+  try {
+    const { name, email, password } = await req.json()
+
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    const user = await prisma.user.create({
+      data: { name, email, password: hashedPassword },
+    })
+
+    return NextResponse.json({ id: user.id, email: user.email }, { status: 201 })
+  } catch (e) {
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+  }
+}
 ```
-src/
-  app/
-    daily/
-      page.tsx                  ← Daily Revision page
-    api/
-      activity/
-        route.ts                ← NEW: GET /api/activity
-  components/
-    daily/
-      stats-strip.tsx           ← streak + counts row
-      problem-row.tsx           ← single revision row
-      all-done.tsx              ← completion state
-      empty-state.tsx           ← no problems due state
-    heatmap/
-      index.tsx                 ← contribution heatmap
+
+---
+
+## 8. Replace hardcoded userId in all API routes
+
+Find every instance of the hardcoded dev user (look for comments like `// TODO: replace hardcoded userId` or the literal string `"dev-user-1"`) in all API routes under `src/app/api/`.
+
+Replace each one with the real session user:
+
+```typescript
+import { auth } from '@/auth'
+
+// Inside the route handler:
+const session = await auth()
+if (!session?.user?.id) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+const userId = session.user.id
+```
+
+Do this for every route that uses a userId — problems, columns, streak, activity, all of them. Do not miss any.
+
+---
+
+## 9. Auth UI — login + signup page
+
+Create `src/app/auth/login/page.tsx` — the split-screen auth page.
+
+### Layout
+- Full viewport height, two columns, 50/50 split
+- Left panel: branding/visual space
+- Right panel: the auth form
+- No sidebar on this page — it uses a completely different layout from the main app
+
+### Left panel specs
+- Background: dark gradient from `#0a0a0a` to `#111827` (dark navy-ish, subtle — not bright)
+- Centered content vertically and horizontally:
+  - App wordmark: `recall.` in monospace, white, `32px`, with the period in `#444`
+  - Tagline below: `"Never forget a problem you've solved."` in muted gray `#888`, `16px`, normal weight
+  - Below tagline, a subtle decorative element: a small static mockup of the contribution heatmap grid (just a visual, not functional — a grid of small squares in varying shades of green, hardcoded, to hint at the app's content)
+- Bottom of left panel: very small muted text `"Track · Revise · Master"` in `#444`, monospace, `11px`
+
+### Right panel specs
+- Background: `#0f0f0f`
+- Centered content vertically, max-width `400px`, centered horizontally within the panel
+- Top of form area: tab switcher between `Sign in` and `Sign up` — two text buttons, active one is white, inactive is `#555`. Switching tabs shows/hides the relevant form. No page navigation — both forms are on the same page.
+
+### Sign in form
+```
+Email
+[ email input ]
+
+Password
+[ password input ]
+
+[ Sign in → ]          (full width button, dark border, white text)
+
+── or ──
+
+[ G  Continue with Google ]    (full width, outlined)
+[ ⌥  Continue with GitHub ]    (full width, outlined)
+
+Don't have an account? Sign up
+```
+
+### Sign up form
+```
+Name (optional)
+[ name input ]
+
+Email
+[ email input ]
+
+Password  (min 8 characters)
+[ password input ]
+
+[ Create account → ]   (full width button)
+
+── or ──
+
+[ G  Continue with Google ]
+[ ⌥  Continue with GitHub ]
+
+Already have an account? Sign in
+```
+
+### Form behavior
+- All inputs: dark background `#1a1a1a`, border `#2a2a2a`, white text, `14px`, border radius `6px`, padding `10px 14px`
+- On focus: border color shifts to `#444`
+- Primary button: background `#fff`, text `#000`, full width, `14px`, border radius `6px`
+- OAuth buttons: background transparent, border `#2a2a2a`, white text, full width, icon on left
+- Error messages: red `#f87171`, `13px`, shown below the relevant input or below the submit button for general errors
+- Loading state on submit: button shows a spinner, is disabled
+- On successful sign in → redirect to `/` (the problems table)
+- On successful sign up → automatically sign in and redirect to `/`
+- "Sign in" / "Sign up" toggle at bottom: clicking switches the active tab
+
+### OAuth button behavior
+- Google: calls `signIn('google')` from next-auth/react
+- GitHub: calls `signIn('github')` from next-auth/react
+- These redirect to the provider and come back automatically — no extra handling needed
+
+### Sign out
+Add a sign out button to the sidebar (bottom of sidebar, above the "dev mode" badge which can now be removed). Small, muted, shows user's name/email and a "Sign out" button that calls `signOut()`.
+
+---
+
+## 10. Type augmentation for session.user.id
+
+Create `src/types/next-auth.d.ts`:
+
+```typescript
+import { DefaultSession } from 'next-auth'
+
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string
+    } & DefaultSession['user']
+  }
+}
 ```
 
 ---
 
 ## Definition of done
 
-- `/daily` route renders without errors
-- Stats strip shows streak + problem counts (even if all zeros with stub user)
-- Due problems list renders with correct row structure
-- Confidence buttons work end to end — clicking Clean/Shaky/Struggled calls the API and shows the done state on that row
-- All done state appears and animates in when all problems are marked
-- Empty state shows when no problems are due
-- Heatmap renders (will be empty with stub user, that's fine — the grid should still show)
-- `GET /api/activity` route exists and returns correct shape
-- `npm run dev` shows no console errors on `/daily`
-- Commit: `git add . && git commit -m "Build Daily Revision page (Phase 6)"`
-- Stop here — do not build auth, landing page, or any other screen
+- `npx prisma migrate dev --name add_nextauth_tables` ran successfully
+- `src/auth.ts` exists with all three providers configured
+- Middleware redirects unauthenticated users to `/auth/login`
+- `/auth/login` page renders with split-screen layout, sign in + sign up tabs, OAuth buttons
+- Sign up with email/password creates a user in the DB (verify in Neon dashboard)
+- Sign in with email/password works and redirects to `/`
+- Every API route uses real session userId — no hardcoded `dev-user-1` remaining
+- Sign out button in sidebar works
+- `npm run dev` shows no console errors
+- Commit: `git add . && git commit -m "Add NextAuth authentication (Phase 7)"`
+- Stop here — do not build the landing page or deploy yet
+ENDOFFILE
