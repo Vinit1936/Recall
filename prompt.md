@@ -1,36 +1,27 @@
+# Task: Add authentication with NextAuth.js (Auth.js v5)
 
+This phase wires real authentication into the app. The app currently uses a hardcoded `dev-user-1` userId everywhere — after this phase, every route uses the real logged-in user's ID from the session.
 
-Phase 7 - NextAuth authentication prompt
-bash
-
-cat > /mnt/user-data/outputs/phase7-prompt.md << 'ENDOFFILE'
-# Task: Add authentication with NextAuth.js (Auth.js)
-
-Read `ui.md` before writing any UI. This phase wires real authentication into the app. After this phase, the hardcoded `dev-user-1` is gone and every route uses the real logged-in user.
+Read `ui.md` before building any UI in this phase.
 
 ---
 
-## 0. Before anything else — read this fully
-
-This phase touches: Prisma schema, all API routes, middleware, and the login/signup UI. Do each step in order. Do not skip ahead. If any step fails, stop and report.
-
----
-
-## 1. Install packages
+## 0. Install packages
 
 ```bash
-npm install next-auth@beta @auth/prisma-adapter
+npm install next-auth@beta
+npm install @auth/prisma-adapter
 npm install bcryptjs
-npm install --save-dev @types/bcryptjs
+npm install @types/bcryptjs --save-dev
 ```
 
-We are using `next-auth@beta` (Auth.js v5) which is built for Next.js App Router. Do not install the older `next-auth@4`.
+Use `next-auth@beta` (Auth.js v5) — not v4. The configuration pattern is different from v4; use the v5 App Router pattern with a single `auth.ts` config file.
 
 ---
 
-## 2. Prisma schema additions
+## 1. Prisma schema additions
 
-Add the following models to `prisma/schema.prisma`. Do NOT modify any existing models — only add these new ones at the bottom:
+Add the standard NextAuth.js Prisma adapter models to `prisma/schema.prisma`. Add these alongside the existing models — do NOT modify existing models:
 
 ```prisma
 model Account {
@@ -69,331 +60,305 @@ model VerificationToken {
 }
 ```
 
-Also add these relations to the existing `User` model (add only these two lines, do not touch other User fields):
+Also update the existing `User` model to add the relations NextAuth needs:
+
 ```prisma
-accounts Account[]
-sessions Session[]
+accounts  Account[]
+sessions  Session[]
 ```
 
-Then run:
-```bash
-npx prisma migrate dev --name add_nextauth_tables
-npx prisma generate
-```
+Run: `npx prisma migrate dev --name add_nextauth_tables`
+Run: `npx prisma generate`
 
 ---
 
-## 3. Auth.js configuration
+## 2. Environment variables
 
-Create `src/auth.ts` at the project root level (not inside src/app):
+Add these to `.env`:
+
+```env
+NEXTAUTH_SECRET="generate-a-random-string-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google OAuth — leave empty for now, fill in later
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# GitHub OAuth — leave empty for now, fill in later
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+```
+
+For `NEXTAUTH_SECRET`: generate a secure random string using:
+```bash
+openssl rand -base64 32
+```
+Paste the output as the value.
+
+---
+
+## 3. Auth config — `src/auth.ts`
+
+Create the main NextAuth config file at the project root level `src/auth.ts`:
 
 ```typescript
-import NextAuth from 'next-auth'
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import Credentials from 'next-auth/providers/credentials'
-import Google from 'next-auth/providers/google'
-import GitHub from 'next-auth/providers/github'
-import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
+import NextAuth from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   pages: {
-    signIn: '/auth/login',
+    signIn: '/login',
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
-    Credentials({
+    CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-        })
+        });
 
-        if (!user || !user.password) return null
+        if (!user || !user.password) return null;
 
         const passwordMatch = await bcrypt.compare(
           credentials.password as string,
           user.password
-        )
+        );
 
-        if (!passwordMatch) return null
+        if (!passwordMatch) return null;
 
-        return user
+        return user;
       },
     }),
+    // Google and GitHub providers stubbed — uncomment when credentials are ready:
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID!,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    // }),
+    // GitHubProvider({
+    //   clientId: process.env.GITHUB_CLIENT_ID!,
+    //   clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    // }),
   ],
   callbacks: {
-    async session({ session, token }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub
-      }
-      return session
-    },
     async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id
-      }
-      return token
+      if (user) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) session.user.id = token.id as string;
+      return session;
     },
   },
-})
+});
 ```
 
 ---
 
-## 4. Environment variables
-
-Add these to `.env`. Leave the values as placeholders — the developer will fill them in:
-
-```env
-# NextAuth
-NEXTAUTH_SECRET="generate-a-random-secret-run-openssl-rand-base64-32"
-NEXTAUTH_URL="http://localhost:3000"
-
-# Google OAuth (get from console.cloud.google.com)
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
-
-# GitHub OAuth (get from github.com/settings/applications/new)
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET=""
-```
-
-Add a comment in the code and here: `NEXTAUTH_SECRET` can be generated by running `openssl rand -base64 32` in terminal.
-
----
-
-## 5. API route handler for NextAuth
+## 4. NextAuth route handler
 
 Create `src/app/api/auth/[...nextauth]/route.ts`:
 
 ```typescript
-import { handlers } from '@/auth'
-export const { GET, POST } = handlers
+import { handlers } from '@/auth';
+export const { GET, POST } = handlers;
 ```
 
 ---
 
-## 6. Middleware — protect all routes
+## 5. Middleware — protect all routes
 
 Create `src/middleware.ts` at the project root:
 
 ```typescript
-import { auth } from '@/auth'
-import { NextResponse } from 'next/server'
-
-export default auth((req) => {
-  const isLoggedIn = !!req.auth
-  const isAuthPage = req.nextUrl.pathname.startsWith('/auth')
-  const isApiAuth = req.nextUrl.pathname.startsWith('/api/auth')
-
-  // Allow auth pages and NextAuth API routes through
-  if (isAuthPage || isApiAuth) return NextResponse.next()
-
-  // Redirect unauthenticated users to login
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/auth/login', req.url))
-  }
-
-  return NextResponse.next()
-})
+export { auth as middleware } from '@/auth';
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-}
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|login|signup).*)'],
+};
 ```
+
+This redirects unauthenticated users to `/login` for all pages except the auth pages themselves and Next.js internals.
 
 ---
 
-## 7. Signup API route
+## 6. Signup API route
 
 Create `src/app/api/auth/signup/route.ts`:
 
+- Accepts `POST` with `{ email, password, name? }`
+- Validates: email must be valid format, password must be at least 8 characters
+- Checks if user already exists — return 409 if so
+- Hashes password with `bcrypt.hash(password, 12)`
+- Creates User in database
+- Returns `{ success: true, email }` on success
+- Returns appropriate error messages on failure
+
+---
+
+## 7. Replace hardcoded userId everywhere
+
+Search the entire codebase for `dev-user-1` and `// TODO: replace hardcoded userId` comments. Replace every instance with the real session user ID.
+
+Pattern for API routes:
+
 ```typescript
-import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth';
 
-export async function POST(req: NextRequest) {
-  try {
-    const { name, email, password } = await req.json()
-
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) {
-      return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword },
-    })
-
-    return NextResponse.json({ id: user.id, email: user.email }, { status: 201 })
-  } catch (e) {
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const userId = session.user.id;
+  // ... rest of route
 }
 ```
 
----
+Apply this pattern to ALL existing API routes:
+- `GET /api/problems`
+- `POST /api/problems`
+- `GET /api/problems/due`
+- `PATCH /api/problems/[id]/revise`
+- `PATCH /api/problems/[id]/retire`
+- `PATCH /api/problems/[id]/revise-again`
+- `PATCH /api/problems/[id]`
+- `PATCH /api/problems/[id]/custom-fields`
+- `GET /api/columns`
+- `POST /api/columns`
+- `GET /api/streak`
+- `GET /api/activity`
+- `GET /api/leetcode/resolve`
 
-## 8. Replace hardcoded userId in all API routes
-
-Find every instance of the hardcoded dev user (look for comments like `// TODO: replace hardcoded userId` or the literal string `"dev-user-1"`) in all API routes under `src/app/api/`.
-
-Replace each one with the real session user:
-
-```typescript
-import { auth } from '@/auth'
-
-// Inside the route handler:
-const session = await auth()
-if (!session?.user?.id) {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-}
-const userId = session.user.id
-```
-
-Do this for every route that uses a userId — problems, columns, streak, activity, all of them. Do not miss any.
+Every route must return 401 if no valid session exists.
 
 ---
 
-## 9. Auth UI — login + signup page
+## 8. Login page — `src/app/login/page.tsx`
 
-Create `src/app/auth/login/page.tsx` — the split-screen auth page.
+Split-screen layout, full viewport height:
 
-### Layout
-- Full viewport height, two columns, 50/50 split
-- Left panel: branding/visual space
-- Right panel: the auth form
-- No sidebar on this page — it uses a completely different layout from the main app
+### Left panel (40% width)
+- Background: very dark `#0a0a0a`
+- A large user-supplied image fills this panel — use `next/image` with `fill` and `object-fit: cover`
+- Image source: `/public/auth-hero.jpg` — create a placeholder for now (a dark gradient div) since the real image will be added later
+- Over the image/gradient, bottom-left: app name `recall.` in monospace white, `24px`
+- Tagline below: `"Never forget what you've solved."` in muted gray, `14px`
 
-### Left panel specs
-- Background: dark gradient from `#0a0a0a` to `#111827` (dark navy-ish, subtle — not bright)
-- Centered content vertically and horizontally:
-  - App wordmark: `recall.` in monospace, white, `32px`, with the period in `#444`
-  - Tagline below: `"Never forget a problem you've solved."` in muted gray `#888`, `16px`, normal weight
-  - Below tagline, a subtle decorative element: a small static mockup of the contribution heatmap grid (just a visual, not functional — a grid of small squares in varying shades of green, hardcoded, to hint at the app's content)
-- Bottom of left panel: very small muted text `"Track · Revise · Master"` in `#444`, monospace, `11px`
+### Right panel (60% width)
+- Background: `#111111`
+- Centered vertically and horizontally
+- Max width of form content: `380px`
 
-### Right panel specs
-- Background: `#0f0f0f`
-- Centered content vertically, max-width `400px`, centered horizontally within the panel
-- Top of form area: tab switcher between `Sign in` and `Sign up` — two text buttons, active one is white, inactive is `#555`. Switching tabs shows/hides the relevant form. No page navigation — both forms are on the same page.
-
-### Sign in form
+Form content top to bottom:
 ```
+Get started
+
 Email
 [ email input ]
 
 Password
 [ password input ]
 
-[ Sign in → ]          (full width button, dark border, white text)
+[ Sign in ]
 
-── or ──
+─────── or ───────
 
-[ G  Continue with Google ]    (full width, outlined)
-[ ⌥  Continue with GitHub ]    (full width, outlined)
+[ G  Sign in with Google ]     ← disabled/grayed out, tooltip: "Coming soon"
+[ ⌥  Sign in with GitHub ]     ← disabled/grayed out, tooltip: "Coming soon"
 
 Don't have an account? Sign up
 ```
 
-### Sign up form
+- "Get started": white, `24px`, slightly bold
+- Label style: muted gray `#888`, `12px`, uppercase, monospace, `4px` margin bottom
+- Input style: background `#1a1a1a`, border `1px solid #2a2a2a`, white text, `14px`, `8px` padding, border radius `6px`. Focus: border color `#444`
+- "Sign in" button: full width, background `#fff`, text `#000`, `14px`, bold, border radius `6px`, height `40px`. Hover: background `#e5e5e5`
+- OAuth buttons: full width, background `#1a1a1a`, border `1px solid #2a2a2a`, white text (muted to `#666` since disabled), border radius `6px`, height `40px`, logo icon on left
+- "Don't have an account? Sign up": muted gray text, "Sign up" is a link to `/signup` in white
+
+Form behavior:
+- On submit: call `signIn('credentials', { email, password, callbackUrl: '/' })`
+- Show inline error below the button if sign in fails: "Invalid email or password" in red `#f87171`
+- Show loading state on the button while submitting (spinner, disabled)
+- No page reload on error — handle with NextAuth's error callback
+
+---
+
+## 9. Signup page — `src/app/signup/page.tsx`
+
+Same split-screen layout as login. Right panel form:
+
 ```
+Create account
+
 Name (optional)
 [ name input ]
 
 Email
 [ email input ]
 
-Password  (min 8 characters)
-[ password input ]
+Password
+[ password input — min 8 chars ]
 
-[ Create account → ]   (full width button)
+[ Create account ]
 
-── or ──
+─────── or ───────
 
-[ G  Continue with Google ]
-[ ⌥  Continue with GitHub ]
+[ G  Sign up with Google ]     ← disabled, "Coming soon"
+[ ⌥  Sign up with GitHub ]     ← disabled, "Coming soon"
 
 Already have an account? Sign in
 ```
 
-### Form behavior
-- All inputs: dark background `#1a1a1a`, border `#2a2a2a`, white text, `14px`, border radius `6px`, padding `10px 14px`
-- On focus: border color shifts to `#444`
-- Primary button: background `#fff`, text `#000`, full width, `14px`, border radius `6px`
-- OAuth buttons: background transparent, border `#2a2a2a`, white text, full width, icon on left
-- Error messages: red `#f87171`, `13px`, shown below the relevant input or below the submit button for general errors
-- Loading state on submit: button shows a spinner, is disabled
-- On successful sign in → redirect to `/` (the problems table)
-- On successful sign up → automatically sign in and redirect to `/`
-- "Sign in" / "Sign up" toggle at bottom: clicking switches the active tab
-
-### OAuth button behavior
-- Google: calls `signIn('google')` from next-auth/react
-- GitHub: calls `signIn('github')` from next-auth/react
-- These redirect to the provider and come back automatically — no extra handling needed
-
-### Sign out
-Add a sign out button to the sidebar (bottom of sidebar, above the "dev mode" badge which can now be removed). Small, muted, shows user's name/email and a "Sign out" button that calls `signOut()`.
+Form behavior:
+- On submit: call `POST /api/auth/signup` with `{ name, email, password }`
+- On success: automatically sign in with `signIn('credentials', { email, password, callbackUrl: '/' })`
+- Show inline errors:
+  - "Password must be at least 8 characters" if too short
+  - "An account with this email already exists" if 409
+  - "Something went wrong, please try again" for other errors
 
 ---
 
-## 10. Type augmentation for session.user.id
+## 10. Update sidebar to show user info + sign out
 
-Create `src/types/next-auth.d.ts`:
+At the very bottom of the sidebar (above the "dev mode" badge which should now be removed), add:
 
-```typescript
-import { DefaultSession } from 'next-auth'
-
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string
-    } & DefaultSession['user']
-  }
-}
 ```
+[ user avatar initial ]  user@email.com
+                         Sign out
+```
+
+- Avatar: a small circle `32px` with the first letter of the user's name/email, background `#2a2a2a`, white text, monospace
+- Email: muted gray `#666`, `12px`, truncated if long
+- "Sign out": muted gray `#555`, `11px`, clickable — calls `signOut()` from next-auth
+
+Use `useSession()` from `next-auth/react` in the sidebar component. Wrap the app in `<SessionProvider>` in `layout.tsx`.
 
 ---
 
 ## Definition of done
 
 - `npx prisma migrate dev --name add_nextauth_tables` ran successfully
-- `src/auth.ts` exists with all three providers configured
-- Middleware redirects unauthenticated users to `/auth/login`
-- `/auth/login` page renders with split-screen layout, sign in + sign up tabs, OAuth buttons
-- Sign up with email/password creates a user in the DB (verify in Neon dashboard)
-- Sign in with email/password works and redirects to `/`
-- Every API route uses real session userId — no hardcoded `dev-user-1` remaining
-- Sign out button in sidebar works
+- `/login` page renders correctly with split-screen layout
+- `/signup` page renders correctly
+- Signing up creates a real User in the Neon database (verify in Neon dashboard → Tables → User)
+- Signing in with those credentials redirects to `/` (the problems table)
+- Visiting `/` while logged out redirects to `/login`
+- All API routes return 401 when called without a session
+- Sidebar shows logged-in user's email + sign out button
+- All `dev-user-1` references are gone from the codebase (run `grep -r "dev-user-1" src/` to confirm — should return nothing)
 - `npm run dev` shows no console errors
 - Commit: `git add . && git commit -m "Add NextAuth authentication (Phase 7)"`
 - Stop here — do not build the landing page or deploy yet
-ENDOFFILE
