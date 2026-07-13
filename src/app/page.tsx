@@ -1,5 +1,2 @@
-import { ProblemsTable } from '@/components/problems-table';
-
-export default function HomePage() {
-  return <ProblemsTable />;
-}
+// Route moved to src/app/(app)/page.tsx
+export {};
