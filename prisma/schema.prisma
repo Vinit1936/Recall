@@ -36,11 +36,13 @@ enum RevisionType {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  password  String?
-  createdAt DateTime  @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
 
   problems  Problem[]
   accounts  Account[]
