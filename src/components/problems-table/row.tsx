@@ -172,11 +172,13 @@ function CustomFieldCell({ problem, columnName, onSave }: { problem: any; column
 type ProblemRowProps = {
   problem: any;
   columns: any[];
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
   onStarToggle: (id: string, current: boolean) => void;
   onCustomFieldSave: (id: string, columnName: string, value: string) => void;
 };
 
-export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }: ProblemRowProps) {
+export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onCustomFieldSave }: ProblemRowProps) {
   const [hovered, setHovered] = useState(false);
   const diffStyle = getDifficultyStyle(problem.difficulty);
   const topicColor = getTopicColor(problem.topic);
@@ -186,15 +188,34 @@ export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? '#161616' : 'transparent',
+        background: isSelected ? '#1c1c24' : hovered ? '#161616' : 'transparent',
         borderBottom: '1px solid #1c1c1c',
         height: 44,
-        transition: 'background 0s',
+        transition: 'background 0.1s',
       }}
     >
-      {/* Platform */}
-      <td style={{ width: 52, textAlign: 'center', padding: '0 8px' }}>
-        <LCIcon />
+      {/* Platform cell: Checkbox before LC logo on hover or selection */}
+      <td style={{ width: 52, textAlign: 'center', padding: '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(problem.id)}
+            onClick={(e) => e.stopPropagation()}
+            title="Select row"
+            style={{
+              width: 14,
+              height: 14,
+              cursor: 'pointer',
+              accentColor: '#818cf8',
+              borderRadius: 3,
+              opacity: hovered || isSelected ? 1 : 0,
+              transition: 'opacity 0.15s',
+              flexShrink: 0,
+            }}
+          />
+          <LCIcon />
+        </div>
       </td>
 
       {/* Problem: number + title on same line */}
@@ -279,3 +300,4 @@ export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }
     </tr>
   );
 }
+

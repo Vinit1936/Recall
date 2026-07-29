@@ -36,3 +36,26 @@ export async function PATCH(
     return Response.json({ error: 'Failed to update problem' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
+    const { id } = await params;
+
+    const existing = await prisma.problem.findFirst({ where: { id, userId } });
+    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
+
+    await prisma.problem.delete({ where: { id } });
+    return Response.json({ success: true, message: 'Problem deleted' });
+  } catch (e) {
+    console.error('[DELETE /api/problems/[id]]', e);
+    return Response.json({ error: 'Failed to delete problem' }, { status: 500 });
+  }
+}
+

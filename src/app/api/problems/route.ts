@@ -106,10 +106,37 @@ export async function POST(request: NextRequest) {
       if (e?.code === 'P2002') {
         return Response.json({ error: 'This problem already exists in your tracker.' }, { status: 409 });
       }
-      throw e;
     }
   } catch (e) {
     console.error('[POST /api/problems]', e);
     return Response.json({ error: 'Failed to create problem' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
+    const body = await request.json();
+    const { ids } = body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return Response.json({ error: 'ids array is required' }, { status: 400 });
+    }
+
+    const deleted = await prisma.problem.deleteMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
+
+    return Response.json({ count: deleted.count, message: `Successfully deleted ${deleted.count} problems` });
+  } catch (e) {
+    console.error('[DELETE /api/problems]', e);
+    return Response.json({ error: 'Failed to delete problems' }, { status: 500 });
+  }
+}
+

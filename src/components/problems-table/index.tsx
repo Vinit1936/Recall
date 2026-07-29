@@ -169,6 +169,7 @@ export function ProblemsTable() {
   const [showNewRow, setShowNewRow] = useState(false);
   const [toast, setToast] = useState('');
   const [tableHovered, setTableHovered] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -184,6 +185,49 @@ export function ProblemsTable() {
     return true;
   });
   const sorted = sortProblems(filtered, sort);
+
+  const isAllSelected = sorted.length > 0 && sorted.every((p) => selectedIds.includes(p.id));
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleToggleSelectAll = useCallback(() => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(sorted.map((p) => p.id));
+    }
+  }, [isAllSelected, sorted]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    const count = selectedIds.length;
+    const idsToDelete = [...selectedIds];
+
+    // Optimistic update
+    mutate(
+      (prev: any[] | undefined) => prev?.filter((p) => !idsToDelete.includes(p.id)) ?? [],
+      false
+    );
+    setSelectedIds([]);
+
+    try {
+      const res = await fetch('/api/problems', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: idsToDelete }),
+      });
+      if (!res.ok) throw new Error('Failed to delete problems');
+      showToast(`Deleted ${count} ${count === 1 ? 'problem' : 'problems'}`);
+      mutate();
+    } catch (e: any) {
+      mutate(); // revert
+      showToast(e.message ?? 'Failed to delete problems');
+    }
+  }, [selectedIds, mutate]);
 
   // Star toggle with optimistic update
   const handleStarToggle = useCallback(async (id: string, current: boolean) => {
@@ -255,8 +299,26 @@ export function ProblemsTable() {
   const TableHead = () => (
     <thead>
       <tr style={{ borderBottom: '1px solid #1c1c1c', height: 36 }}>
+        <th style={{ width: 52, padding: '0 4px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={handleToggleSelectAll}
+              title={isAllSelected ? "Deselect all" : "Select all"}
+              style={{
+                width: 14,
+                height: 14,
+                cursor: 'pointer',
+                accentColor: '#818cf8',
+                borderRadius: 3,
+                opacity: selectedIds.length > 0 ? 1 : 0.4,
+                transition: 'opacity 0.15s',
+              }}
+            />
+          </div>
+        </th>
         {[
-          { label: '⊞', width: 52, center: true },
           { label: 'PROBLEM', width: undefined },
           { label: 'DIFFICULTY', width: 100 },
           { label: 'TOPIC', width: 130 },
@@ -297,6 +359,8 @@ export function ProblemsTable() {
         key={p.id}
         problem={p}
         columns={columns}
+        isSelected={selectedIds.includes(p.id)}
+        onToggleSelect={handleToggleSelect}
         onStarToggle={handleStarToggle}
         onCustomFieldSave={handleCustomFieldSave}
       />
@@ -332,6 +396,72 @@ export function ProblemsTable() {
       {toast && (
         <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, color: '#f87171', fontSize: 13, padding: '10px 16px', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
           {toast}
+        </div>
+      )}
+
+      {/* Floating Bulk Actions Toolbar (Notion Style) */}
+      {selectedIds.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 32,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: 8,
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            zIndex: 100,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+          }}
+        >
+          <div style={{ fontSize: 13, color: '#e5e5e5', fontFamily: 'var(--font-geist-mono), monospace' }}>
+            <span style={{ color: '#818cf8', fontWeight: 600 }}>{selectedIds.length}</span> {selectedIds.length === 1 ? 'selected' : 'selected'}
+          </div>
+          <div style={{ height: 16, width: 1, background: '#333' }} />
+          <button
+            onClick={handleBulkDelete}
+            style={{
+              background: '#3a0f0f',
+              border: '1px solid #5a1a1a',
+              borderRadius: 6,
+              color: '#f87171',
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 500,
+              padding: '6px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'background 0.15s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 4h12M5.5 4V2.5a1 1 0 011-1h3a1 1 0 011 1V4M6 7v5M10 7v5M3.5 4l.8 10a1 1 0 001 .9h5.4a1 1 0 001-.9l.8-10" />
+            </svg>
+            Delete
+          </button>
+          <button
+            onClick={() => setSelectedIds([])}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#666',
+              cursor: 'pointer',
+              fontSize: 16,
+              padding: '2px 4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1,
+            }}
+            title="Clear selection"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -417,3 +547,4 @@ export function ProblemsTable() {
     </div>
   );
 }
+
