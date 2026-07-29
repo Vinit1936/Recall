@@ -2,12 +2,12 @@
 
 import useSWR from 'swr';
 import { useState, useCallback, useRef } from 'react';
-import { startOfDay } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TabBar } from './tab-bar';
 import { Toolbar } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
+import { getTopicColor } from '@/lib/topic-colors';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -31,15 +31,15 @@ function sortProblems(problems: any[], sort: string) {
 
 function SkeletonRow({ columns }: { columns: number }) {
   return (
-    <tr style={{ borderBottom: '1px solid #1a1a1a', height: 44 }}>
-      <td style={{ width: 48, padding: '0 8px', textAlign: 'center' }}><Skeleton className="h-5 w-5 mx-auto rounded" /></td>
+    <tr style={{ borderBottom: '1px solid #1c1c1c', height: 44 }}>
+      <td style={{ width: 52, padding: '0 8px', textAlign: 'center' }}><Skeleton className="h-6 w-6 mx-auto rounded" /></td>
       <td style={{ padding: '0 12px' }}><Skeleton className="h-4 w-48 rounded" /></td>
-      <td style={{ width: 90, padding: '0 8px' }}><Skeleton className="h-5 w-14 rounded-full" /></td>
-      <td style={{ width: 130, padding: '0 8px' }}><Skeleton className="h-5 w-20 rounded-full" /></td>
-      <td style={{ width: 110, padding: '0 8px' }}><Skeleton className="h-4 w-20 rounded" /></td>
+      <td style={{ width: 100, padding: '0 8px' }}><Skeleton className="h-5 w-16 rounded" /></td>
+      <td style={{ width: 130, padding: '0 8px' }}><Skeleton className="h-5 w-20 rounded" /></td>
+      <td style={{ width: 120, padding: '0 8px' }}><Skeleton className="h-4 w-20 rounded" /></td>
       <td style={{ width: 44 }}><Skeleton className="h-4 w-4 mx-auto rounded" /></td>
-      <td style={{ width: 120, padding: '0 8px' }}><Skeleton className="h-4 w-16 rounded" /></td>
-      <td style={{ width: 160, padding: '0 12px' }}><Skeleton className="h-4 w-24 rounded" /></td>
+      <td style={{ width: 130, padding: '0 8px' }}><Skeleton className="h-4 w-16 rounded" /></td>
+      <td style={{ width: 180, padding: '0 12px' }}><Skeleton className="h-4 w-24 rounded" /></td>
       {Array.from({ length: columns }).map((_, i) => (
         <td key={i} style={{ width: 140, padding: '0 8px' }}><Skeleton className="h-4 w-20 rounded" /></td>
       ))}
@@ -47,19 +47,42 @@ function SkeletonRow({ columns }: { columns: number }) {
   );
 }
 
-function CollapsibleGroup({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+function CollapsibleGroup({ title, count, topicColor, children }: {
+  title: string;
+  count: number;
+  topicColor?: { bg: string; text: string; border: string };
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(true);
   return (
     <>
       <tr
         onClick={() => setOpen((o) => !o)}
-        style={{ borderBottom: '1px solid #1a1a1a', height: 36, cursor: 'pointer', background: '#0f0f0f' }}
+        style={{ borderBottom: '1px solid #1c1c1c', height: 36, cursor: 'pointer', background: '#141414' }}
       >
         <td colSpan={100} style={{ padding: '0 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: '#555', fontSize: 11, transition: 'transform 0.15s', display: 'inline-block', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
-            <span style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>{title}</span>
-            <span style={{ fontSize: 12, color: '#444', background: '#1a1a1a', borderRadius: 10, padding: '1px 7px' }}>{count}</span>
+            <span style={{
+              color: '#555',
+              fontSize: 11,
+              transition: 'transform 0.15s',
+              display: 'inline-block',
+              transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+            }}>▶</span>
+            {topicColor ? (
+              <span style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: topicColor.text,
+                background: topicColor.bg,
+                border: `1px solid ${topicColor.border}`,
+                borderRadius: 4,
+                padding: '2px 8px',
+              }}>{title}</span>
+            ) : (
+              <span style={{ fontSize: 12, color: '#888', fontWeight: 500, textTransform: 'uppercase', fontFamily: 'var(--font-geist-mono), monospace', letterSpacing: '0.06em' }}>{title}</span>
+            )}
+            <span style={{ fontSize: 12, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>{count}</span>
           </div>
         </td>
       </tr>
@@ -111,6 +134,28 @@ function AddColumnPopover({ onSave, columns }: { onSave: (name: string) => void;
   );
 }
 
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={100}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect x="4" y="4" width="40" height="40" rx="4" stroke="#333" strokeWidth="2"/>
+            <line x1="4" y1="16" x2="44" y2="16" stroke="#333" strokeWidth="2"/>
+            <line x1="4" y1="28" x2="44" y2="28" stroke="#333" strokeWidth="2"/>
+            <line x1="16" y1="4" x2="16" y2="44" stroke="#333" strokeWidth="2"/>
+          </svg>
+          <div style={{ fontSize: 16, color: '#888', fontWeight: 500 }}>No problems yet</div>
+          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6, textAlign: 'center', maxWidth: 320 }}>
+            Add your first problem using the + New Problem button above,<br />
+            or click + New row at the bottom of the table.
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export function ProblemsTable() {
   const { data: allProblems, isLoading, mutate } = useSWR<any[]>('/api/problems', fetcher);
   const { data: rawColumns, mutate: mutateColumns } = useSWR('/api/columns', fetcher);
@@ -123,6 +168,7 @@ export function ProblemsTable() {
   const [sort, setSort] = useState('nextRevision');
   const [showNewRow, setShowNewRow] = useState(false);
   const [toast, setToast] = useState('');
+  const [tableHovered, setTableHovered] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -172,14 +218,20 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // New problem save
+  // New problem save — fixed Content-Type typo + always send dateSolved
   const handleNewProblemSave = useCallback(async (data: any) => {
+    const payload = {
+      ...data,
+      dateSolved: data.dateSolved ?? new Date().toISOString(),
+    };
+    console.log('[handleNewProblemSave] sending payload', payload);
     const res = await fetch('/api/problems', {
       method: 'POST',
-      headers: { 'Content-Ty pe': 'application/json' },
-      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
     const json = await res.json();
+    console.log('[handleNewProblemSave] response', res.status, json);
     if (!res.ok) throw new Error(json.error ?? 'Failed to create problem');
     setShowNewRow(false);
     mutate();
@@ -202,27 +254,37 @@ export function ProblemsTable() {
   // Table header
   const TableHead = () => (
     <thead>
-      <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+      <tr style={{ borderBottom: '1px solid #1c1c1c', height: 36 }}>
         {[
-          { label: '⊞', width: 48, center: true },
-          { label: 'Problem', width: undefined },
-          { label: 'Difficulty', width: 90 },
-          { label: 'Topic', width: 130 },
-          { label: 'Status', width: 110 },
+          { label: '⊞', width: 52, center: true },
+          { label: 'PROBLEM', width: undefined },
+          { label: 'DIFFICULTY', width: 100 },
+          { label: 'TOPIC', width: 130 },
+          { label: 'STATUS', width: 120 },
           { label: '★', width: 44, center: true },
-          { label: 'Next Revision', width: 120 },
-          { label: 'Notes', width: 160 },
+          { label: 'NEXT REVISION', width: 130 },
+          { label: 'NOTES', width: 180 },
         ].map(({ label, width, center }) => (
-          <th key={label} style={{ width, padding: center ? '0' : '0 12px', paddingLeft: center ? 0 : undefined, textAlign: center ? 'center' : 'left', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 500, paddingBottom: 10, paddingTop: 10 }}>
+          <th key={label} style={{
+            width,
+            padding: center ? '0' : '0 12px',
+            textAlign: center ? 'center' : 'left',
+            fontSize: 11,
+            fontFamily: 'var(--font-geist-mono), monospace',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: '#555',
+            fontWeight: 500,
+          }}>
             {label}
           </th>
         ))}
         {columns.map((col) => (
-          <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#555', fontWeight: 500, paddingBottom: 10, paddingTop: 10 }}>
+          <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500 }}>
             {col.name}
           </th>
         ))}
-        <th style={{ padding: '0 8px', paddingBottom: 10, paddingTop: 10 }}>
+        <th style={{ padding: '0 8px' }}>
           <AddColumnPopover onSave={handleAddColumn} columns={columns} />
         </th>
       </tr>
@@ -256,9 +318,13 @@ export function ProblemsTable() {
     const map: Record<string, any[]> = {};
     sorted.forEach((p) => { (map[p.topic] = map[p.topic] ?? []).push(p); });
     return Object.keys(map).sort().map((topic) => (
-      <CollapsibleGroup key={topic} title={topic} count={map[topic].length}>{renderRows(map[topic])}</CollapsibleGroup>
+      <CollapsibleGroup key={topic} title={topic} count={map[topic].length} topicColor={getTopicColor(topic)}>
+        {renderRows(map[topic])}
+      </CollapsibleGroup>
     ));
   };
+
+  const isEmpty = !isLoading && Array.isArray(allProblems) && allProblems.length === 0;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -277,6 +343,7 @@ export function ProblemsTable() {
           <span style={{ color: '#fff', fontWeight: 500 }}>All Problems</span>
         </div>
         <button
+          id="new-problem-btn"
           onClick={() => setShowNewRow(true)}
           style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 13, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
         >
@@ -298,38 +365,55 @@ export function ProblemsTable() {
       </div>
 
       {/* Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-        <TableHead />
-        <tbody>
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} columns={COLUMN_COUNT} />)
-            : activeTab === 'all' ? renderRows(sorted)
-            : activeTab === 'status' ? renderByStatus()
-            : renderByTopic()
-          }
-          {/* New row */}
-          {showNewRow && (
-            <NewRow
-              onSave={handleNewProblemSave}
-              onCancel={() => setShowNewRow(false)}
-              columns={columns}
-            />
-          )}
-          {/* + New row button at bottom */}
-          {!showNewRow && (
-            <tr style={{ borderTop: '1px solid #1a1a1a' }}>
-              <td colSpan={8 + COLUMN_COUNT} style={{ padding: '8px 12px' }}>
-                <button
-                  onClick={() => setShowNewRow(true)}
-                  style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <span style={{ fontSize: 15 }}>+</span> New row
-                </button>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <div
+        onMouseEnter={() => setTableHovered(true)}
+        onMouseLeave={() => setTableHovered(false)}
+      >
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <TableHead />
+          <tbody>
+            {isLoading
+              ? Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} columns={COLUMN_COUNT} />)
+              : isEmpty ? <EmptyState />
+              : activeTab === 'all' ? renderRows(sorted)
+              : activeTab === 'status' ? renderByStatus()
+              : renderByTopic()
+            }
+            {/* New row */}
+            {showNewRow && (
+              <NewRow
+                onSave={handleNewProblemSave}
+                onCancel={() => setShowNewRow(false)}
+                columns={columns}
+              />
+            )}
+            {/* + New row button at bottom */}
+            {!showNewRow && (
+              <tr style={{ borderTop: '1px solid #1c1c1c' }}>
+                <td colSpan={8 + COLUMN_COUNT} style={{ padding: '8px 12px' }}>
+                  <button
+                    id="new-row-btn"
+                    onClick={() => setShowNewRow(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: tableHovered ? '#666' : '#333',
+                      cursor: 'pointer',
+                      fontSize: 13,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: 15 }}>+</span> New row
+                  </button>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

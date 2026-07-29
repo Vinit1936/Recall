@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     const result = leetcodeResolver.resolve(id);
+    console.log(`[GET /api/leetcode/resolve] id=${id} found=${result.found}`);
     return Response.json(result);
   } catch (e) {
     console.error('[GET /api/leetcode/resolve]', e);

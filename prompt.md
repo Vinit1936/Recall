@@ -1,364 +1,342 @@
-# Task: Add authentication with NextAuth.js (Auth.js v5)
+# Task: Fix and rebuild the problems table completely
 
-This phase wires real authentication into the app. The app currently uses a hardcoded `dev-user-1` userId everywhere — after this phase, every route uses the real logged-in user's ID from the session.
+The problems table has multiple critical issues. Fix all of them. Read `ui.md` before touching any code. Reference the Notion tracker screenshot for visual direction — that's the target feel.
 
-Read `ui.md` before building any UI in this phase.
-
----
-
-## 0. Install packages
-
-```bash
-npm install next-auth@beta
-npm install @auth/prisma-adapter
-npm install bcryptjs
-npm install @types/bcryptjs --save-dev
-```
-
-Use `next-auth@beta` (Auth.js v5) — not v4. The configuration pattern is different from v4; use the v5 App Router pattern with a single `auth.ts` config file.
+Do not add new features. Fix what exists. Every fix listed below must be verified working before marking done.
 
 ---
 
-## 1. Prisma schema additions
+## 0. Critical bug — new row not saving to database
 
-Add the standard NextAuth.js Prisma adapter models to `prisma/schema.prisma`. Add these alongside the existing models — do NOT modify existing models:
+This is the most important fix. Currently adding a new row via inline creation does nothing to the database.
 
-```prisma
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+Debug and fix the full inline row creation flow:
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+1. Check `POST /api/problems` — does it actually receive the request when Enter is pressed? Add a `console.log` at the top of the route to confirm it's being hit.
+2. Check the request body — is `platform`, `problemNumber`, `title`, `difficulty`, `topic`, `url`, `dateSolved` all being sent correctly?
+3. Check the response — is it returning a 200 with the created problem, or an error?
+4. Check the frontend — after the API responds successfully, is `mutate()` being called to revalidate the SWR cache?
+5. Fix whatever is broken in this chain. The flow must work end to end:
+   - User types `32` in the problem number field → presses Enter
+   - App calls local resolver → gets back "Longest Valid Parentheses", HARD, Stack/String, URL
+   - App calls `POST /api/problems` with all fields including `dateSolved: new Date().toISOString()`
+   - On 200 response → `mutate()` is called → table reloads → new row appears with all fields populated
+   - On error → show a toast with the error message, keep the draft row so user doesn't lose input
 
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-```
-
-Also update the existing `User` model to add the relations NextAuth needs:
-
-```prisma
-accounts  Account[]
-sessions  Session[]
-```
-
-Run: `npx prisma migrate dev --name add_nextauth_tables`
-Run: `npx prisma generate`
+The `dateSolved` field is required in the schema — make sure it's always sent, defaulting to today if the user doesn't specify.
 
 ---
 
-## 2. Environment variables
+## 1. Visual overhaul — match Notion tracker feel
 
-Add these to `.env`:
+The current table looks sparse and broken. The target is the Notion tracker screenshot — warm, colorful, data-dense, refined.
 
-```env
-NEXTAUTH_SECRET="generate-a-random-string-here"
-NEXTAUTH_URL="http://localhost:3000"
+### Background and spacing
+- Page background: `#0f0f0f`
+- Sidebar background: `#111111`
+- Table area background: same as page `#0f0f0f` — no card/panel around the table
+- Row height: `44px` — compact, not tall
+- Column header height: `36px`
+- Column header text: `11px`, uppercase, monospace, color `#555`, letter-spacing `0.08em`
+- Row separator: `1px solid #1c1c1c`
+- Row hover: `#161616` background, instant
 
-# Google OAuth — leave empty for now, fill in later
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
-
-# GitHub OAuth — leave empty for now, fill in later
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET=""
-```
-
-For `NEXTAUTH_SECRET`: generate a secure random string using:
-```bash
-openssl rand -base64 32
-```
-Paste the output as the value.
+### Typography
+- Problem number: monospace, `#666`, `13px`, font-weight 400
+- Problem title: `#e5e5e5`, `14px`, font-weight 500, hover: underline, cursor pointer (links to problem URL)
+- All pill text: `12px`, font-weight 500
+- All metadata (dates, counts): monospace, `13px`
 
 ---
 
-## 3. Auth config — `src/auth.ts`
+## 2. Fix every column — exact specs
 
-Create the main NextAuth config file at the project root level `src/auth.ts`:
+### Column 1 — Platform (width: `52px`, centered)
+- Show ONLY the platform logo icon, nothing else
+- LeetCode: an orange `#FFA116` square `24px × 24px` with rounded corners `4px`, containing white text "LC" in monospace bold `10px`, centered
+- Column header: a small grid icon `#555`, no text
+- This must be its own column, not merged with the problem name
+
+### Column 2 — Problem (width: `flex, min 260px`)
+- Format: `[number]  [title]`
+- Number and title on the SAME line, separated by a single space
+- Number: monospace, `#666`, `13px`
+- Title: `#e5e5e5`, `14px`, `font-weight 500`
+- The entire title is clickable — `cursor: pointer`, opens problem URL in new tab
+- On hover: title gets `text-decoration: underline`
+- If `url` is null: title is NOT clickable, show a small `🔗` icon with strikethrough after it in `#444`
+- Column header text: "PROBLEM"
+
+### Column 3 — Difficulty (width: `100px`)
+Pill style — match these EXACTLY (same as LeetCode's color scheme but dark/muted):
+- Easy: background `#1c3a1c`, text `#4ade80`, border `1px solid #2d5a2d`
+- Medium: background `#3a2a0d`, text `#fb923c`, border `1px solid #5a3d10`
+- Hard: background `#3a0f0f`, text `#f87171`, border `1px solid #5a1a1a`
+- Pill shape: `border-radius: 4px`, padding `2px 8px`, `font-size: 12px`, `font-weight: 600`
+- Column header text: "DIFFICULTY"
+
+### Column 4 — Topic (width: `130px`)
+- Single pill, same shape as difficulty pill
+- Deterministic color from topic name — use this exact hash function, do not change it:
 
 ```typescript
-import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/login',
-  },
-  providers: [
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
-
-        if (!user || !user.password) return null;
-
-        const passwordMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!passwordMatch) return null;
-
-        return user;
-      },
-    }),
-    // Google and GitHub providers stubbed — uncomment when credentials are ready:
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // }),
-    // GitHubProvider({
-    //   clientId: process.env.GITHUB_CLIENT_ID!,
-    //   clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    // }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) session.user.id = token.id as string;
-      return session;
-    },
-  },
-});
-```
-
----
-
-## 4. NextAuth route handler
-
-Create `src/app/api/auth/[...nextauth]/route.ts`:
-
-```typescript
-import { handlers } from '@/auth';
-export const { GET, POST } = handlers;
-```
-
----
-
-## 5. Middleware — protect all routes
-
-Create `src/middleware.ts` at the project root:
-
-```typescript
-export { auth as middleware } from '@/auth';
-
-export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|login|signup).*)'],
-};
-```
-
-This redirects unauthenticated users to `/login` for all pages except the auth pages themselves and Next.js internals.
-
----
-
-## 6. Signup API route
-
-Create `src/app/api/auth/signup/route.ts`:
-
-- Accepts `POST` with `{ email, password, name? }`
-- Validates: email must be valid format, password must be at least 8 characters
-- Checks if user already exists — return 409 if so
-- Hashes password with `bcrypt.hash(password, 12)`
-- Creates User in database
-- Returns `{ success: true, email }` on success
-- Returns appropriate error messages on failure
-
----
-
-## 7. Replace hardcoded userId everywhere
-
-Search the entire codebase for `dev-user-1` and `// TODO: replace hardcoded userId` comments. Replace every instance with the real session user ID.
-
-Pattern for API routes:
-
-```typescript
-import { auth } from '@/auth';
-
-export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export function getTopicColor(topic: string): { bg: string; text: string; border: string } {
+  const palette = [
+    { bg: '#1a1a3a', text: '#818cf8', border: '#2a2a5a' },
+    { bg: '#1a3a2a', text: '#34d399', border: '#2a5a3a' },
+    { bg: '#3a1a3a', text: '#c084fc', border: '#5a2a5a' },
+    { bg: '#3a3a0f', text: '#facc15', border: '#5a5a1a' },
+    { bg: '#0f2a3a', text: '#38bdf8', border: '#1a3a5a' },
+    { bg: '#3a0f1a', text: '#fb7185', border: '#5a1a2a' },
+    { bg: '#1a3a1a', text: '#4ade80', border: '#2a5a2a' },
+    { bg: '#2a1a3a', text: '#a78bfa', border: '#3a2a5a' },
+    { bg: '#3a2a0a', text: '#fdba74', border: '#5a3a1a' },
+    { bg: '#1a1a2a', text: '#94a3b8', border: '#2a2a3a' },
+    { bg: '#1a3a2a', text: '#86efac', border: '#2a5a3a' },
+    { bg: '#3a1a1a', text: '#fca5a5', border: '#5a2a2a' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < topic.length; i++) {
+    hash = topic.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const userId = session.user.id;
-  // ... rest of route
+  return palette[Math.abs(hash) % palette.length];
 }
 ```
 
-Apply this pattern to ALL existing API routes:
-- `GET /api/problems`
-- `POST /api/problems`
-- `GET /api/problems/due`
-- `PATCH /api/problems/[id]/revise`
-- `PATCH /api/problems/[id]/retire`
-- `PATCH /api/problems/[id]/revise-again`
-- `PATCH /api/problems/[id]`
-- `PATCH /api/problems/[id]/custom-fields`
-- `GET /api/columns`
-- `POST /api/columns`
-- `GET /api/streak`
-- `GET /api/activity`
-- `GET /api/leetcode/resolve`
+Put this function in `src/lib/topic-colors.ts` and import it in both the problems table AND the daily revision page — same file, same colors everywhere.
 
-Every route must return 401 if no valid session exists.
+- Column header text: "TOPIC"
+
+### Column 5 — Status (width: `120px`)
+This column is currently broken — shows nothing. Fix it completely.
+
+Status is derived from TWO things: the problem's `status` field AND the latest revision's `confidence`:
+- If `status === 'ACTIVE'` and `revisionCount === 0`: show gray dot `#555` + label "Not started" in `#666`
+- If `status === 'ACTIVE'` and latest confidence is `CLEAN`: green dot `#4ade80` + "Clean" in `#4ade80`
+- If `status === 'ACTIVE'` and latest confidence is `SHAKY`: amber dot `#fb923c` + "Shaky" in `#fb923c`
+- If `status === 'ACTIVE'` and latest confidence is `STRUGGLED`: red dot `#f87171` + "Struggled" in `#f87171`
+- If `status === 'MASTERED'`: purple dot `#a78bfa` + "Mastered" in `#a78bfa`
+- If `status === 'RETIRED'`: gray dot `#444` + "Retired" in `#555`
+
+To get the latest confidence, update `GET /api/problems` to include the most recent revision:
+```typescript
+include: {
+  revisions: {
+    orderBy: { revisedAt: 'desc' },
+    take: 1,
+  }
+}
+```
+
+Then derive the display status from `problem.status` + `problem.revisions[0]?.confidence`.
+
+Dot size: `8px` circle, `margin-right: 6px`
+Label: `13px`, monospace
+Column header text: "STATUS"
+
+### Column 6 — Star (width: `44px`, centered)
+Currently broken — shows nothing. Fix it.
+
+- Show a star icon always — filled `★` in `#facc15` when `isFavorite = true`, outline `☆` in `#444` when false
+- Clicking toggles immediately (optimistic update)
+- Calls `PATCH /api/problems/[id]` with `{ isFavorite: !current }`
+- On hover: outline star becomes `#888`
+- Column header: `★` icon in `#555`, no text
+
+### Column 7 — Next Revision (width: `130px`)
+Currently broken — shows nothing. Fix it.
+
+Use `date-fns` `formatDistanceToNow` with `addSuffix: true`:
+- Overdue: "3 days ago" in `#f87171` (red)
+- Due today: "today" in `#fb923c` (amber)
+- Future: "in 14 days" in `#888` (muted)
+- MASTERED: show "Mastered ✓" in `#a78bfa`
+- RETIRED: show "—" in `#444`
+
+Column header text: "NEXT REVISION"
+
+### Column 8 — Notes (width: `180px`)
+- Plain text, `#666`, `13px`
+- Truncate at 40 chars with ellipsis
+- Empty: show nothing (no placeholder text)
+- Column header text: "NOTES"
 
 ---
 
-## 8. Login page — `src/app/login/page.tsx`
+## 3. Fix inline row creation — make it feel like Notion
 
-Split-screen layout, full viewport height:
+The current inline row creation looks and feels wrong. Rebuild it to match Notion's behavior exactly.
 
-### Left panel (40% width)
-- Background: very dark `#0a0a0a`
-- A large user-supplied image fills this panel — use `next/image` with `fill` and `object-fit: cover`
-- Image source: `/public/auth-hero.jpg` — create a placeholder for now (a dark gradient div) since the real image will be added later
-- Over the image/gradient, bottom-left: app name `recall.` in monospace white, `24px`
-- Tagline below: `"Never forget what you've solved."` in muted gray, `14px`
+### Trigger
+Both `+ New Problem` button (top right) AND a `+ New row` text at the very bottom of the table trigger this. The `+ New row` text: muted `#444`, `13px`, left-aligned with the problem column, shows on table hover, has a `+` icon before it.
 
-### Right panel (60% width)
-- Background: `#111111`
-- Centered vertically and horizontally
-- Max width of form content: `380px`
+### New row appearance
+- Same height as regular rows `44px`
+- Background `#141414` — very slightly different from regular rows to indicate edit state
+- A thin `1px` left border `#3a3a3a` on the row to signal "active"
+- NO big highlighted block like currently shown
 
-Form content top to bottom:
-```
-Get started
+### Flow step by step
 
-Email
-[ email input ]
+**Step 1 — Platform cell:**
+- Shows a small dropdown immediately on row creation
+- Dropdown options: just `LeetCode` for now with the LC logo
+- Auto-selects LeetCode and moves to step 2 (since it's the only option, skip the dropdown entirely — just set platform to LEETCODE and focus the number field)
 
-Password
-[ password input ]
+**Step 2 — Problem number input:**
+- A plain text input inside the Problem cell, no border, transparent background, white text, monospace, `13px`
+- Placeholder: `"Problem number..."` in `#444`
+- User types `32` and presses `Enter`
 
-[ Sign in ]
+**Step 3 — Auto-fetch (while fetching):**
+- Show a subtle loading indicator in the title area — three dots `...` animating, color `#555`
+- Call `GET /api/leetcode/resolve?id=32`
 
-─────── or ───────
+**Step 4a — Found:**
+- Silently fill in: Problem title, Difficulty pill, Topic pill in the row cells
+- A very subtle green flash on the filled cells (Motion: opacity 0→1 on a green `#4ade80` at 5% opacity overlay, 400ms, then fade out) — barely noticeable, just a hint of confirmation
+- Focus moves to the Notes cell
 
-[ G  Sign in with Google ]     ← disabled/grayed out, tooltip: "Coming soon"
-[ ⌥  Sign in with GitHub ]     ← disabled/grayed out, tooltip: "Coming soon"
+**Step 4b — Not found:**
+- Show inline below the row: `"Problem #32 not found. Paste the URL to continue, or press Esc to cancel."`
+- Text color `#888`, `12px`
+- A URL input appears below: same style as number input
+- User pastes `https://leetcode.com/problems/longest-valid-parentheses/`
+- Extract slug from URL → call `POST /api/leetcode/lookup` with `{ titleSlug: "longest-valid-parentheses" }`
+- If found: fill cells same as 4a
+- If still not found: let user manually type the title. Show inputs for title, difficulty (dropdown), topic (text input)
 
-Don't have an account? Sign up
-```
+**Step 5 — Save:**
+- User presses `Enter` in the Notes cell (or any cell) OR clicks outside the row
+- Collect all data: `{ platform: 'LEETCODE', problemNumber: 32, title, difficulty, topic, url, dateSolved: new Date().toISOString(), notes }`
+- Call `POST /api/problems`
+- On 200: call `mutate('/api/problems')`, remove the draft row, the real row appears in the table
+- On 409 (duplicate): show inline error "You've already added this problem" in `#f87171` below the row, keep draft
+- On other error: show toast, keep draft
 
-- "Get started": white, `24px`, slightly bold
-- Label style: muted gray `#888`, `12px`, uppercase, monospace, `4px` margin bottom
-- Input style: background `#1a1a1a`, border `1px solid #2a2a2a`, white text, `14px`, `8px` padding, border radius `6px`. Focus: border color `#444`
-- "Sign in" button: full width, background `#fff`, text `#000`, `14px`, bold, border radius `6px`, height `40px`. Hover: background `#e5e5e5`
-- OAuth buttons: full width, background `#1a1a1a`, border `1px solid #2a2a2a`, white text (muted to `#666` since disabled), border radius `6px`, height `40px`, logo icon on left
-- "Don't have an account? Sign up": muted gray text, "Sign up" is a link to `/signup` in white
-
-Form behavior:
-- On submit: call `signIn('credentials', { email, password, callbackUrl: '/' })`
-- Show inline error below the button if sign in fails: "Invalid email or password" in red `#f87171`
-- Show loading state on the button while submitting (spinner, disabled)
-- No page reload on error — handle with NextAuth's error callback
-
----
-
-## 9. Signup page — `src/app/signup/page.tsx`
-
-Same split-screen layout as login. Right panel form:
-
-```
-Create account
-
-Name (optional)
-[ name input ]
-
-Email
-[ email input ]
-
-Password
-[ password input — min 8 chars ]
-
-[ Create account ]
-
-─────── or ───────
-
-[ G  Sign up with Google ]     ← disabled, "Coming soon"
-[ ⌥  Sign up with GitHub ]     ← disabled, "Coming soon"
-
-Already have an account? Sign in
-```
-
-Form behavior:
-- On submit: call `POST /api/auth/signup` with `{ name, email, password }`
-- On success: automatically sign in with `signIn('credentials', { email, password, callbackUrl: '/' })`
-- Show inline errors:
-  - "Password must be at least 8 characters" if too short
-  - "An account with this email already exists" if 409
-  - "Something went wrong, please try again" for other errors
+**Step 6 — Cancel:**
+- `Escape` at any point removes the draft row with no API call
+- Clicking `+ New row` while a draft exists: do nothing (don't create a second draft)
 
 ---
 
-## 10. Update sidebar to show user info + sign out
+## 4. Tab views — fix grouping
 
-At the very bottom of the sidebar (above the "dev mode" badge which should now be removed), add:
+### By Status tab
+Groups: `Active` / `Mastered` / `Retired`
+Each group header:
+- Background `#141414`, full width
+- Left: group name in `#888`, `12px`, uppercase, monospace
+- Right: count in `#555`, `12px`, monospace
+- A `▼` / `▶` chevron for collapse/expand
+- `8px` vertical padding
+- Problems within each group render as normal rows
 
-```
-[ user avatar initial ]  user@email.com
-                         Sign out
-```
-
-- Avatar: a small circle `32px` with the first letter of the user's name/email, background `#2a2a2a`, white text, monospace
-- Email: muted gray `#666`, `12px`, truncated if long
-- "Sign out": muted gray `#555`, `11px`, clickable — calls `signOut()` from next-auth
-
-Use `useSession()` from `next-auth/react` in the sidebar component. Wrap the app in `<SessionProvider>` in `layout.tsx`.
+### By Topic tab
+Same pattern — group by `topic` field, alphabetical, each topic gets its colored pill as the group header instead of plain text.
 
 ---
 
-## Definition of done
+## 5. Search and filter — verify they work
 
-- `npx prisma migrate dev --name add_nextauth_tables` ran successfully
-- `/login` page renders correctly with split-screen layout
-- `/signup` page renders correctly
-- Signing up creates a real User in the Neon database (verify in Neon dashboard → Tables → User)
-- Signing in with those credentials redirects to `/` (the problems table)
-- Visiting `/` while logged out redirects to `/login`
-- All API routes return 401 when called without a session
-- Sidebar shows logged-in user's email + sign out button
-- All `dev-user-1` references are gone from the codebase (run `grep -r "dev-user-1" src/` to confirm — should return nothing)
-- `npm run dev` shows no console errors
-- Commit: `git add . && git commit -m "Add NextAuth authentication (Phase 7)"`
-- Stop here — do not build the landing page or deploy yet
+Search: filter on `title` (case insensitive) and `problemNumber` (string contains). Debounce 150ms.
+
+Filter dropdown — fix the UI:
+- Shows checkboxes for Difficulty: Easy / Medium / Hard
+- Shows checkboxes for Status: Active / Mastered / Retired
+- Applied filters show as small pills below the toolbar with an `×` to remove each one
+- "Clear all" link if any filters active
+
+Sort dropdown — options:
+- Next Revision (default) — ascending
+- Problem Number — ascending
+- Date Added — descending
+- Difficulty — Easy first
+
+---
+
+## 6. Empty state
+
+When no problems exist yet (fresh account):
+```
+No problems yet
+
+Add your first problem using the + New Problem button above,
+or click + New row at the bottom of the table.
+```
+- Centered in the table area
+- Icon: a simple grid/table icon in `#333`, `48px`
+- Title: `#888`, `16px`
+- Subtitle: `#555`, `13px`, `line-height 1.6`
+
+---
+
+## 7. API fixes needed
+
+### `GET /api/problems` — include latest revision
+```typescript
+include: {
+  revisions: {
+    orderBy: { revisedAt: 'desc' },
+    take: 1,
+  }
+}
+```
+
+### `PATCH /api/problems/[id]` — generic update
+Make sure this route exists and handles `{ isFavorite }` correctly. It should accept any partial Problem fields and update only those provided.
+
+### `GET /api/leetcode/resolve` — verify it works
+Add a console.log to confirm it's being hit and returning the right shape `{ found: boolean, data?: ProblemMeta }`.
+
+---
+
+## 8. File to create — `src/lib/topic-colors.ts`
+
+```typescript
+export function getTopicColor(topic: string): { bg: string; text: string; border: string } {
+  const palette = [
+    { bg: '#1a1a3a', text: '#818cf8', border: '#2a2a5a' },
+    { bg: '#1a3a2a', text: '#34d399', border: '#2a5a3a' },
+    { bg: '#3a1a3a', text: '#c084fc', border: '#5a2a5a' },
+    { bg: '#3a3a0f', text: '#facc15', border: '#5a5a1a' },
+    { bg: '#0f2a3a', text: '#38bdf8', border: '#1a3a5a' },
+    { bg: '#3a0f1a', text: '#fb7185', border: '#5a1a2a' },
+    { bg: '#1a3a1a', text: '#4ade80', border: '#2a5a3a' },
+    { bg: '#2a1a3a', text: '#a78bfa', border: '#3a2a5a' },
+    { bg: '#3a2a0a', text: '#fdba74', border: '#5a3a1a' },
+    { bg: '#1a1a2a', text: '#94a3b8', border: '#2a2a3a' },
+    { bg: '#1a3a2a', text: '#86efac', border: '#2a5a3a' },
+    { bg: '#3a1a1a', text: '#fca5a5', border: '#5a2a2a' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < topic.length; i++) {
+    hash = topic.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return palette[Math.abs(hash) % palette.length];
+}
+```
+
+Import this in the problems table AND daily revision page. Same function, same colors, consistent everywhere.
+
+---
+
+## Definition of done — verify EVERY item
+
+- [ ] Adding problem number `1` → Enter → "Two Sum" auto-fills → Enter → row appears in table AND exists in Neon database (check Neon dashboard → Tables → Problem)
+- [ ] Adding problem number `99999` → shows "not found" message → URL input appears
+- [ ] All 8 columns visible with correct data
+- [ ] Difficulty pills match LeetCode colors (dark muted green/amber/red)
+- [ ] Topic pills use deterministic colors from `getTopicColor`
+- [ ] Status column shows correct dot + label for each state
+- [ ] Star toggle works — clicking changes icon, persists after page refresh
+- [ ] Next Revision shows relative date in correct color
+- [ ] By Status tab groups correctly
+- [ ] By Topic tab groups correctly
+- [ ] Search filters rows as user types
+- [ ] Filter dropdown works
+- [ ] Empty state shows when no problems exist
+- [ ] `npm run dev` — zero console errors
+- [ ] Commit: `git add . && git commit -m "Fix problems table — row creation, columns, styling (Phase 5 fix)"`
+- [ ] Stop here — do not touch Daily Revision or auth
+ENDOFFILE

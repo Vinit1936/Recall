@@ -51,7 +51,7 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
   const [hovered, setHovered] = useState(false);
 
   const diffStyle = getDifficultyStyle(problem.difficulty);
-  const [topicBg, topicText] = getTopicColor(problem.topic);
+  const topicColor = getTopicColor(problem.topic);
 
   const handleConfidence = async (conf: Confidence) => {
     setLoadingConf(conf);
@@ -116,11 +116,11 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
 
       {/* Right side */}
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Pill bg={diffStyle.bg} text={diffStyle.text}>
+        <Pill bg={diffStyle.bg} text={diffStyle.text} border={diffStyle.border}>
           {problem.difficulty.charAt(0) + problem.difficulty.slice(1).toLowerCase()}
         </Pill>
 
-        <Pill bg={topicBg} text={topicText}>{problem.topic}</Pill>
+        <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>{problem.topic}</Pill>
 
         {/* Confidence buttons / done badge */}
         <AnimatePresence mode="wait">

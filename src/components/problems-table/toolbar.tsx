@@ -125,67 +125,101 @@ export function Toolbar({
     debounceRef.current = setTimeout(() => onSearchChange(v), 150);
   };
 
+  const activeFilters = [
+    ...difficultyFilter.map((d) => ({ label: d.charAt(0) + d.slice(1).toLowerCase(), remove: () => toggleDifficulty(d) })),
+    ...statusFilter.map((s) => ({ label: s.charAt(0) + s.slice(1).toLowerCase(), remove: () => toggleStatus(s) })),
+  ];
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      {/* Search */}
-      <div style={{ position: 'relative' }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#555', pointerEvents: 'none' }}>
-          <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
-          <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-        </svg>
-        <input
-          value={searchVal}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search problems..."
-          style={{
-            background: '#1a1a1a',
-            border: '1px solid #2a2a2a',
-            borderRadius: 6,
-            color: '#fff',
-            fontSize: 13,
-            padding: '6px 12px 6px 32px',
-            outline: 'none',
-            width: 220,
-          }}
-        />
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Search */}
+        <div style={{ position: 'relative' }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#555', pointerEvents: 'none' }}>
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+            <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+          </svg>
+          <input
+            value={searchVal}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search problems..."
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #2a2a2a',
+              borderRadius: 6,
+              color: '#fff',
+              fontSize: 13,
+              padding: '6px 12px 6px 32px',
+              outline: 'none',
+              width: 220,
+            }}
+          />
+        </div>
+
+        {/* Filter dropdown */}
+        <DropdownMenu label={difficultyFilter.length + statusFilter.length > 0 ? `Filters (${difficultyFilter.length + statusFilter.length})` : 'Filter'}>
+          <div style={{ padding: '2px 4px 6px', fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Difficulty</div>
+          {DIFFICULTIES.map((d) => (
+            <CheckItem key={d} label={d} checked={difficultyFilter.includes(d)} onChange={() => toggleDifficulty(d)} />
+          ))}
+          <div style={{ borderTop: '1px solid #2a2a2a', margin: '6px 0' }} />
+          <div style={{ padding: '2px 4px 6px', fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Status</div>
+          {STATUSES.map((s) => (
+            <CheckItem key={s} label={s} checked={statusFilter.includes(s)} onChange={() => toggleStatus(s)} />
+          ))}
+        </DropdownMenu>
+
+        {/* Sort dropdown */}
+        <DropdownMenu label={SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort'}>
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onSortChange(opt.value)}
+              style={{
+                display: 'block',
+                width: '100%',
+                background: sort === opt.value ? '#252525' : 'none',
+                border: 'none',
+                borderRadius: 4,
+                color: sort === opt.value ? '#fff' : '#ccc',
+                cursor: 'pointer',
+                fontSize: 13,
+                padding: '5px 8px',
+                textAlign: 'left',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </DropdownMenu>
       </div>
 
-      {/* Filter dropdown */}
-      <DropdownMenu label={difficultyFilter.length + statusFilter.length > 0 ? `Filters (${difficultyFilter.length + statusFilter.length})` : 'Filter'}>
-        <div style={{ padding: '2px 4px 6px', fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Difficulty</div>
-        {DIFFICULTIES.map((d) => (
-          <CheckItem key={d} label={d} checked={difficultyFilter.includes(d)} onChange={() => toggleDifficulty(d)} />
-        ))}
-        <div style={{ borderTop: '1px solid #2a2a2a', margin: '6px 0' }} />
-        <div style={{ padding: '2px 4px 6px', fontSize: 10, color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Status</div>
-        {STATUSES.map((s) => (
-          <CheckItem key={s} label={s} checked={statusFilter.includes(s)} onChange={() => toggleStatus(s)} />
-        ))}
-      </DropdownMenu>
-
-      {/* Sort dropdown */}
-      <DropdownMenu label={SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort'}>
-        {SORT_OPTIONS.map((opt) => (
+      {/* Active filter pills */}
+      {activeFilters.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+          {activeFilters.map((f, i) => (
+            <span key={i} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#1a1a1a', border: '1px solid #2a2a2a',
+              borderRadius: 4, fontSize: 12, color: '#aaa',
+              padding: '2px 6px',
+            }}>
+              {f.label}
+              <button
+                onClick={f.remove}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: 0, fontSize: 12, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+              >×</button>
+            </span>
+          ))}
           <button
-            key={opt.value}
-            onClick={() => onSortChange(opt.value)}
-            style={{
-              display: 'block',
-              width: '100%',
-              background: sort === opt.value ? '#252525' : 'none',
-              border: 'none',
-              borderRadius: 4,
-              color: sort === opt.value ? '#fff' : '#ccc',
-              cursor: 'pointer',
-              fontSize: 13,
-              padding: '5px 8px',
-              textAlign: 'left',
-            }}
+            onClick={() => { onDifficultyChange([]); onStatusChange([]); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555', fontSize: 12, padding: 0 }}
           >
-            {opt.label}
+            Clear all
           </button>
-        ))}
-      </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 }
+

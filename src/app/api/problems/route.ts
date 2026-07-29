@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
         ...(topic ? { topic } : {}),
       },
       orderBy: { createdAt: 'desc' },
+      include: {
+        revisions: {
+          orderBy: { revisedAt: 'desc' },
+          take: 1,
+        },
+      },
     });
 
     return Response.json(problems);
@@ -34,6 +40,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[POST /api/problems] hit');
   try {
     const session = await auth();
     if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });

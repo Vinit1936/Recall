@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { getDifficultyStyle, getTopicColor } from './columns';
 
 type NewRowProps = {
   onSave: (data: {
@@ -11,6 +12,7 @@ type NewRowProps = {
     topic: string;
     url: string;
     notes?: string;
+    dateSolved: string;
   }) => Promise<void>;
   onCancel: () => void;
   columns: any[];
@@ -93,6 +95,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   const handleSave = async () => {
     if (!autoFill || !problemNumber) return;
     setSaving(true);
+    setError('');
     try {
       await onSave({
         platform,
@@ -102,6 +105,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         topic: autoFill.topic,
         url: autoFill.url,
         notes: notes || undefined,
+        dateSolved: new Date().toISOString(),
       });
     } catch (e: any) {
       setError(e.message ?? 'Failed to save');
@@ -115,18 +119,33 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     if (e.key === 'Escape') onCancel();
   };
 
-  const cellBg = flash ? 'rgba(74, 222, 128, 0.08)' : 'transparent';
+  const cellBg = flash ? 'rgba(74, 222, 128, 0.05)' : 'transparent';
+
+  // Derive pill styles from autofill data
+  const diffStyle = autoFill ? getDifficultyStyle(autoFill.difficulty) : null;
+  const topicColor = autoFill ? getTopicColor(autoFill.topic) : null;
 
   return (
     <>
-      <tr style={{ background: '#111', borderBottom: '1px solid #1a1a1a', height: 44 }}>
+      <tr style={{
+        background: '#141414',
+        borderBottom: '1px solid #1c1c1c',
+        borderLeft: '1px solid #3a3a3a',
+        height: 44,
+        outline: 'none',
+      }}>
         {/* Platform */}
-        <td style={{ width: 48, textAlign: 'center', padding: '0 8px' }}>
-          <span style={{ fontSize: 10, color: '#FFA116', fontFamily: 'monospace', fontWeight: 700, background: '#1a1209', border: '1px solid #3a2a0a', borderRadius: 4, padding: '2px 4px' }}>LC</span>
+        <td style={{ width: 52, textAlign: 'center', padding: '0 8px' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 24, height: 24, background: '#FFA116', borderRadius: 4,
+            fontSize: 10, fontWeight: 700, color: '#fff',
+            fontFamily: 'var(--font-geist-mono), monospace',
+          }}>LC</span>
         </td>
 
-        {/* Problem Number + Name */}
-        <td style={{ padding: '0 12px', minWidth: 280, transition: 'background 0.3s', background: cellBg }}>
+        {/* Problem Number + Title */}
+        <td style={{ padding: '0 12px', minWidth: 260, transition: 'background 0.4s', background: cellBg }}>
           {!autoFill ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
@@ -134,7 +153,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                 value={problemNumber}
                 onChange={(e) => setProblemNumber(e.target.value)}
                 onKeyDown={handleNumberKey}
-                placeholder="Problem #"
+                placeholder="Problem number..."
                 style={{
                   background: 'none',
                   border: 'none',
@@ -142,55 +161,61 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                   fontFamily: 'var(--font-geist-mono), monospace',
                   fontSize: 13,
                   outline: 'none',
-                  width: 90,
+                  width: 160,
                   caretColor: '#818cf8',
                 }}
               />
               {loading && (
-                <span style={{ color: '#555', fontSize: 12 }}>looking up...</span>
+                <span style={{ color: '#555', fontSize: 12, letterSpacing: 2 }}>...</span>
               )}
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666' }}>{problemNumber}</span>
-              <span style={{ fontSize: 14, color: '#fff' }}>{autoFill.title}</span>
+              <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500 }}>{autoFill.title}</span>
             </div>
           )}
         </td>
 
         {/* Difficulty */}
-        <td style={{ width: 90, padding: '0 8px', transition: 'background 0.3s', background: cellBg }}>
-          {autoFill && (
+        <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg }}>
+          {diffStyle && (
             <span style={{
-              background: autoFill.difficulty === 'EASY' ? '#1a3a1a' : autoFill.difficulty === 'MEDIUM' ? '#3a2a0a' : '#3a0a0a',
-              color: autoFill.difficulty === 'EASY' ? '#4ade80' : autoFill.difficulty === 'MEDIUM' ? '#fb923c' : '#f87171',
-              borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 500,
+              background: diffStyle.bg,
+              color: diffStyle.text,
+              border: `1px solid ${diffStyle.border}`,
+              borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600,
             }}>
-              {autoFill.difficulty.charAt(0) + autoFill.difficulty.slice(1).toLowerCase()}
+              {autoFill!.difficulty.charAt(0) + autoFill!.difficulty.slice(1).toLowerCase()}
             </span>
           )}
         </td>
 
         {/* Topic */}
-        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.3s', background: cellBg }}>
-          {autoFill && (
-            <span style={{ background: '#1a1a3a', color: '#818cf8', borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 500 }}>
+        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg }}>
+          {topicColor && autoFill && (
+            <span style={{
+              background: topicColor.bg,
+              color: topicColor.text,
+              border: `1px solid ${topicColor.border}`,
+              borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600,
+            }}>
               {autoFill.topic}
             </span>
           )}
         </td>
 
         {/* Status */}
-        <td style={{ width: 110, padding: '0 8px', color: '#555', fontSize: 13 }}>—</td>
+        <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Star */}
         <td style={{ width: 44 }} />
 
         {/* Next Revision */}
-        <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13 }}>—</td>
+        <td style={{ width: 130, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Notes */}
-        <td style={{ width: 160, padding: '0 12px' }}>
+        <td style={{ width: 180, padding: '0 12px' }}>
           {autoFill && (
             <input
               ref={notesRef}
@@ -209,23 +234,24 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
       {/* Not found message row */}
       {notFound && (
-        <tr style={{ background: '#111', borderBottom: '1px solid #1a1a1a' }}>
+        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={8 + columns.length} style={{ padding: '8px 68px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: '#888' }}>
-                Couldn&apos;t find problem #{problemNumber}. Paste the URL to continue, or press Escape to cancel.
+                Problem #{problemNumber} not found. Paste the URL to continue, or press Esc to cancel.
               </span>
-              <input
-                value={manualUrl}
-                onChange={(e) => handleManualUrl(e.target.value)}
-                placeholder="https://leetcode.com/problems/..."
-                onKeyDown={(e) => e.key === 'Escape' && onCancel()}
-                style={{
-                  background: '#1a1a1a', border: '1px solid #333', borderRadius: 4,
-                  color: '#fff', fontSize: 12, padding: '3px 8px', outline: 'none', width: 280,
-                }}
-              />
             </div>
+            <input
+              value={manualUrl}
+              onChange={(e) => handleManualUrl(e.target.value)}
+              placeholder="https://leetcode.com/problems/..."
+              onKeyDown={(e) => e.key === 'Escape' && onCancel()}
+              style={{
+                background: 'none', border: 'none', color: '#fff',
+                fontFamily: 'var(--font-geist-mono), monospace',
+                fontSize: 12, padding: '0', outline: 'none', width: 320,
+              }}
+            />
             {error && <div style={{ fontSize: 12, color: '#f87171', marginTop: 4 }}>{error}</div>}
           </td>
         </tr>
@@ -233,7 +259,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
       {/* Save/cancel hint */}
       {autoFill && (
-        <tr style={{ background: '#0e0e0e', borderBottom: '1px solid #1a1a1a' }}>
+        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={8 + columns.length} style={{ padding: '4px 68px' }}>
             <span style={{ fontSize: 11, color: '#444' }}>
               Press <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Enter</kbd> to save &nbsp;

@@ -1,10 +1,10 @@
 'use client';
 
-import { formatDistanceToNow, isToday, isPast, startOfDay } from 'date-fns';
+import { formatDistanceToNow, startOfDay } from 'date-fns';
 import { getDifficultyStyle, getTopicColor, Pill } from './columns';
 import { useState, useRef, useEffect } from 'react';
 
-// LeetCode logo monogram
+// LeetCode logo — orange square with white LC text per spec
 function LCIcon() {
   return (
     <span
@@ -12,16 +12,16 @@ function LCIcon() {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 22,
-        height: 22,
-        background: '#1a1209',
-        border: '1px solid #3a2a0a',
-        borderRadius: 5,
-        fontSize: 9,
+        width: 24,
+        height: 24,
+        background: '#FFA116',
+        borderRadius: 4,
+        fontSize: 10,
         fontWeight: 700,
-        color: '#FFA116',
+        color: '#fff',
         fontFamily: 'var(--font-geist-mono), monospace',
         letterSpacing: '-0.5px',
+        flexShrink: 0,
       }}
     >
       LC
@@ -29,51 +29,57 @@ function LCIcon() {
   );
 }
 
-// Status dot + label
+// Status dot + label — derives from problem.status and revisions[0].confidence
 function StatusCell({ problem }: { problem: any }) {
   if (problem.status === 'MASTERED') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#818cf8', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#818cf8' }}>Mastered</span>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered</span>
       </div>
     );
   }
   if (problem.status === 'RETIRED') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#555' }}>Retired</span>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#444', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>Retired</span>
       </div>
     );
   }
-  if (problem.revisionCount === 0) {
+
+  const latestConfidence = problem.revisions?.[0]?.confidence ?? null;
+
+  if (!latestConfidence || problem.revisionCount === 0) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#555' }}>Not started</span>
+        <span style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>Not started</span>
       </div>
     );
   }
-  // Determine from last revision confidence — for now derive from step
-  // step 0 = struggled/new, step 1/2 = shaky/mid, step 3 = clean
-  const step = problem.currentStep;
-  if (step === 3) return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
-      <span style={{ fontSize: 13, color: '#4ade80' }}>Clean</span>
-    </div>
-  );
-  if (step >= 1) return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
-      <span style={{ fontSize: 13, color: '#fb923c' }}>Shaky</span>
-    </div>
-  );
+
+  if (latestConfidence === 'CLEAN') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: '#4ade80', fontFamily: 'var(--font-geist-mono), monospace' }}>Clean</span>
+      </div>
+    );
+  }
+  if (latestConfidence === 'SHAKY') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: '#fb923c', fontFamily: 'var(--font-geist-mono), monospace' }}>Shaky</span>
+      </div>
+    );
+  }
+  // STRUGGLED
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
-      <span style={{ fontSize: 13, color: '#f87171' }}>Struggled</span>
+      <span style={{ fontSize: 13, color: '#f87171', fontFamily: 'var(--font-geist-mono), monospace' }}>Struggled</span>
     </div>
   );
 }
@@ -81,10 +87,10 @@ function StatusCell({ problem }: { problem: any }) {
 // Next revision date cell
 function NextRevisionCell({ problem }: { problem: any }) {
   if (problem.status === 'MASTERED') {
-    return <span style={{ fontSize: 13, color: '#818cf8' }}>Mastered ✓</span>;
+    return <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered ✓</span>;
   }
   if (problem.status === 'RETIRED' || !problem.nextRevisionAt) {
-    return <span style={{ fontSize: 13, color: '#444' }}>—</span>;
+    return <span style={{ fontSize: 13, color: '#444', fontFamily: 'var(--font-geist-mono), monospace' }}>—</span>;
   }
 
   const date = new Date(problem.nextRevisionAt);
@@ -99,25 +105,24 @@ function NextRevisionCell({ problem }: { problem: any }) {
   const color = isOverdue ? '#f87171' : isDueToday ? '#fb923c' : '#888';
   const text = isDueToday ? 'today' : label;
 
-  return <span style={{ fontSize: 13, color, fontVariantNumeric: 'tabular-nums' }}>{text}</span>;
+  return <span style={{ fontSize: 13, color, fontFamily: 'var(--font-geist-mono), monospace', fontVariantNumeric: 'tabular-nums' }}>{text}</span>;
 }
 
-// Star toggle
+// Star toggle — filled ★ yellow when favorite, outline ☆ #444 when not
 function StarCell({ problem, onToggle }: { problem: any; onToggle: () => void }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: 16, lineHeight: 1 }}
       title={problem.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     >
       {problem.isFavorite ? (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="#facc15">
-          <path d="M8 1l1.854 3.756 4.146.603-3 2.924.708 4.131L8 10.5l-3.708 1.914.708-4.131-3-2.924 4.146-.603L8 1z"/>
-        </svg>
+        <span style={{ color: '#facc15' }}>★</span>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#444" strokeWidth="1.2">
-          <path d="M8 1l1.854 3.756 4.146.603-3 2.924.708 4.131L8 10.5l-3.708 1.914.708-4.131-3-2.924 4.146-.603L8 1z"/>
-        </svg>
+        <span style={{ color: hovered ? '#888' : '#444' }}>☆</span>
       )}
     </button>
   );
@@ -174,27 +179,28 @@ type ProblemRowProps = {
 export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }: ProblemRowProps) {
   const [hovered, setHovered] = useState(false);
   const diffStyle = getDifficultyStyle(problem.difficulty);
-  const [topicBg, topicText] = getTopicColor(problem.topic);
+  const topicColor = getTopicColor(problem.topic);
 
   return (
     <tr
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? '#141414' : 'transparent',
-        borderBottom: '1px solid #1a1a1a',
+        background: hovered ? '#161616' : 'transparent',
+        borderBottom: '1px solid #1c1c1c',
         height: 44,
+        transition: 'background 0s',
       }}
     >
       {/* Platform */}
-      <td style={{ width: 48, textAlign: 'center', padding: '0 8px' }}>
+      <td style={{ width: 52, textAlign: 'center', padding: '0 8px' }}>
         <LCIcon />
       </td>
 
-      {/* Problem Name */}
-      <td style={{ padding: '0 12px', minWidth: 280 }}>
+      {/* Problem: number + title on same line */}
+      <td style={{ padding: '0 12px', minWidth: 260 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666' }}>
+          <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
             {problem.problemNumber}
           </span>
           {problem.url ? (
@@ -204,39 +210,40 @@ export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }
               rel="noopener noreferrer"
               style={{
                 fontSize: 14,
-                color: '#fff',
-                textDecoration: 'none',
-                borderBottom: hovered ? '1px solid #555' : '1px solid transparent',
-                transition: 'border-color 0.1s',
+                color: '#e5e5e5',
+                fontWeight: 500,
+                textDecoration: hovered ? 'underline' : 'none',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
               {problem.title}
             </a>
           ) : (
-            <span style={{ fontSize: 14, color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               {problem.title}
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="#555" style={{ flexShrink: 0 }}>
-                <path d="M2 6h8M6 2l4 4-4 4" stroke="#555" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
-              </svg>
+              <span style={{ color: '#444', fontSize: 12, textDecoration: 'line-through' }}>🔗</span>
             </span>
           )}
         </div>
       </td>
 
       {/* Difficulty */}
-      <td style={{ width: 90, padding: '0 8px' }}>
-        <Pill bg={diffStyle.bg} text={diffStyle.text}>
+      <td style={{ width: 100, padding: '0 8px' }}>
+        <Pill bg={diffStyle.bg} text={diffStyle.text} border={diffStyle.border}>
           {problem.difficulty.charAt(0) + problem.difficulty.slice(1).toLowerCase()}
         </Pill>
       </td>
 
       {/* Topic */}
       <td style={{ width: 130, padding: '0 8px' }}>
-        <Pill bg={topicBg} text={topicText}>{problem.topic}</Pill>
+        <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>{problem.topic}</Pill>
       </td>
 
       {/* Status */}
-      <td style={{ width: 110, padding: '0 8px' }}>
+      <td style={{ width: 120, padding: '0 8px' }}>
         <StatusCell problem={problem} />
       </td>
 
@@ -246,14 +253,14 @@ export function ProblemRow({ problem, columns, onStarToggle, onCustomFieldSave }
       </td>
 
       {/* Next Revision */}
-      <td style={{ width: 120, padding: '0 8px' }}>
+      <td style={{ width: 130, padding: '0 8px' }}>
         <NextRevisionCell problem={problem} />
       </td>
 
-      {/* Notes */}
-      <td style={{ width: 160, padding: '0 12px' }}>
+      {/* Notes — truncated at 40 chars */}
+      <td style={{ width: 180, padding: '0 12px' }}>
         {problem.notes && (
-          <span style={{ fontSize: 13, color: '#888', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+          <span style={{ fontSize: 13, color: '#666', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
             {problem.notes.length > 40 ? problem.notes.slice(0, 40) + '…' : problem.notes}
           </span>
         )}
