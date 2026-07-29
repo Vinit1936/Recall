@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 
 type TabBarProps = {
   activeTab: 'all' | 'status' | 'topic';

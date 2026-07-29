@@ -11,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             marginLeft: 240,
             flex: 1,
             minHeight: '100vh',
-            background: '#0a0a0a',
+            background: '#0f0f0f',
             padding: '32px 40px',
             overflowY: 'auto',
           }}

@@ -51,7 +51,7 @@
 
 html, body {
   height: 100%;
-  background: #0a0a0a;
+  background: #0f0f0f;
   color: #ffffff;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -112,7 +112,7 @@ html, body {
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #0f0f0f;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);

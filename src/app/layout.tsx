@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
-      <body style={{ background: '#0a0a0a', color: '#fff', minHeight: '100vh' }}>
+      <body style={{ background: '#0f0f0f', color: '#fff', minHeight: '100vh' }}>
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
