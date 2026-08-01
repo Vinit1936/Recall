@@ -9,27 +9,31 @@ import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Star, Pencil } from 'lucide-react';
 
 
-// LeetCode logo — orange square with white LC text per spec
-function LCIcon() {
+// LeetCode logo — black square with LeetCode icon
+function LCIcon({ size = 24 }: { size?: number }) {
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 24,
-        height: 24,
-        background: '#FFA116',
+        width: size,
+        height: size,
+        background: '#0F0F0F',
         borderRadius: 4,
-        fontSize: 10,
-        fontWeight: 700,
-        color: '#fff',
-        fontFamily: 'var(--font-geist-mono), monospace',
-        letterSpacing: '-0.5px',
+        padding: 3,
         flexShrink: 0,
       }}
     >
-      LC
+      <img
+        src="/LeetCode.png"
+        alt="LeetCode"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+        }}
+      />
     </span>
   );
 }
@@ -379,7 +383,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: isSelected ? '#1c1c1c' : hovered ? '#161616' : 'transparent',
+        background: isSelected ? '#1c1c1c' : hovered ? '#0f0f0f' : 'transparent',
         borderBottom: '1px solid #1c1c1c',
         height: 44,
         transition: 'background 0.1s',

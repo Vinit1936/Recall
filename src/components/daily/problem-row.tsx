@@ -29,17 +29,21 @@ function LCIcon({ size = 20 }: { size?: number }) {
         justifyContent: 'center',
         width: size,
         height: size,
-        background: '#1a1209',
-        border: '1px solid #3a2a0a',
+        background: '#0F0F0F',
         borderRadius: 4,
-        fontSize: 8,
-        fontWeight: 700,
-        color: '#FFA116',
-        fontFamily: 'var(--font-geist-mono), monospace',
+        padding: 2.5,
         flexShrink: 0,
       }}
     >
-      LC
+      <img
+        src="/LeetCode.png"
+        alt="LeetCode"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+        }}
+      />
     </span>
   );
 }
@@ -83,7 +87,7 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
         display: 'flex',
         alignItems: 'center',
         height: 52,
-        background: done ? '#0d0d0d' : hovered ? '#161616' : '#111111',
+        background: done ? '#0d0d0d' : hovered ? '#0f0f0f' : '#111111',
         border: '1px solid #1e1e1e',
         borderRadius: 8,
         marginBottom: 6,

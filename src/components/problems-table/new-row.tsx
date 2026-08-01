@@ -321,11 +321,15 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 24, height: 24, background: '#FFA116', borderRadius: 4,
-            fontSize: 10, fontWeight: 700, color: '#fff',
-            fontFamily: 'var(--font-geist-mono), monospace',
-            flexShrink: 0,
-          }}>LC</span>
+            width: 24, height: 24, background: '#0F0F0F', borderRadius: 4,
+            padding: 3, flexShrink: 0,
+          }}>
+            <img
+              src="/LeetCode.png"
+              alt="LeetCode"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </span>
         </td>
 
         {/* Problem Number + Title */}
