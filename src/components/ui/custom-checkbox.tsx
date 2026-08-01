@@ -43,22 +43,22 @@ export function CustomCheckbox({
         height: size,
         borderRadius: 4,
         border: checked
-          ? '1px solid #6366f1'
+          ? '1px solid #666666'
           : hovered
-          ? '1px solid #666'
-          : '1px solid #3a3a3a',
+          ? '1px solid #555555'
+          : '1px solid #333333',
         background: checked
-          ? '#6366f1'
+          ? '#242424'
           : hovered
-          ? '#22222a'
-          : '#141414',
+          ? '#1a1a1a'
+          : '#121212',
         cursor: 'pointer',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         transition: 'all 0.15s ease',
         opacity,
-        boxShadow: checked ? '0 0 8px rgba(99, 102, 241, 0.4)' : 'none',
+        boxShadow: 'none',
         flexShrink: 0,
         userSelect: 'none',
       }}
@@ -70,7 +70,7 @@ export function CustomCheckbox({
           viewBox="0 0 12 12"
           fill="none"
           stroke="#ffffff"
-          strokeWidth="2.2"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
