@@ -19,7 +19,7 @@ export async function PATCH(
     const existing = await prisma.problem.findFirst({ where: { id, userId } });
     if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
-    const allowed = ['isFavorite', 'notes', 'topic'] as const;
+    const allowed = ['isFavorite', 'notes', 'topic', 'difficulty'] as const;
     const data: Record<string, unknown> = {};
     for (const key of allowed) {
       if (key in body) data[key] = body[key];

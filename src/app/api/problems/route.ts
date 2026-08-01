@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     const body = await request.json();
-    const { platform, problemNumber, notes, dateSolved } = body;
+    const { platform, problemNumber, notes, dateSolved, customFields } = body;
 
     if (!platform || problemNumber == null) {
       return Response.json({ error: 'platform and problemNumber are required' }, { status: 400 });
@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
           topic: meta.topic,
           dateSolved: dateSolved ? new Date(dateSolved) : now,
           notes: notes ?? null,
+          customFields: customFields ?? {},
           currentStep: schedule.currentStep,
           nextRevisionAt: schedule.nextRevisionAt,
           status: schedule.status,

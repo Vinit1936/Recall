@@ -1,8 +1,13 @@
 'use client';
 
 import { formatDistanceToNow, startOfDay } from 'date-fns';
-import { getDifficultyStyle, getTopicColor, Pill } from './columns';
+import { getDifficultyStyle, getTopicColor, Pill, DifficultyPickerCell, TopicPickerCell } from './columns';
+
+
 import { useState, useRef, useEffect } from 'react';
+import { CustomCheckbox } from '@/components/ui/custom-checkbox';
+import { Star, Pencil } from 'lucide-react';
+
 
 // LeetCode logo — orange square with white LC text per spec
 function LCIcon() {
@@ -84,87 +89,270 @@ function StatusCell({ problem }: { problem: any }) {
   );
 }
 
-// Next revision date cell
+// Next revision formatted date string helper
 function NextRevisionCell({ problem }: { problem: any }) {
-  if (problem.status === 'MASTERED') {
-    return <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered ✓</span>;
-  }
-  if (problem.status === 'RETIRED' || !problem.nextRevisionAt) {
+  if (problem.status !== 'ACTIVE') {
     return <span style={{ fontSize: 13, color: '#444', fontFamily: 'var(--font-geist-mono), monospace' }}>—</span>;
   }
-
   const date = new Date(problem.nextRevisionAt);
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const dateStart = startOfDay(date);
+  const today = startOfDay(new Date());
+  const revDay = startOfDay(date);
+  const diffDays = Math.round((revDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  const label = formatDistanceToNow(date, { addSuffix: true });
-  const isOverdue = dateStart < todayStart;
-  const isDueToday = dateStart.getTime() === todayStart.getTime();
-
-  const color = isOverdue ? '#f87171' : isDueToday ? '#fb923c' : '#888';
-  const text = isDueToday ? 'today' : label;
+  let text = '';
+  let color = '#888';
+  if (diffDays < 0) {
+    text = `${Math.abs(diffDays)}d overdue`;
+    color = '#f87171';
+  } else if (diffDays === 0) {
+    text = 'Today';
+    color = '#facc15';
+  } else if (diffDays === 1) {
+    text = 'Tomorrow';
+    color = '#818cf8';
+  } else {
+    text = `in ${diffDays}d`;
+    color = '#666';
+  }
 
   return <span style={{ fontSize: 13, color, fontFamily: 'var(--font-geist-mono), monospace', fontVariantNumeric: 'tabular-nums' }}>{text}</span>;
 }
 
-// Star toggle — filled ★ yellow when favorite, outline ☆ #444 when not
+// Star toggle — Lucide Star icon with golden glow & hover effect
 function StarCell({ problem, onToggle }: { problem: any; onToggle: () => void }) {
   const [hovered, setHovered] = useState(false);
+  const isFav = !!problem.isFavorite;
+
   return (
-    <button
-      onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: 16, lineHeight: 1 }}
-      title={problem.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-    >
-      {problem.isFavorite ? (
-        <span style={{ color: '#facc15' }}>★</span>
-      ) : (
-        <span style={{ color: hovered ? '#888' : '#444' }}>☆</span>
-      )}
-    </button>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: hovered ? 'rgba(255, 255, 255, 0.05)' : 'none',
+          border: 'none',
+          cursor: 'pointer',
+          width: 28,
+          height: 28,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 6,
+          transition: 'all 0.15s ease',
+          outline: 'none',
+        }}
+        title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <Star
+          size={15}
+          fill={isFav ? '#facc15' : 'none'}
+          color={isFav ? '#facc15' : hovered ? '#a1a1aa' : '#3f3f46'}
+          style={{
+            filter: isFav ? 'drop-shadow(0 0 5px rgba(250, 204, 21, 0.45))' : 'none',
+            transition: 'transform 0.15s ease, color 0.15s ease, fill 0.15s ease',
+            transform: hovered ? 'scale(1.15)' : 'scale(1)',
+          }}
+        />
+      </button>
+    </div>
   );
 }
 
-// Editable custom field cell
-function CustomFieldCell({ problem, columnName, onSave }: { problem: any; columnName: string; onSave: (val: string) => void }) {
+// Notion-style inline editable cell for Notes and Custom Fields using a floating popover editor
+function InlineEditCell({
+  initialValue = '',
+  maxWidth = 180,
+  onSave,
+}: {
+  initialValue?: string;
+  maxWidth?: number;
+  onSave: (val: string) => Promise<void> | void;
+}) {
   const [editing, setEditing] = useState(false);
-  const fields = (problem.customFields as Record<string, string>) ?? {};
-  const [value, setValue] = useState(fields[columnName] ?? '');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [value, setValue] = useState(initialValue ?? '');
+  const [hovered, setHovered] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isCommittingRef = useRef(false);
 
-  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+  useEffect(() => {
+    if (!editing && !saving) {
+      setValue(initialValue ?? '');
+    }
+  }, [initialValue, editing, saving]);
 
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => { setEditing(false); onSave(value); }}
-        onKeyDown={(e) => { if (e.key === 'Enter') { setEditing(false); onSave(value); } if (e.key === 'Escape') setEditing(false); }}
-        style={{
-          background: '#1a1a1a',
-          border: '1px solid #333',
-          borderRadius: 4,
-          color: '#fff',
-          fontSize: 13,
-          padding: '2px 6px',
-          width: '100%',
-          outline: 'none',
-        }}
-      />
-    );
-  }
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      const el = textareaRef.current;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [editing]);
+
+  useEffect(() => {
+    if (!editing) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        handleCommit(value);
+      }
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editing, value]);
+
+  const handleInput = () => {
+    if (textareaRef.current) {
+      const el = textareaRef.current;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  };
+
+  const handleCommit = async (valToSave: string) => {
+    if (isCommittingRef.current) return;
+    isCommittingRef.current = true;
+    const trimmed = valToSave.trim();
+    const original = (initialValue ?? '').trim();
+
+    setEditing(false);
+
+    if (trimmed !== original) {
+      setSaving(true);
+      try {
+        await onSave(trimmed);
+      } catch {
+        setValue(initialValue ?? '');
+      } finally {
+        setSaving(false);
+        isCommittingRef.current = false;
+      }
+    } else {
+      isCommittingRef.current = false;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleCommit(value);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      isCommittingRef.current = true;
+      setValue(initialValue ?? '');
+      setEditing(false);
+      setTimeout(() => {
+        isCommittingRef.current = false;
+      }, 50);
+    }
+  };
+
+  const displayText = (value ?? '').trim();
+  const truncated = displayText.length > 40 ? displayText.slice(0, 40) + '…' : displayText;
 
   return (
-    <div
-      onClick={() => setEditing(true)}
-      style={{ fontSize: 13, color: '#888', cursor: 'text', minHeight: 20, padding: '1px 0' }}
-    >
-      {value || <span style={{ color: '#333' }}>—</span>}
+    <div style={{ position: 'relative', width: '100%' }}>
+      {/* Display mode cell */}
+      <div
+        onClick={() => setEditing(true)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        title={displayText ? displayText : undefined}
+        style={{
+          fontSize: 13,
+          color: '#666',
+          cursor: 'text',
+          minHeight: 26,
+          padding: '3px 6px',
+          borderRadius: 4,
+          background: hovered ? '#1a1a1a' : 'transparent',
+          opacity: saving ? 0.6 : 1,
+          transition: 'background 0.15s ease, opacity 0.15s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        <span
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+            maxWidth: maxWidth - 24,
+          }}
+        >
+          {truncated}
+        </span>
+        {hovered && (
+          <Pencil
+            size={12}
+            style={{ color: '#444', flexShrink: 0, marginLeft: 4 }}
+          />
+        )}
+      </div>
+
+      {/* Floating notion-style popover editor */}
+      {editing && (
+        <div
+          ref={containerRef}
+          style={{
+            position: 'absolute',
+            top: -4,
+            left: -4,
+            width: 'max(100% + 8px, 240px)',
+            zIndex: 100,
+            background: '#1a1a1c',
+            border: '1px solid #2a2a2e',
+            borderRadius: 6,
+            padding: '8px 10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            opacity: saving ? 0.6 : 1,
+            transition: 'opacity 0.15s ease',
+          }}
+        >
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              handleInput();
+            }}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#fff',
+              fontSize: 13,
+              fontFamily: 'inherit',
+              lineHeight: '1.4',
+              resize: 'none',
+              overflow: 'hidden',
+              padding: 0,
+              margin: 0,
+              display: 'block',
+              boxSizing: 'border-box',
+              caretColor: '#818cf8',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -175,10 +363,13 @@ type ProblemRowProps = {
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onStarToggle: (id: string, current: boolean) => void;
-  onCustomFieldSave: (id: string, columnName: string, value: string) => void;
+  onDifficultySave: (id: string, difficulty: string) => Promise<void> | void;
+  onTopicSave: (id: string, topic: string) => Promise<void> | void;
+  onNotesSave: (id: string, notes: string) => Promise<void> | void;
+  onCustomFieldSave: (id: string, columnName: string, value: string) => Promise<void> | void;
 };
 
-export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onCustomFieldSave }: ProblemRowProps) {
+export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onDifficultySave, onTopicSave, onNotesSave, onCustomFieldSave }: ProblemRowProps) {
   const [hovered, setHovered] = useState(false);
   const diffStyle = getDifficultyStyle(problem.difficulty);
   const topicColor = getTopicColor(problem.topic);
@@ -188,39 +379,34 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: isSelected ? '#1c1c24' : hovered ? '#161616' : 'transparent',
+        background: isSelected ? '#1c1c1c' : hovered ? '#161616' : 'transparent',
         borderBottom: '1px solid #1c1c1c',
         height: 44,
         transition: 'background 0.1s',
       }}
     >
-      {/* Platform cell: Checkbox before LC logo on hover or selection */}
-      <td style={{ width: 52, textAlign: 'center', padding: '0 4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <input
-            type="checkbox"
+      {/* Checkbox cell */}
+      <td style={{ width: 36, textAlign: 'center', padding: '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CustomCheckbox
             checked={isSelected}
             onChange={() => onToggleSelect(problem.id)}
-            onClick={(e) => e.stopPropagation()}
             title="Select row"
-            style={{
-              width: 14,
-              height: 14,
-              cursor: 'pointer',
-              accentColor: '#818cf8',
-              borderRadius: 3,
-              opacity: hovered || isSelected ? 1 : 0,
-              transition: 'opacity 0.15s',
-              flexShrink: 0,
-            }}
+            opacity={hovered || isSelected ? 1 : 0}
           />
+        </div>
+      </td>
+
+      {/* Platform logo cell */}
+      <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LCIcon />
         </div>
       </td>
 
-      {/* Problem: number + title on same line */}
-      <td style={{ padding: '0 12px', minWidth: 260 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Problem cell: number + title */}
+      <td style={{ width: 320, padding: '0 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
           <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
             {problem.problemNumber}
           </span>
@@ -229,6 +415,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
               href={problem.url}
               target="_blank"
               rel="noopener noreferrer"
+              title={problem.title}
               style={{
                 fontSize: 14,
                 color: '#e5e5e5',
@@ -243,24 +430,28 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
               {problem.title}
             </a>
           ) : (
-            <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={problem.title}>
               {problem.title}
-              <span style={{ color: '#444', fontSize: 12, textDecoration: 'line-through' }}>🔗</span>
+              <span style={{ color: '#444', fontSize: 12, textDecoration: 'line-through', flexShrink: 0 }}>🔗</span>
             </span>
           )}
         </div>
       </td>
 
       {/* Difficulty */}
-      <td style={{ width: 100, padding: '0 8px' }}>
-        <Pill bg={diffStyle.bg} text={diffStyle.text} border={diffStyle.border}>
-          {problem.difficulty.charAt(0) + problem.difficulty.slice(1).toLowerCase()}
-        </Pill>
+      <td style={{ width: 100, padding: '0 8px', position: 'relative' }}>
+        <DifficultyPickerCell
+          difficulty={problem.difficulty}
+          onSave={(newDiff) => onDifficultySave(problem.id, newDiff)}
+        />
       </td>
 
       {/* Topic */}
-      <td style={{ width: 130, padding: '0 8px' }}>
-        <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>{problem.topic}</Pill>
+      <td style={{ width: 130, padding: '0 8px', position: 'relative' }}>
+        <TopicPickerCell
+          topic={problem.topic}
+          onSave={(newTopic) => onTopicSave(problem.id, newTopic)}
+        />
       </td>
 
       {/* Status */}
@@ -278,25 +469,31 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
         <NextRevisionCell problem={problem} />
       </td>
 
-      {/* Notes — truncated at 40 chars */}
-      <td style={{ width: 180, padding: '0 12px' }}>
-        {problem.notes && (
-          <span style={{ fontSize: 13, color: '#666', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
-            {problem.notes.length > 40 ? problem.notes.slice(0, 40) + '…' : problem.notes}
-          </span>
-        )}
+      {/* Notes — Notion-style in-place editable */}
+      <td style={{ width: 180, padding: '0 8px' }}>
+        <InlineEditCell
+          initialValue={problem.notes ?? ''}
+          maxWidth={180}
+          onSave={(val) => onNotesSave(problem.id, val)}
+        />
       </td>
 
-      {/* Custom columns */}
-      {columns.map((col) => (
-        <td key={col.id} style={{ width: 140, padding: '0 8px' }}>
-          <CustomFieldCell
-            problem={problem}
-            columnName={col.name}
-            onSave={(val) => onCustomFieldSave(problem.id, col.name, val)}
-          />
-        </td>
-      ))}
+      {/* Custom columns — Notion-style in-place editable */}
+      {columns.map((col) => {
+        const fields = (problem.customFields as Record<string, string>) ?? {};
+        return (
+          <td key={col.id} style={{ width: 140, padding: '0 8px' }}>
+            <InlineEditCell
+              initialValue={fields[col.name] ?? ''}
+              maxWidth={140}
+              onSave={(val) => onCustomFieldSave(problem.id, col.name, val)}
+            />
+          </td>
+        );
+      })}
+
+      {/* Trailing cell for Add Column column alignment */}
+      <td style={{ width: 100 }} />
     </tr>
   );
 }

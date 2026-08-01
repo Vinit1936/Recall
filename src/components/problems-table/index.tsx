@@ -7,9 +7,109 @@ import { TabBar } from './tab-bar';
 import { Toolbar } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
+import { CustomCheckbox } from '@/components/ui/custom-checkbox';
+import { Star, MoreVertical, Trash2 } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
+import { useEffect } from 'react';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function ColumnHeaderMenu({ col, onDelete }: { col: any; onDelete: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  return (
+    <div
+      ref={ref}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span style={{ textTransform: 'uppercase', letterSpacing: '0.08em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {col.name}
+      </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
+        style={{
+          background: open ? 'rgba(255, 255, 255, 0.08)' : 'none',
+          border: 'none',
+          color: open ? '#818cf8' : hovered ? '#888' : 'transparent',
+          cursor: 'pointer',
+          padding: '2px 4px',
+          borderRadius: 4,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'color 0.15s ease, background 0.15s ease',
+          outline: 'none',
+        }}
+        title="Column settings"
+      >
+        <MoreVertical size={13} />
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: 4,
+            background: '#1a1a1c',
+            border: '1px solid #2a2a2e',
+            borderRadius: 6,
+            padding: 4,
+            zIndex: 100,
+            width: 140,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+          }}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              onDelete(col.id);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#f87171',
+              cursor: 'pointer',
+              fontSize: 12,
+              padding: '6px 10px',
+              width: '100%',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              borderRadius: 4,
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#2e1212')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+          >
+            <Trash2 size={13} />
+            Delete column
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function sortProblems(problems: any[], sort: string) {
   const arr = [...problems];
@@ -32,17 +132,19 @@ function sortProblems(problems: any[], sort: string) {
 function SkeletonRow({ columns }: { columns: number }) {
   return (
     <tr style={{ borderBottom: '1px solid #1c1c1c', height: 44 }}>
-      <td style={{ width: 52, padding: '0 8px', textAlign: 'center' }}><Skeleton className="h-6 w-6 mx-auto rounded" /></td>
-      <td style={{ padding: '0 12px' }}><Skeleton className="h-4 w-48 rounded" /></td>
+      <td style={{ width: 36, padding: '0 4px', textAlign: 'center' }}><Skeleton className="h-4 w-4 mx-auto rounded" /></td>
+      <td style={{ width: 40, padding: '0 4px', textAlign: 'center' }}><Skeleton className="h-6 w-6 mx-auto rounded" /></td>
+      <td style={{ width: 320, padding: '0 12px' }}><Skeleton className="h-4 w-48 rounded" /></td>
       <td style={{ width: 100, padding: '0 8px' }}><Skeleton className="h-5 w-16 rounded" /></td>
       <td style={{ width: 130, padding: '0 8px' }}><Skeleton className="h-5 w-20 rounded" /></td>
       <td style={{ width: 120, padding: '0 8px' }}><Skeleton className="h-4 w-20 rounded" /></td>
-      <td style={{ width: 44 }}><Skeleton className="h-4 w-4 mx-auto rounded" /></td>
+      <td style={{ width: 44, textAlign: 'center' }}><Skeleton className="h-4 w-4 mx-auto rounded" /></td>
       <td style={{ width: 130, padding: '0 8px' }}><Skeleton className="h-4 w-16 rounded" /></td>
       <td style={{ width: 180, padding: '0 12px' }}><Skeleton className="h-4 w-24 rounded" /></td>
       {Array.from({ length: columns }).map((_, i) => (
         <td key={i} style={{ width: 140, padding: '0 8px' }}><Skeleton className="h-4 w-20 rounded" /></td>
       ))}
+      <td style={{ width: 100 }} />
     </tr>
   );
 }
@@ -148,7 +250,7 @@ function EmptyState() {
           <div style={{ fontSize: 16, color: '#888', fontWeight: 500 }}>No problems yet</div>
           <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6, textAlign: 'center', maxWidth: 320 }}>
             Add your first problem using the + New Problem button above,<br />
-            or click + New row at the bottom of the table.
+            or click + New row at the top of the table.
           </div>
         </div>
       </td>
@@ -248,17 +350,39 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // Custom field save
+  // Custom field save — call PATCH /api/problems/[id]/custom-fields with { key: columnName, value }
   const handleCustomFieldSave = useCallback(async (id: string, columnName: string, value: string) => {
     try {
-      await fetch(`/api/problems/${id}/custom-fields`, {
+      const res = await fetch(`/api/problems/${id}/custom-fields`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [columnName]: value }),
+        body: JSON.stringify({ key: columnName, value }),
       });
-      mutate();
-    } catch {
-      showToast('Failed to save field');
+      if (!res.ok) {
+        throw new Error('Failed to save field');
+      }
+      await mutate();
+    } catch (e: any) {
+      showToast(e.message ?? 'Failed to save field');
+      throw e;
+    }
+  }, [mutate]);
+
+  // Notes save — Notion-style inline editable notes via PATCH /api/problems/[id] with { notes }
+  const handleNotesSave = useCallback(async (id: string, notes: string) => {
+    try {
+      const res = await fetch(`/api/problems/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to save notes');
+      }
+      await mutate();
+    } catch (e: any) {
+      showToast(e.message ?? 'Failed to save notes');
+      throw e;
     }
   }, [mutate]);
 
@@ -293,40 +417,44 @@ export function ProblemsTable() {
     mutate();
   }, [columns.length, mutateColumns, mutate]);
 
+  // Delete custom column
+  const handleDeleteColumn = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/columns?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete column');
+      mutateColumns();
+      mutate();
+    } catch {
+      showToast('Failed to delete column');
+    }
+  }, [mutateColumns, mutate]);
+
   const COLUMN_COUNT = columns.length;
 
   // Table header
   const TableHead = () => (
     <thead>
       <tr style={{ borderBottom: '1px solid #1c1c1c', height: 36 }}>
-        <th style={{ width: 52, padding: '0 4px', textAlign: 'center' }}>
+        <th style={{ width: 36, padding: '0 4px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <input
-              type="checkbox"
+            <CustomCheckbox
               checked={isAllSelected}
               onChange={handleToggleSelectAll}
               title={isAllSelected ? "Deselect all" : "Select all"}
-              style={{
-                width: 14,
-                height: 14,
-                cursor: 'pointer',
-                accentColor: '#818cf8',
-                borderRadius: 3,
-                opacity: selectedIds.length > 0 ? 1 : 0.4,
-                transition: 'opacity 0.15s',
-              }}
+              opacity={selectedIds.length > 0 ? 1 : 0.4}
             />
           </div>
         </th>
+        <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', width: undefined },
+          { label: 'PROBLEM', width: 320 },
           { label: 'DIFFICULTY', width: 100 },
           { label: 'TOPIC', width: 130 },
           { label: 'STATUS', width: 120 },
-          { label: '★', width: 44, center: true },
+          { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true },
           { label: 'NEXT REVISION', width: 130 },
           { label: 'NOTES', width: 180 },
-        ].map(({ label, width, center }) => (
+        ].map(({ label, icon, width, center }) => (
           <th key={label} style={{
             width,
             padding: center ? '0' : '0 12px',
@@ -337,21 +465,64 @@ export function ProblemsTable() {
             letterSpacing: '0.08em',
             color: '#555',
             fontWeight: 500,
+            whiteSpace: 'nowrap',
           }}>
-            {label}
+            {icon ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {icon}
+              </div>
+            ) : (
+              label
+            )}
           </th>
         ))}
         {columns.map((col) => (
-          <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500 }}>
-            {col.name}
+          <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
+            <ColumnHeaderMenu col={col} onDelete={handleDeleteColumn} />
           </th>
         ))}
-        <th style={{ padding: '0 8px' }}>
+        <th style={{ width: 100, padding: '0 8px' }}>
           <AddColumnPopover onSave={handleAddColumn} columns={columns} />
         </th>
       </tr>
     </thead>
   );
+
+  // Difficulty save
+  const handleDifficultySave = useCallback(async (id: string, difficulty: string) => {
+    try {
+      const res = await fetch(`/api/problems/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ difficulty }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update difficulty');
+      }
+      await mutate();
+    } catch (e: any) {
+      showToast(e.message ?? 'Failed to update difficulty');
+      throw e;
+    }
+  }, [mutate]);
+
+  // Topic save
+  const handleTopicSave = useCallback(async (id: string, topic: string) => {
+    try {
+      const res = await fetch(`/api/problems/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update topic');
+      }
+      await mutate();
+    } catch (e: any) {
+      showToast(e.message ?? 'Failed to update topic');
+      throw e;
+    }
+  }, [mutate]);
 
   const renderRows = (problems: any[]) =>
     problems.map((p) => (
@@ -362,6 +533,9 @@ export function ProblemsTable() {
         isSelected={selectedIds.includes(p.id)}
         onToggleSelect={handleToggleSelect}
         onStarToggle={handleStarToggle}
+        onDifficultySave={handleDifficultySave}
+        onTopicSave={handleTopicSave}
+        onNotesSave={handleNotesSave}
         onCustomFieldSave={handleCustomFieldSave}
       />
     ));
@@ -494,52 +668,107 @@ export function ProblemsTable() {
         />
       </div>
 
-      {/* Table */}
+      {/* Table — Notion-style horizontal scroll container */}
       <div
+        style={{
+          overflowX: 'auto',
+          maxWidth: '100%',
+          borderRadius: 8,
+          border: '1px solid #1c1c1c',
+        }}
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', minWidth: 1060 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
-            {isLoading
-              ? Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} columns={COLUMN_COUNT} />)
-              : isEmpty ? <EmptyState />
-              : activeTab === 'all' ? renderRows(sorted)
-              : activeTab === 'status' ? renderByStatus()
-              : renderByTopic()
-            }
-            {/* New row */}
-            {showNewRow && (
-              <NewRow
-                onSave={handleNewProblemSave}
-                onCancel={() => setShowNewRow(false)}
-                columns={columns}
-              />
-            )}
-            {/* + New row button at bottom */}
-            {!showNewRow && (
-              <tr style={{ borderTop: '1px solid #1c1c1c' }}>
-                <td colSpan={8 + COLUMN_COUNT} style={{ padding: '8px 12px' }}>
-                  <button
-                    id="new-row-btn"
-                    onClick={() => setShowNewRow(true)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: tableHovered ? '#666' : '#333',
-                      cursor: 'pointer',
-                      fontSize: 13,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      transition: 'color 0.15s',
-                    }}
-                  >
-                    <span style={{ fontSize: 15 }}>+</span> New row
-                  </button>
-                </td>
-              </tr>
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} columns={COLUMN_COUNT} />)
+            ) : isEmpty ? (
+              <>
+                {/* When empty, + New row trigger or inline row creation is at the top */}
+                {showNewRow ? (
+                  <NewRow
+                    onSave={handleNewProblemSave}
+                    onCancel={() => setShowNewRow(false)}
+                    columns={columns}
+                  />
+                ) : (
+                  <tr style={{ borderBottom: '1px solid #1c1c1c' }}>
+                    <td style={{ width: 36 }} />
+                    <td style={{ width: 40 }} />
+                    <td style={{ width: 320, padding: '12px 12px' }}>
+                      <button
+                        id="new-row-btn"
+                        onClick={() => setShowNewRow(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#444',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          transition: 'color 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#444')}
+                      >
+                        <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> New row
+                      </button>
+                    </td>
+                    <td colSpan={7 + COLUMN_COUNT} />
+                  </tr>
+                )}
+                <EmptyState />
+              </>
+            ) : (
+              <>
+                {/* When table has entries, problem rows first, then + New row at bottom */}
+                {activeTab === 'all'
+                  ? renderRows(sorted)
+                  : activeTab === 'status'
+                  ? renderByStatus()
+                  : renderByTopic()}
+
+                {showNewRow ? (
+                  <NewRow
+                    onSave={handleNewProblemSave}
+                    onCancel={() => setShowNewRow(false)}
+                    columns={columns}
+                  />
+                ) : (
+                  <tr style={{ borderTop: '1px solid #1c1c1c' }}>
+                    <td style={{ width: 36 }} />
+                    <td style={{ width: 40 }} />
+                    <td style={{ width: 320, padding: '12px 12px' }}>
+                      <button
+                        id="new-row-btn"
+                        onClick={() => setShowNewRow(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#444',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          transition: 'color 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#444')}
+                      >
+                        <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> New row
+                      </button>
+                    </td>
+                    <td colSpan={7 + COLUMN_COUNT} />
+                  </tr>
+                )}
+              </>
             )}
           </tbody>
         </table>

@@ -20,7 +20,12 @@ export async function PATCH(
     if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
     const current = (existing.customFields as Record<string, string>) ?? {};
-    const merged = { ...current, ...body };
+    let merged: Record<string, string>;
+    if (body && typeof body === 'object' && 'key' in body && 'value' in body) {
+      merged = { ...current, [body.key]: body.value };
+    } else {
+      merged = { ...current, ...body };
+    }
 
     const updated = await prisma.problem.update({ where: { id }, data: { customFields: merged } });
     return Response.json(updated);

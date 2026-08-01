@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma';
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
+  basePath: '/api/auth',
   session: { strategy: 'jwt' },
   cookies: {
     pkceCodeVerifier: {

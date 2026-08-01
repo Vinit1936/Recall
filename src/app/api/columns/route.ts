@@ -42,3 +42,35 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'Failed to create column' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session.user.id;
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return Response.json({ error: 'Column id is required' }, { status: 400 });
+    }
+
+    const existing = await prisma.userColumnConfig.findFirst({
+      where: { id, userId },
+    });
+
+    if (!existing) {
+      return Response.json({ error: 'Column not found' }, { status: 404 });
+    }
+
+    await prisma.userColumnConfig.delete({
+      where: { id },
+    });
+
+    return Response.json({ success: true });
+  } catch (e) {
+    console.error('[DELETE /api/columns]', e);
+    return Response.json({ error: 'Failed to delete column' }, { status: 500 });
+  }
+}

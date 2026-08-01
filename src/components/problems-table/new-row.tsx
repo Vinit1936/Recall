@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { getDifficultyStyle, getTopicColor } from './columns';
+import { getDifficultyStyle, getTopicColor, DifficultyPickerCell, TopicPickerCell } from './columns';
+
+import { Pencil } from 'lucide-react';
 
 type NewRowProps = {
   onSave: (data: {
@@ -12,6 +14,7 @@ type NewRowProps = {
     topic: string;
     url: string;
     notes?: string;
+    customFields?: Record<string, string>;
     dateSolved: string;
   }) => Promise<void>;
   onCancel: () => void;
@@ -25,6 +28,184 @@ type AutoFillData = {
   url: string;
 } | null;
 
+function NewRowFloatingCell({
+  value,
+  placeholder,
+  maxWidth = 180,
+  autoOpen = false,
+  onChange,
+  onSaveRow,
+  onCancelRow,
+}: {
+  value: string;
+  placeholder: string;
+  maxWidth?: number;
+  autoOpen?: boolean;
+  onChange: (val: string) => void;
+  onSaveRow: () => void;
+  onCancelRow: () => void;
+}) {
+  const [editing, setEditing] = useState(autoOpen);
+  const [hovered, setHovered] = useState(false);
+  const [localVal, setLocalVal] = useState(value);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setLocalVal(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (autoOpen) {
+      setEditing(true);
+    }
+  }, [autoOpen]);
+
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      const el = textareaRef.current;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [editing]);
+
+  useEffect(() => {
+    if (!editing) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onChange(localVal);
+        setEditing(false);
+      }
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editing, localVal, onChange]);
+
+  const handleInput = () => {
+    if (textareaRef.current) {
+      const el = textareaRef.current;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onChange(localVal);
+      setEditing(false);
+      onSaveRow();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setEditing(false);
+    }
+  };
+
+  const displayText = localVal.trim();
+  const truncated = displayText.length > 40 ? displayText.slice(0, 40) + '…' : displayText;
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      {/* Display mode cell */}
+      <div
+        onClick={() => setEditing(true)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        title={displayText ? displayText : undefined}
+        style={{
+          fontSize: 13,
+          color: displayText ? '#666' : '#444',
+          cursor: 'text',
+          minHeight: 26,
+          padding: '3px 6px',
+          borderRadius: 4,
+          background: hovered ? '#1a1a1a' : 'transparent',
+          transition: 'background 0.15s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        <span
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+            maxWidth: maxWidth - 24,
+          }}
+        >
+          {truncated || placeholder}
+        </span>
+        {hovered && (
+          <Pencil
+            size={12}
+            style={{ color: '#444', flexShrink: 0, marginLeft: 4 }}
+          />
+        )}
+      </div>
+
+      {/* Floating popover editor */}
+      {editing && (
+        <div
+          ref={containerRef}
+          style={{
+            position: 'absolute',
+            top: -4,
+            left: -4,
+            width: 'max(100% + 8px, 240px)',
+            zIndex: 100,
+            background: '#1a1a1c',
+            border: '1px solid #2a2a2e',
+            borderRadius: 6,
+            padding: '8px 10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+          }}
+        >
+          <textarea
+            ref={textareaRef}
+            value={localVal}
+            onChange={(e) => {
+              setLocalVal(e.target.value);
+              onChange(e.target.value);
+              handleInput();
+            }}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            placeholder={placeholder}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: '#fff',
+              fontSize: 13,
+              fontFamily: 'inherit',
+              lineHeight: '1.4',
+              resize: 'none',
+              overflow: 'hidden',
+              padding: 0,
+              margin: 0,
+              display: 'block',
+              boxSizing: 'border-box',
+              caretColor: '#818cf8',
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   const [platform] = useState('LEETCODE');
   const [problemNumber, setProblemNumber] = useState('');
@@ -33,12 +214,15 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   const [notFound, setNotFound] = useState(false);
   const [manualUrl, setManualUrl] = useState('');
   const [notes, setNotes] = useState('');
+  const [difficulty, setDifficulty] = useState<string>('');
+  const [topic, setTopic] = useState<string>('');
+  const [customFields, setCustomFields] = useState<Record<string, string>>({});
+  const [openNotesFloating, setOpenNotesFloating] = useState(false);
   const [flash, setFlash] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const numRef = useRef<HTMLInputElement>(null);
-  const notesRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { numRef.current?.focus(); }, []);
 
@@ -57,9 +241,11 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
       const json = await res.json();
       if (json.found) {
         setAutoFill(json.data);
+        setDifficulty(json.data.difficulty);
+        setTopic(json.data.topic);
         setFlash(true);
         setTimeout(() => setFlash(false), 400);
-        setTimeout(() => notesRef.current?.focus(), 50);
+        setTimeout(() => setOpenNotesFloating(true), 50);
       } else {
         setNotFound(true);
       }
@@ -84,10 +270,12 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
       const json = await res.json();
       if (!json.error) {
         setAutoFill(json);
+        setDifficulty(json.difficulty);
+        setTopic(json.topic);
         setNotFound(false);
         setFlash(true);
         setTimeout(() => setFlash(false), 400);
-        setTimeout(() => notesRef.current?.focus(), 50);
+        setTimeout(() => setOpenNotesFloating(true), 50);
       }
     } catch {}
   };
@@ -101,10 +289,11 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         platform,
         problemNumber: parseInt(problemNumber, 10),
         title: autoFill.title,
-        difficulty: autoFill.difficulty,
-        topic: autoFill.topic,
+        difficulty: difficulty || autoFill.difficulty,
+        topic: topic || autoFill.topic,
         url: autoFill.url,
         notes: notes || undefined,
+        customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
         dateSolved: new Date().toISOString(),
       });
     } catch (e: any) {
@@ -114,16 +303,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     }
   };
 
-  const handleNotesKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); handleSave(); }
-    if (e.key === 'Escape') onCancel();
-  };
-
   const cellBg = flash ? 'rgba(74, 222, 128, 0.05)' : 'transparent';
-
-  // Derive pill styles from autofill data
-  const diffStyle = autoFill ? getDifficultyStyle(autoFill.difficulty) : null;
-  const topicColor = autoFill ? getTopicColor(autoFill.topic) : null;
 
   return (
     <>
@@ -134,18 +314,22 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         height: 44,
         outline: 'none',
       }}>
-        {/* Platform */}
-        <td style={{ width: 52, textAlign: 'center', padding: '0 8px' }}>
+        {/* Checkbox cell */}
+        <td style={{ width: 36, textAlign: 'center', padding: '0 4px' }} />
+
+        {/* Platform logo cell */}
+        <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 24, height: 24, background: '#FFA116', borderRadius: 4,
             fontSize: 10, fontWeight: 700, color: '#fff',
             fontFamily: 'var(--font-geist-mono), monospace',
+            flexShrink: 0,
           }}>LC</span>
         </td>
 
         {/* Problem Number + Title */}
-        <td style={{ padding: '0 12px', minWidth: 260, transition: 'background 0.4s', background: cellBg }}>
+        <td style={{ width: 320, padding: '0 12px', transition: 'background 0.4s', background: cellBg }}>
           {!autoFill ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
@@ -161,7 +345,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                   fontFamily: 'var(--font-geist-mono), monospace',
                   fontSize: 13,
                   outline: 'none',
-                  width: 160,
+                  width: '100%',
                   caretColor: '#818cf8',
                 }}
               />
@@ -170,38 +354,30 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
               )}
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666' }}>{problemNumber}</span>
-              <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500 }}>{autoFill.title}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>{problemNumber}</span>
+              <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{autoFill.title}</span>
             </div>
           )}
         </td>
 
         {/* Difficulty */}
-        <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg }}>
-          {diffStyle && (
-            <span style={{
-              background: diffStyle.bg,
-              color: diffStyle.text,
-              border: `1px solid ${diffStyle.border}`,
-              borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600,
-            }}>
-              {autoFill!.difficulty.charAt(0) + autoFill!.difficulty.slice(1).toLowerCase()}
-            </span>
+        <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+          {autoFill && (
+            <DifficultyPickerCell
+              difficulty={difficulty || autoFill.difficulty}
+              onSave={(newDiff) => setDifficulty(newDiff)}
+            />
           )}
         </td>
 
         {/* Topic */}
-        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg }}>
-          {topicColor && autoFill && (
-            <span style={{
-              background: topicColor.bg,
-              color: topicColor.text,
-              border: `1px solid ${topicColor.border}`,
-              borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600,
-            }}>
-              {autoFill.topic}
-            </span>
+        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+          {autoFill && (
+            <TopicPickerCell
+              topic={topic || autoFill.topic}
+              onSave={(newTopic) => setTopic(newTopic)}
+            />
           )}
         </td>
 
@@ -209,33 +385,50 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Star */}
-        <td style={{ width: 44 }} />
+        <td style={{ width: 44, textAlign: 'center' }} />
 
         {/* Next Revision */}
         <td style={{ width: 130, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Notes */}
-        <td style={{ width: 180, padding: '0 12px' }}>
+        <td style={{ width: 180, padding: '0 8px', position: 'relative' }}>
           {autoFill && (
-            <input
-              ref={notesRef}
+            <NewRowFloatingCell
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onKeyDown={handleNotesKey}
               placeholder="Notes (optional)"
-              style={{ background: 'none', border: 'none', color: '#888', fontSize: 13, outline: 'none', width: '100%', caretColor: '#818cf8' }}
+              maxWidth={180}
+              autoOpen={openNotesFloating}
+              onChange={(val) => setNotes(val)}
+              onSaveRow={handleSave}
+              onCancelRow={onCancel}
             />
           )}
         </td>
 
         {/* Custom columns */}
-        {columns.map((col) => <td key={col.id} style={{ width: 140 }} />)}
+        {columns.map((col) => (
+          <td key={col.id} style={{ width: 140, padding: '0 8px', position: 'relative' }}>
+            {autoFill && (
+              <NewRowFloatingCell
+                value={customFields[col.name] ?? ''}
+                placeholder={col.name}
+                maxWidth={140}
+                onChange={(val) => setCustomFields((prev) => ({ ...prev, [col.name]: val }))}
+                onSaveRow={handleSave}
+                onCancelRow={onCancel}
+              />
+            )}
+          </td>
+        ))}
+
+        {/* Trailing cell */}
+        <td style={{ width: 100 }} />
       </tr>
 
       {/* Not found message row */}
       {notFound && (
         <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
-          <td colSpan={8 + columns.length} style={{ padding: '8px 68px' }}>
+          <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
             <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: '#888' }}>
                 Problem #{problemNumber} not found. Paste the URL to continue, or press Esc to cancel.
@@ -260,7 +453,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
       {/* Save/cancel hint */}
       {autoFill && (
         <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
-          <td colSpan={8 + columns.length} style={{ padding: '4px 68px' }}>
+          <td colSpan={9 + columns.length} style={{ padding: '4px 68px' }}>
             <span style={{ fontSize: 11, color: '#444' }}>
               Press <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Enter</kbd> to save &nbsp;
               <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Esc</kbd> to cancel
