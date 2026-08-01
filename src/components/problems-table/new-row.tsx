@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { getDifficultyStyle, getTopicColor, DifficultyPickerCell, TopicPickerCell } from './columns';
+import { DifficultyPickerCell, TopicPickerCell } from './columns';
 import { PlatformLogo } from '@/lib/platforms/logos';
-
 import { Pencil } from 'lucide-react';
 
 type NewRowProps = {
@@ -37,31 +36,8 @@ const PLATFORMS = [
   { value: 'CODECHEF',   label: 'CodeChef' },
 ];
 
-const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'];
-
 // ---------------------------------------------------------------------------
-// Slug → title heuristic for non-LeetCode platforms
-// ---------------------------------------------------------------------------
-function slugToTitle(url: string): string {
-  try {
-    const u = new URL(url);
-    // Codeforces: /problemset/problem/1800/A → "1800A"
-    const cfMatch = u.pathname.match(/\/problemset\/problem\/(\d+)\/([A-Z0-9]+)/i);
-    if (cfMatch) return `${cfMatch[1]}${cfMatch[2].toUpperCase()}`;
-    // CodeChef: /problems/MINSTACK → "MINSTACK"
-    const ccMatch = u.pathname.match(/\/problems\/([^/]+)/i);
-    if (u.hostname.includes('codechef') && ccMatch) return ccMatch[1].toUpperCase();
-    // GFG / HackerRank: last path segment, slug → Title Case
-    const parts = u.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
-    const slug = parts[parts.length - 1] ?? '';
-    return slug.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  } catch {
-    return '';
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Floating notes / text cell (unchanged from before)
+// Floating notes / text cell
 // ---------------------------------------------------------------------------
 function NewRowFloatingCell({
   value,
@@ -121,13 +97,9 @@ function NewRowFloatingCell({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onChange(localVal);
-      setEditing(false);
-      onSaveRow();
+      e.preventDefault(); onChange(localVal); setEditing(false); onSaveRow();
     } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setEditing(false);
+      e.preventDefault(); setEditing(false);
     }
   };
 
@@ -190,50 +162,54 @@ function NewRowFloatingCell({
 // Main NewRow component
 // ---------------------------------------------------------------------------
 export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
-  // Step 1: platform selection
   const [platform, setPlatform] = useState<string | null>(null);
   const [platformOpen, setPlatformOpen] = useState(true);
 
-  // LeetCode flow state
-  const [problemNumber, setProblemNumber] = useState('');
+  // Shared autofill / pickers state
   const [autoFill, setAutoFill] = useState<AutoFillData>(null);
-  const [loading, setLoading] = useState(false);
-  const [notFound, setNotFound] = useState(false);
-  const [manualUrl, setManualUrl] = useState('');
-  const [openNotesFloating, setOpenNotesFloating] = useState(false);
-  const [flash, setFlash] = useState(false);
-
-  // Other platform flow state
-  const [otherUrl, setOtherUrl] = useState('');
-  const [otherTitle, setOtherTitle] = useState('');
-  const [otherDifficulty, setOtherDifficulty] = useState('');
-  const [otherTopic, setOtherTopic] = useState('');
-
-  // Shared
-  const [notes, setNotes] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [topic, setTopic] = useState('');
+  const [notes, setNotes] = useState('');
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
+  const [flash, setFlash] = useState(false);
+  const [openNotesFloating, setOpenNotesFloating] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // LeetCode-specific
+  const [problemNumber, setProblemNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [lcUrl, setLcUrl] = useState('');
+
+  // Other platforms: simple URL + Title inputs
+  const [otherUrl, setOtherUrl] = useState('');
+  const [otherTitle, setOtherTitle] = useState('');
+
   const numRef = useRef<HTMLInputElement>(null);
+  const lcUrlRef = useRef<HTMLInputElement>(null);
   const otherUrlRef = useRef<HTMLInputElement>(null);
   const otherTitleRef = useRef<HTMLInputElement>(null);
-  const otherTopicRef = useRef<HTMLInputElement>(null);
 
   const isLeetCode = platform === 'LEETCODE';
   const isOther = platform && !isLeetCode;
-  const ready = isLeetCode ? !!autoFill : (isOther && !!otherUrl && !!otherTitle && !!otherDifficulty);
 
-  // focus after platform picked
+  // For other platforms, difficulty/topic pickers are always visible once platform is picked
+  const otherReady = !!isOther;
+
   useEffect(() => {
     if (!platform) return;
     if (isLeetCode) setTimeout(() => numRef.current?.focus(), 20);
     else setTimeout(() => otherUrlRef.current?.focus(), 20);
   }, [platform]);
 
-  // ── LeetCode handlers ────────────────────────────────────────────────────
+  const triggerFlash = () => {
+    setFlash(true);
+    setTimeout(() => setFlash(false), 400);
+    setTimeout(() => setOpenNotesFloating(true), 50);
+  };
+
+  // ── LeetCode: number → resolve ─────────────────────────────────────────
   const handleNumberKey = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { onCancel(); return; }
     if (e.key !== 'Enter') return;
@@ -247,25 +223,24 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         setAutoFill(json.data);
         setDifficulty(json.data.difficulty);
         setTopic(json.data.topic === 'General' ? '' : json.data.topic);
-        setFlash(true);
-        setTimeout(() => setFlash(false), 400);
-        setTimeout(() => setOpenNotesFloating(true), 50);
+        triggerFlash();
       } else {
         setNotFound(true);
+        setTimeout(() => lcUrlRef.current?.focus(), 20);
       }
     } catch { setNotFound(true); }
     finally { setLoading(false); }
   };
 
-  const handleManualUrl = async (url: string) => {
-    setManualUrl(url);
+  // ── LeetCode: URL fallback → LC GraphQL ───────────────────────────────
+  const handleLcUrl = async (url: string) => {
+    setLcUrl(url);
     const match = url.match(/leetcode\.com\/problems\/([^/]+)/);
     if (!match) return;
-    const slug = match[1];
     try {
       const res = await fetch('/api/leetcode/lookup', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titleSlug: slug }),
+        body: JSON.stringify({ titleSlug: match[1] }),
       });
       const json = await res.json();
       if (!json.error) {
@@ -273,25 +248,23 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         setDifficulty(json.difficulty);
         setTopic(json.topic === 'General' ? '' : json.topic);
         setNotFound(false);
-        setFlash(true);
-        setTimeout(() => setFlash(false), 400);
-        setTimeout(() => setOpenNotesFloating(true), 50);
+        triggerFlash();
       }
     } catch {}
   };
 
-  // ── Other platform: URL paste → prefill title ───────────────────────────
-  const handleOtherUrl = (url: string) => {
-    setOtherUrl(url);
-    if (!otherTitle) {
-      const guessed = slugToTitle(url);
-      if (guessed) setOtherTitle(guessed);
-    }
-  };
-
-  // ── Save ─────────────────────────────────────────────────────────────────
+  // ── Save ────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!platform) return;
+    if (isLeetCode && !autoFill) return;
+    if (isOther && (!otherTitle || !otherUrl)) {
+      setError('Title and URL are required.');
+      return;
+    }
+    if (isOther && !difficulty) {
+      setError('Please select a difficulty.');
+      return;
+    }
     setSaving(true); setError('');
     try {
       if (isLeetCode && autoFill) {
@@ -309,10 +282,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
       } else if (isOther) {
         await onSave({
           platform,
-          problemNumber: 0,  // non-LeetCode problems use 0
+          problemNumber: 0,
           title: otherTitle,
-          difficulty: otherDifficulty,
-          topic: otherTopic,
+          difficulty,
+          topic,
           url: otherUrl,
           notes: notes || undefined,
           customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
@@ -333,6 +306,15 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     fontSize: 13, outline: 'none', width: '100%', caretColor: '#ffffff',
   } as React.CSSProperties;
 
+  const resetState = () => {
+    setPlatform(null); setPlatformOpen(true);
+    setAutoFill(null); setNotFound(false);
+    setLcUrl(''); setProblemNumber('');
+    setOtherUrl(''); setOtherTitle('');
+    setDifficulty(''); setTopic('');
+    setError('');
+  };
+
   return (
     <>
       <tr style={{
@@ -342,14 +324,14 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         height: 44,
         outline: 'none',
       }}>
-        {/* Checkbox cell */}
+        {/* Checkbox */}
         <td style={{ width: 36, textAlign: 'center', padding: '0 4px' }} />
 
-        {/* Platform logo / selector cell */}
+        {/* Platform logo / selector */}
         <td style={{ width: 40, textAlign: 'center', padding: '0 4px', position: 'relative' }}>
           {platform ? (
             <button
-              onClick={() => { setPlatform(null); setPlatformOpen(true); }}
+              onClick={resetState}
               title="Change platform"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex' }}
             >
@@ -370,10 +352,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
               </button>
               {platformOpen && (
                 <div style={{
-                  position: 'absolute', top: 28, left: -4, zIndex: 200,
+                  position: 'absolute', bottom: 28, left: -4, zIndex: 200,
                   background: '#1a1a1c', border: '1px solid #2a2a2e',
                   borderRadius: 8, padding: 6, minWidth: 160,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                  boxShadow: '0 -8px 24px rgba(0,0,0,0.6)',
                 }}>
                   {PLATFORMS.map((p) => (
                     <button
@@ -398,170 +380,119 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           )}
         </td>
 
-        {/* ── LeetCode flow ── */}
-        {isLeetCode && (
-          <>
-            {/* Problem Number + Title */}
-            <td style={{ width: 320, padding: '0 12px', transition: 'background 0.4s', background: cellBg }}>
-              {!autoFill ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input
-                    ref={numRef}
-                    value={problemNumber}
-                    onChange={(e) => setProblemNumber(e.target.value)}
-                    onKeyDown={handleNumberKey}
-                    placeholder="Problem number..."
-                    style={inputStyle}
-                  />
-                  {loading && <span style={{ color: '#555', fontSize: 12, letterSpacing: 2 }}>...</span>}
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>{problemNumber}</span>
-                  <span style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{autoFill.title}</span>
-                </div>
-              )}
-            </td>
-
-            {/* Difficulty */}
-            <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
-              {autoFill && (
-                <DifficultyPickerCell difficulty={difficulty || autoFill.difficulty} onSave={(d) => setDifficulty(d)} />
-              )}
-            </td>
-
-            {/* Topic */}
-            <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
-              {autoFill && (
-                <TopicPickerCell
-                  topic={topic || (autoFill.topic === 'General' ? '' : autoFill.topic)}
-                  onSave={(t) => setTopic(t)}
+        {/* Title / number area */}
+        <td style={{ width: 320, padding: '0 12px', transition: 'background 0.4s', background: cellBg }}>
+          {!platform ? (
+            <span style={{ fontSize: 13, color: '#444' }}>← Select a platform</span>
+          ) : isLeetCode ? (
+            !autoFill ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  ref={numRef}
+                  value={problemNumber}
+                  onChange={(e) => setProblemNumber(e.target.value)}
+                  onKeyDown={handleNumberKey}
+                  placeholder="Problem number..."
+                  style={inputStyle}
                 />
-              )}
-            </td>
-
-            {/* Status */}
-            <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
-            {/* Star */}
-            <td style={{ width: 44, textAlign: 'center' }} />
-            {/* Next Revision */}
-            <td style={{ width: 130, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
-
-            {/* Notes */}
-            <td style={{ width: 180, padding: '0 8px', position: 'relative' }}>
-              {autoFill && (
-                <NewRowFloatingCell
-                  value={notes}
-                  placeholder="Notes (optional)"
-                  maxWidth={180}
-                  autoOpen={openNotesFloating}
-                  onChange={(val) => setNotes(val)}
-                  onSaveRow={handleSave}
-                  onCancelRow={onCancel}
-                />
-              )}
-            </td>
-
-            {/* Custom columns */}
-            {columns.map((col) => (
-              <td key={col.id} style={{ width: 140, padding: '0 8px', position: 'relative' }}>
-                {autoFill && (
-                  <NewRowFloatingCell
-                    value={customFields[col.name] ?? ''}
-                    placeholder={col.name}
-                    maxWidth={140}
-                    onChange={(val) => setCustomFields((prev) => ({ ...prev, [col.name]: val }))}
-                    onSaveRow={handleSave}
-                    onCancelRow={onCancel}
-                  />
-                )}
-              </td>
-            ))}
-
-            <td style={{ width: 100 }} />
-          </>
-        )}
-
-        {/* ── Other platform flow ── */}
-        {isOther && (
-          <>
-            {/* URL */}
-            <td style={{ width: 220, padding: '0 12px' }}>
-              <input
-                ref={otherUrlRef}
-                value={otherUrl}
-                onChange={(e) => handleOtherUrl(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); if (e.key === 'Tab') { e.preventDefault(); otherTitleRef.current?.focus(); } }}
-                placeholder={`${PLATFORMS.find(p => p.value === platform)?.label} problem URL...`}
-                style={inputStyle}
-              />
-            </td>
-
-            {/* Title */}
-            <td style={{ width: 200, padding: '0 8px' }}>
-              <input
-                ref={otherTitleRef}
-                value={otherTitle}
-                onChange={(e) => setOtherTitle(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); }}
-                placeholder="Problem title..."
-                style={inputStyle}
-              />
-            </td>
-
-            {/* Difficulty dropdown */}
-            <td style={{ width: 110, padding: '0 8px' }}>
-              <select
-                value={otherDifficulty}
-                onChange={(e) => setOtherDifficulty(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); }}
-                style={{
-                  background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4,
-                  color: otherDifficulty ? '#fff' : '#555', fontSize: 12,
-                  padding: '3px 6px', outline: 'none', cursor: 'pointer', width: '100%',
-                }}
+                {loading && <span style={{ color: '#555', fontSize: 12, letterSpacing: 2 }}>...</span>}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+                <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>{problemNumber}</span>
+                <a
+                  href={autoFill.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                  onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                >
+                  {autoFill.title}
+                </a>
+              </div>
+            )
+          ) : (
+            // Other platforms — title shown as hyperlink if URL is set
+            otherTitle && otherUrl ? (
+              <a
+                href={otherUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 14, color: '#e5e5e5', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none', display: 'block' }}
+                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
               >
-                <option value="" disabled>Difficulty</option>
-                {DIFFICULTIES.map((d) => (
-                  <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase()}</option>
-                ))}
-              </select>
-            </td>
+                {otherTitle}
+              </a>
+            ) : (
+              <span style={{ fontSize: 13, color: '#444' }}>Fill in URL and title below...</span>
+            )
+          )}
+        </td>
 
-            {/* Topic */}
-            <td style={{ width: 130, padding: '0 8px' }}>
-              <input
-                ref={otherTopicRef}
-                value={otherTopic}
-                onChange={(e) => setOtherTopic(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') { onCancel(); return; }
-                  if (e.key === 'Enter') handleSave();
-                }}
-                placeholder="Topic (e.g. DP, Graphs...)"
-                style={inputStyle}
+        {/* Difficulty */}
+        <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+          {(autoFill || otherReady) && (
+            <DifficultyPickerCell
+              difficulty={difficulty || (autoFill?.difficulty ?? '')}
+              onSave={(d) => setDifficulty(d)}
+            />
+          )}
+        </td>
+
+        {/* Topic */}
+        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+          {(autoFill || otherReady) && (
+            <TopicPickerCell
+              topic={topic || (autoFill?.topic === 'General' ? '' : (autoFill?.topic ?? ''))}
+              onSave={(t) => setTopic(t)}
+            />
+          )}
+        </td>
+
+        {/* Status */}
+        <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+        {/* Star */}
+        <td style={{ width: 44, textAlign: 'center' }} />
+        {/* Next Revision */}
+        <td style={{ width: 130, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+
+        {/* Notes */}
+        <td style={{ width: 180, padding: '0 8px', position: 'relative' }}>
+          {(autoFill || otherReady) && (
+            <NewRowFloatingCell
+              value={notes}
+              placeholder="Notes (optional)"
+              maxWidth={180}
+              autoOpen={openNotesFloating}
+              onChange={(val) => setNotes(val)}
+              onSaveRow={handleSave}
+              onCancelRow={onCancel}
+            />
+          )}
+        </td>
+
+        {/* Custom columns */}
+        {columns.map((col) => (
+          <td key={col.id} style={{ width: 140, padding: '0 8px', position: 'relative' }}>
+            {(autoFill || otherReady) && (
+              <NewRowFloatingCell
+                value={customFields[col.name] ?? ''}
+                placeholder={col.name}
+                maxWidth={140}
+                onChange={(val) => setCustomFields((prev) => ({ ...prev, [col.name]: val }))}
+                onSaveRow={handleSave}
+                onCancelRow={onCancel}
               />
-            </td>
-
-            {/* Remaining empty cells to fill the row */}
-            <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
-            <td style={{ width: 44 }} />
-            <td style={{ width: 130 }} />
-            <td style={{ width: 180 }} />
-            {columns.map((col) => <td key={col.id} style={{ width: 140 }} />)}
-            <td style={{ width: 100 }} />
-          </>
-        )}
-
-        {/* ── No platform selected yet ── */}
-        {!platform && (
-          <td colSpan={8 + columns.length} style={{ padding: '0 12px', color: '#444', fontSize: 13 }}>
-            ← Select a platform
+            )}
           </td>
-        )}
+        ))}
+
+        <td style={{ width: 100 }} />
       </tr>
 
-      {/* LeetCode: not found → URL prompt */}
+      {/* ── LeetCode: number not found → URL fallback ── */}
       {isLeetCode && notFound && (
         <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
@@ -571,30 +502,78 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
               </span>
             </div>
             <input
-              value={manualUrl}
-              onChange={(e) => handleManualUrl(e.target.value)}
+              ref={lcUrlRef}
+              value={lcUrl}
+              onChange={(e) => handleLcUrl(e.target.value)}
               placeholder="https://leetcode.com/problems/..."
               onKeyDown={(e) => e.key === 'Escape' && onCancel()}
               style={{
                 background: 'none', border: 'none', color: '#fff',
                 fontFamily: 'var(--font-geist-mono), monospace',
-                fontSize: 12, padding: '0', outline: 'none', width: 320,
+                fontSize: 12, padding: 0, outline: 'none', width: 380, caretColor: '#ffffff',
               }}
             />
-            {error && <div style={{ fontSize: 12, color: '#f87171', marginTop: 4 }}>{error}</div>}
           </td>
         </tr>
       )}
 
-      {/* Save/cancel hint */}
-      {ready && (
+      {/* ── Other platforms: URL + Title inputs ── */}
+      {isOther && (
+        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
+          <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
+            <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 10, color: '#555', letterSpacing: '0.05em', textTransform: 'uppercase' }}>URL</span>
+                <input
+                  ref={otherUrlRef}
+                  value={otherUrl}
+                  onChange={(e) => setOtherUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') { onCancel(); return; }
+                    if (e.key === 'Tab') { e.preventDefault(); otherTitleRef.current?.focus(); }
+                    if (e.key === 'Enter') { otherTitleRef.current?.focus(); }
+                  }}
+                  placeholder={`${PLATFORMS.find(p => p.value === platform)?.label} problem URL...`}
+                  style={{
+                    background: 'none', border: 'none', color: '#fff',
+                    fontFamily: 'var(--font-geist-mono), monospace',
+                    fontSize: 12, padding: 0, outline: 'none', width: 300, caretColor: '#ffffff',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 10, color: '#555', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Title</span>
+                <input
+                  ref={otherTitleRef}
+                  value={otherTitle}
+                  onChange={(e) => setOtherTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') { onCancel(); return; }
+                    if (e.key === 'Enter') handleSave();
+                  }}
+                  placeholder="Problem title..."
+                  style={{
+                    background: 'none', border: 'none', color: '#fff',
+                    fontFamily: 'inherit', fontSize: 13, padding: 0,
+                    outline: 'none', width: 220, caretColor: '#ffffff',
+                  }}
+                />
+              </div>
+            </div>
+            {error && <div style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{error}</div>}
+          </td>
+        </tr>
+      )}
+
+      {/* ── Save / cancel hint ── */}
+      {(autoFill || (isOther && (otherTitle || otherUrl))) && (
         <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '4px 68px' }}>
             <span style={{ fontSize: 11, color: '#444' }}>
               Press <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Enter</kbd> to save &nbsp;
               <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Esc</kbd> to cancel
               {saving && <span style={{ color: '#ffffff', marginLeft: 8 }}>saving...</span>}
-              {error && <span style={{ color: '#f87171', marginLeft: 8 }}>{error}</span>}
+              {error && !isOther && <span style={{ color: '#f87171', marginLeft: 8 }}>{error}</span>}
             </span>
           </td>
         </tr>

@@ -81,6 +81,12 @@ export async function POST(request: NextRequest) {
       meta = { title, difficulty, topic: topic || '', url };
     }
 
+    // Validate difficulty — it's a required enum; empty string will crash Prisma
+    const validDifficulties = ['EASY', 'MEDIUM', 'HARD'];
+    if (!validDifficulties.includes(meta.difficulty?.toUpperCase?.())) {
+      return Response.json({ error: 'difficulty is required and must be EASY, MEDIUM, or HARD' }, { status: 400 });
+    }
+
     const now = new Date();
     const schedule = getInitialSchedule(now);
 
@@ -107,6 +113,7 @@ export async function POST(request: NextRequest) {
       if (e?.code === 'P2002') {
         return Response.json({ error: 'This problem already exists in your tracker.' }, { status: 409 });
       }
+      throw e; // rethrow so the outer catch returns a proper 500
     }
   } catch (e) {
     console.error('[POST /api/problems]', e);
