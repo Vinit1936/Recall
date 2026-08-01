@@ -113,7 +113,7 @@ function NextRevisionCell({ problem }: { problem: any }) {
     color = '#facc15';
   } else if (diffDays === 1) {
     text = 'Tomorrow';
-    color = '#818cf8';
+    color = '#a1a1aa';
   } else {
     text = `in ${diffDays}d`;
     color = '#666';
@@ -352,7 +352,7 @@ function InlineEditCell({
               margin: 0,
               display: 'block',
               boxSizing: 'border-box',
-              caretColor: '#818cf8',
+              caretColor: '#ffffff',
             }}
           />
         </div>

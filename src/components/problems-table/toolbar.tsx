@@ -93,7 +93,7 @@ function CheckItem({ label, checked, onChange }: { label: string; checked: boole
         color: '#ccc',
       }}
     >
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ accentColor: '#818cf8' }} />
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ accentColor: '#ffffff' }} />
       {label.charAt(0) + label.slice(1).toLowerCase()}
     </label>
   );

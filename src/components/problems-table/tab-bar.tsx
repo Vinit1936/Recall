@@ -24,7 +24,7 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
             style={{
               background: 'none',
               border: 'none',
-              borderBottom: isActive ? '2px solid #818cf8' : '2px solid transparent',
+              borderBottom: isActive ? '2px solid #ffffff' : '2px solid transparent',
               color: isActive ? '#fff' : '#555',
               cursor: 'pointer',
               fontSize: 13,

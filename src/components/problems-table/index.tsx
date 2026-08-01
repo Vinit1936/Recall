@@ -47,7 +47,7 @@ function ColumnHeaderMenu({ col, onDelete }: { col: any; onDelete: (id: string) 
         style={{
           background: open ? 'rgba(255, 255, 255, 0.08)' : 'none',
           border: 'none',
-          color: open ? '#818cf8' : hovered ? '#888' : 'transparent',
+          color: open ? '#ffffff' : hovered ? '#888' : 'transparent',
           cursor: 'pointer',
           padding: '2px 4px',
           borderRadius: 4,
@@ -226,7 +226,7 @@ function AddColumnPopover({ onSave, columns }: { onSave: (name: string) => void;
           />
           <button
             onClick={submit}
-            style={{ background: '#1e1e3a', border: '1px solid #333', borderRadius: 4, color: '#818cf8', cursor: 'pointer', fontSize: 12, padding: '4px 12px', width: '100%' }}
+            style={{ background: '#222222', border: '1px solid #333', borderRadius: 4, color: '#ffffff', cursor: 'pointer', fontSize: 12, padding: '4px 12px', width: '100%' }}
           >
             Save
           </button>
@@ -593,7 +593,7 @@ export function ProblemsTable() {
           }}
         >
           <div style={{ fontSize: 13, color: '#e5e5e5', fontFamily: 'var(--font-geist-mono), monospace' }}>
-            <span style={{ color: '#818cf8', fontWeight: 600 }}>{selectedIds.length}</span> {selectedIds.length === 1 ? 'selected' : 'selected'}
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>{selectedIds.length}</span> {selectedIds.length === 1 ? 'selected' : 'selected'}
           </div>
           <div style={{ height: 16, width: 1, background: '#333' }} />
           <button

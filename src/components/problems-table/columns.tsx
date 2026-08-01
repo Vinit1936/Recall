@@ -147,7 +147,7 @@ export function DifficultyPickerCell({
                 <Pill bg={st.bg} text={st.text} border={st.border}>
                   {d.charAt(0) + d.slice(1).toLowerCase()}
                 </Pill>
-                {isSelected && <span style={{ color: '#818cf8', fontSize: 12, marginLeft: 8 }}>✓</span>}
+                {isSelected && <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>}
               </button>
             );
           })}
@@ -300,7 +300,7 @@ export function TopicPickerCell({
               width: '100%',
               outline: 'none',
               boxSizing: 'border-box',
-              caretColor: '#818cf8',
+              caretColor: '#ffffff',
             }}
           />
 
@@ -325,13 +325,13 @@ export function TopicPickerCell({
                 onMouseEnter={() => setHoveredOpt('CREATE_NEW')}
                 onMouseLeave={() => setHoveredOpt(null)}
                 style={{
-                  background: hoveredOpt === 'CREATE_NEW' ? 'rgba(129, 140, 248, 0.15)' : 'none',
-                  border: '1px border-dashed #818cf8',
+                  background: hoveredOpt === 'CREATE_NEW' ? 'rgba(255, 255, 255, 0.15)' : 'none',
+                  border: '1px dashed #ffffff',
                   borderRadius: 4,
                   padding: '6px 8px',
                   cursor: 'pointer',
                   fontSize: 12,
-                  color: '#818cf8',
+                  color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
@@ -379,7 +379,7 @@ export function TopicPickerCell({
                   <Pill bg={tc.bg} text={tc.text} border={tc.border}>
                     {t}
                   </Pill>
-                  {isSelected && <span style={{ color: '#818cf8', fontSize: 12, marginLeft: 8 }}>✓</span>}
+                  {isSelected && <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>}
                 </button>
               );
             })}
@@ -412,7 +412,7 @@ export function TopicPickerCell({
                 <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>
                   {topic}
                 </Pill>
-                <span style={{ color: '#818cf8', fontSize: 12, marginLeft: 8 }}>✓</span>
+                <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>
               </button>
             )}
           </div>

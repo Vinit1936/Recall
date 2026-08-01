@@ -197,7 +197,7 @@ function NewRowFloatingCell({
               margin: 0,
               display: 'block',
               boxSizing: 'border-box',
-              caretColor: '#818cf8',
+              caretColor: '#ffffff',
             }}
           />
         </div>
@@ -350,7 +350,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                   fontSize: 13,
                   outline: 'none',
                   width: '100%',
-                  caretColor: '#818cf8',
+                  caretColor: '#ffffff',
                 }}
               />
               {loading && (
@@ -461,7 +461,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
             <span style={{ fontSize: 11, color: '#444' }}>
               Press <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Enter</kbd> to save &nbsp;
               <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Esc</kbd> to cancel
-              {saving && <span style={{ color: '#818cf8', marginLeft: 8 }}>saving...</span>}
+              {saving && <span style={{ color: '#ffffff', marginLeft: 8 }}>saving...</span>}
               {error && <span style={{ color: '#f87171', marginLeft: 8 }}>{error}</span>}
             </span>
           </td>

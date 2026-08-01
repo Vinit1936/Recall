@@ -53,7 +53,7 @@ export function StatsStrip({ streak, totalProblems, masteredCount, dueCount }: S
 
       {/* Mastered */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14, fontWeight: 600, color: '#818cf8' }}>
+        <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14, fontWeight: 600, color: '#ffffff' }}>
           {masteredCount}
         </span>
         <span style={{ color: '#888' }}>mastered</span>

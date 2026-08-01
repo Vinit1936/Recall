@@ -247,7 +247,7 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', maxWidth: 360 }}>
           {/* Wordmark */}
           <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 32, fontWeight: 600, color: '#fff', marginBottom: 12, letterSpacing: '-0.03em' }}>
-            recall<span style={{ color: '#444' }}>.</span>
+            recall<span style={{ color: '#F7981E' }}>.</span>
           </div>
           {/* Tagline */}
           <div style={{ fontSize: 16, color: '#888', lineHeight: 1.5 }}>
