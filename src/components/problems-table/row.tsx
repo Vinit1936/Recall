@@ -2,41 +2,11 @@
 
 import { formatDistanceToNow, startOfDay } from 'date-fns';
 import { getDifficultyStyle, getTopicColor, Pill, DifficultyPickerCell, TopicPickerCell } from './columns';
-
+import { PlatformLogo } from '@/lib/platforms/logos';
 
 import { useState, useRef, useEffect } from 'react';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Star, Pencil } from 'lucide-react';
-
-
-// LeetCode logo — black square with LeetCode icon
-function LCIcon({ size = 24 }: { size?: number }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: size,
-        height: size,
-        background: '#0F0F0F',
-        borderRadius: 4,
-        padding: 3,
-        flexShrink: 0,
-      }}
-    >
-      <img
-        src="/LeetCode.png"
-        alt="LeetCode"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-        }}
-      />
-    </span>
-  );
-}
 
 // Status dot + label — derives from problem.status and revisions[0].confidence
 function StatusCell({ problem }: { problem: any }) {
@@ -404,7 +374,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       {/* Platform logo cell */}
       <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <LCIcon />
+          <PlatformLogo platform={problem.platform} />
         </div>
       </td>
 

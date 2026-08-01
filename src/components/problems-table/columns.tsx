@@ -225,7 +225,7 @@ export function TopicPickerCell({
     }
   };
 
-  const topicColor = getTopicColor(topic || 'General');
+  const topicColor = getTopicColor(topic || '');
 
   // Filter topics
   const query = search.trim().toLowerCase();
@@ -253,7 +253,7 @@ export function TopicPickerCell({
         }}
       >
         <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>
-          {topic || 'General'}
+          {topic || '—'}
         </Pill>
       </button>
 

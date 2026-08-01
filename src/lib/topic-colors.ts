@@ -1,4 +1,5 @@
 export function getTopicColor(topic: string): { bg: string; text: string; border: string } {
+  if (!topic) return { bg: '#1a1a1a', text: '#555555', border: '#2a2a2a' };
   const palette = [
     { bg: '#1a1a3a', text: '#ffffff', border: '#2a2a5a' },
     { bg: '#1a3a2a', text: '#34d399', border: '#2a5a3a' },

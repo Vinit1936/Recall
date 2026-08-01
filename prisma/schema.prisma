@@ -10,6 +10,10 @@ datasource db {
 
 enum Platform {
   LEETCODE
+  CODEFORCES
+  GFG
+  HACKERRANK
+  CODECHEF
 }
 
 enum Difficulty {

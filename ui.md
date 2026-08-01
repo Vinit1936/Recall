@@ -1,3 +1,4 @@
+
 # UI Resources Reference — use these when relevant, don't force them
 
 When building frontend components, you have access to the following libraries and resources. Use them when they genuinely improve the output — don't force-use any of them, and don't install everything at once. Pick what fits the specific component being built.

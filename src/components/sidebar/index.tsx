@@ -6,7 +6,7 @@ import { signOut, useSession } from 'next-auth/react';
 
 const navItems = [
   {
-    label: 'Home',
+    label: 'Lists',
     href: '/',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

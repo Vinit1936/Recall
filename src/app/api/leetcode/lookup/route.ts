@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     const difficulty = (q.difficulty as string).toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD';
-    const topic = q.topicTags?.[0]?.name ?? 'General';
+    const topic = q.topicTags?.[0]?.name ?? '';
 
     return NextResponse.json({
       title: q.title,

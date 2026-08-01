@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getDifficultyStyle, getTopicColor, Pill } from '@/components/problems-table/columns';
+import { PlatformLogo } from '@/lib/platforms/logos';
 
 type Confidence = 'CLEAN' | 'SHAKY' | 'STRUGGLED';
 
@@ -18,35 +19,6 @@ const CONF_COLORS: Record<Confidence, { done_bg: string; done_text: string; labe
   SHAKY:     { done_bg: '#3a2a0a', done_text: '#fb923c', label: 'Shaky' },
   STRUGGLED: { done_bg: '#3a0a0a', done_text: '#f87171', label: 'Struggled' },
 };
-
-// LeetCode icon
-function LCIcon({ size = 20 }: { size?: number }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: size,
-        height: size,
-        background: '#0F0F0F',
-        borderRadius: 4,
-        padding: 2.5,
-        flexShrink: 0,
-      }}
-    >
-      <img
-        src="/LeetCode.png"
-        alt="LeetCode"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-        }}
-      />
-    </span>
-  );
-}
 
 export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowProps) {
   const [done, setDone] = useState(false);
@@ -97,7 +69,7 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
       }}
     >
       {/* Left side */}
-      <LCIcon size={20} />
+      <PlatformLogo platform={problem.platform ?? 'LEETCODE'} size={20} />
 
       <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 12, color: '#666', flexShrink: 0 }}>
         {problem.problemNumber}

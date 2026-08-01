@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { platform, problemNumber, notes, dateSolved, customFields } = body;
 
-    if (!platform || problemNumber == null) {
-      return Response.json({ error: 'platform and problemNumber are required' }, { status: 400 });
+    if (!platform) {
+      return Response.json({ error: 'platform is required' }, { status: 400 });
     }
 
     const resolver = getResolver(platform);
@@ -62,23 +62,23 @@ export async function POST(request: NextRequest) {
         meta = result.data;
       } else {
         const { title, difficulty, topic, url } = body;
-        if (!title || !difficulty || !topic || !url) {
+        if (!title || !difficulty || !url) {
           return Response.json(
-            { error: 'Problem not found in local dataset. Provide title, difficulty, topic, and url manually.' },
+            { error: 'Problem not found in local dataset. Provide title, difficulty, and url manually.' },
             { status: 422 }
           );
         }
-        meta = { title, difficulty, topic, url };
+        meta = { title, difficulty, topic: topic || '', url };
       }
     } else {
       const { title, difficulty, topic, url } = body;
-      if (!title || !difficulty || !topic || !url) {
+      if (!title || !difficulty || !url) {
         return Response.json(
-          { error: 'Unknown platform. Provide title, difficulty, topic, and url manually.' },
+          { error: 'Unknown platform. Provide title, difficulty, and url.' },
           { status: 422 }
         );
       }
-      meta = { title, difficulty, topic, url };
+      meta = { title, difficulty, topic: topic || '', url };
     }
 
     const now = new Date();
