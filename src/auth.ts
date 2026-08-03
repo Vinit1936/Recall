@@ -18,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false, // must be false for http://localhost
+        secure: process.env.NODE_ENV === 'production', // false on localhost, true on HTTPS in production
       },
     },
     state: {
@@ -27,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
