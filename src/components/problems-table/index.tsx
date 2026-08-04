@@ -8,7 +8,7 @@ import { Toolbar, type SortOrder } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
-import { Star, MoreVertical, Trash2 } from 'lucide-react';
+import { Star, MoreVertical, Trash2, Download } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -664,6 +664,36 @@ export function ProblemsTable() {
     }
   }, [selectedIds, mutate]);
 
+  // CSV Export
+  const handleExportCSV = useCallback(() => {
+    if (!allProblems || allProblems.length === 0) {
+      showToast('No problems to export');
+      return;
+    }
+    const headers = ['Title', 'Platform', 'Problem Code', 'Difficulty', 'Topic', 'Status', 'URL', 'Notes', 'Date Solved'];
+    const rows = allProblems.map((p) => [
+      `"${(p.title || '').replace(/"/g, '""')}"`,
+      `"${p.platform || ''}"`,
+      `"${p.code || p.problemNumber || ''}"`,
+      `"${p.difficulty || ''}"`,
+      `"${(p.topic || '').replace(/"/g, '""')}"`,
+      `"${p.status || ''}"`,
+      `"${p.url || ''}"`,
+      `"${(p.notes || '').replace(/"/g, '""')}"`,
+      `"${p.dateSolved || ''}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `recall-problems-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exported recall-problems.csv');
+  }, [allProblems]);
+
   return (
     <div style={{ padding: '24px 32px' }}>
       {/* Toast notification */}
@@ -801,6 +831,16 @@ export function ProblemsTable() {
             <span style={{ color: '#333' }}>•</span>
             <span><strong style={{ color: '#60a5fa' }}>{(allProblems ?? []).filter((p) => p.status === 'MASTERED').length}</strong> Mastered</span>
           </div>
+
+          <button
+            onClick={handleExportCSV}
+            title="Export problems to CSV"
+            style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#aaa', cursor: 'pointer', fontSize: 13, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, transition: 'color 0.15s, border-color 0.15s' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#444'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.color = '#aaa'; }}
+          >
+            <Download size={14} /> Export CSV
+          </button>
 
           <button
             id="new-problem-btn"
