@@ -44,6 +44,7 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
       {TABS.map((tab) => {
         const isActive = tab.key === activeTab;
         const isPlatformTab = !!tab.platform;
+        const defaultOpacity = isPlatformTab && !isActive ? 0.8 : 1;
 
         return (
           <button
@@ -69,14 +70,14 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
               justifyContent: 'center',
               gap: 6,
               whiteSpace: 'nowrap',
-              transition: 'color 0.15s, box-shadow 0.15s, opacity 0.15s',
-              opacity: isPlatformTab && !isActive ? 0.6 : 1,
+              transition: 'color 0.15s, box-shadow 0.15s, opacity 0.15s ease',
+              opacity: defaultOpacity,
             }}
             onMouseEnter={(e) => {
               if (isPlatformTab && !isActive) e.currentTarget.style.opacity = '1';
             }}
             onMouseLeave={(e) => {
-              if (isPlatformTab && !isActive) e.currentTarget.style.opacity = '0.6';
+              if (isPlatformTab && !isActive) e.currentTarget.style.opacity = '0.8';
             }}
           >
             {isPlatformTab ? (

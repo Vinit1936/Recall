@@ -759,13 +759,6 @@ export function ProblemsTable() {
         <table style={{ width: '100%', minWidth: 1060 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
-            {showNewRow && (
-              <NewRow
-                onSave={handleNewProblemSave}
-                onCancel={() => setShowNewRow(false)}
-                columns={columns}
-              />
-            )}
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <SkeletonRow key={i} columns={COLUMN_COUNT} />
@@ -778,6 +771,13 @@ export function ProblemsTable() {
               renderByTopic()
             ) : (
               renderRows(sorted)
+            )}
+            {showNewRow && (
+              <NewRow
+                onSave={handleNewProblemSave}
+                onCancel={() => setShowNewRow(false)}
+                columns={columns}
+              />
             )}
           </tbody>
         </table>
