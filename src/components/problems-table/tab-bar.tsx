@@ -4,6 +4,7 @@ import { PlatformLogo } from '@/lib/platforms/logos';
 
 export type TabKey =
   | 'all'
+  | 'due'
   | 'status'
   | 'topic'
   | 'LEETCODE'
@@ -19,6 +20,7 @@ type TabBarProps = {
 
 const TABS: { key: TabKey; label: string; platform?: string; size?: number; padding?: number }[] = [
   { key: 'all', label: 'All Problems' },
+  { key: 'due', label: 'Due Today' },
   { key: 'status', label: 'By Status' },
   { key: 'topic', label: 'By Topic' },
   { key: 'LEETCODE', label: 'LeetCode', platform: 'LEETCODE', size: 21, padding: 2 },

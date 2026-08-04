@@ -350,6 +350,12 @@ export function ProblemsTable() {
     if (q && !p.title.toLowerCase().includes(q) && !String(p.problemNumber).includes(q)) return false;
     if (difficultyFilter.length && !difficultyFilter.includes(p.difficulty)) return false;
     if (statusFilter.length && !statusFilter.includes(p.status)) return false;
+    if (activeTab === 'due') {
+      if (!p.nextRevisionAt) return false;
+      const revDate = new Date(p.nextRevisionAt).getTime();
+      const now = new Date().getTime();
+      if (revDate > now) return false;
+    }
     if (['LEETCODE', 'CODEFORCES', 'CODECHEF', 'GFG', 'HACKERRANK'].includes(activeTab)) {
       if (p.platform !== activeTab) return false;
     }
