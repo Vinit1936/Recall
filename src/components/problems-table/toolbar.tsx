@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 
 export type SortOrder = 'asc' | 'desc';
 
@@ -203,7 +203,7 @@ export function Toolbar({
           ))}
         </DropdownMenu>
 
-        {/* Arrow Toggle Button for Ascending / Descending */}
+        {/* Arrow Flip Toggle Icon Button */}
         <button
           onClick={onSortOrderToggle}
           title={sortOrder === 'asc' ? 'Ascending Order (click for Descending)' : 'Descending Order (click for Ascending)'}
@@ -211,29 +211,33 @@ export function Toolbar({
             background: '#1a1a1a',
             border: '1px solid #2a2a2a',
             borderRadius: 6,
-            color: '#e5e5e5',
+            color: '#ccc',
             cursor: 'pointer',
-            fontSize: 12,
-            padding: '6px 10px',
+            width: 30,
+            height: 30,
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            transition: 'background 0.15s ease, border-color 0.15s ease',
+            justifyContent: 'center',
+            transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+            padding: 0,
+            flexShrink: 0,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#444')}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#444';
+            e.currentTarget.style.color = '#fff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#2a2a2a';
+            e.currentTarget.style.color = '#ccc';
+          }}
         >
-          {sortOrder === 'asc' ? (
-            <>
-              <ArrowUp size={14} style={{ color: '#4ade80' }} />
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 11 }}>ASC</span>
-            </>
-          ) : (
-            <>
-              <ArrowDown size={14} style={{ color: '#4ade80' }} />
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 11 }}>DESC</span>
-            </>
-          )}
+          <ArrowUpDown
+            size={14}
+            style={{
+              transition: 'transform 0.2s ease',
+              transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
         </button>
       </div>
 
