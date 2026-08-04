@@ -1,6 +1,7 @@
 type PlatformLogoProps = {
   platform: string;
   size?: number;
+  padding?: number;
 };
 
 const LOGO_CONFIG: Record<string, { src: string; bg: string; padding: number }> = {
@@ -11,9 +12,11 @@ const LOGO_CONFIG: Record<string, { src: string; bg: string; padding: number }> 
   CODECHEF:   { src: '/CodeChef.png',   bg: '#f5f0eb', padding: 3 },
 };
 
-export function PlatformLogo({ platform, size = 24 }: PlatformLogoProps) {
+export function PlatformLogo({ platform, size = 24, padding }: PlatformLogoProps) {
   const cfg = LOGO_CONFIG[platform];
   if (!cfg) return null;
+
+  const pad = padding ?? cfg.padding;
 
   return (
     <span
@@ -25,7 +28,7 @@ export function PlatformLogo({ platform, size = 24 }: PlatformLogoProps) {
         height: size,
         background: cfg.bg,
         borderRadius: 4,
-        padding: cfg.padding,
+        padding: pad,
         flexShrink: 0,
       }}
     >
