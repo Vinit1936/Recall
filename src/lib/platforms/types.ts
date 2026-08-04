@@ -6,6 +6,8 @@ export type ProblemMeta = {
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   topic: string;
   url: string;
+  problemNumber?: number;
+  code?: string;
 };
 
 export type ResolveResult =

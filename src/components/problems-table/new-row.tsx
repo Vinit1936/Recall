@@ -26,6 +26,7 @@ type AutoFillData = {
   difficulty: string;
   topic: string;
   url: string;
+  problemNumber?: number;
 } | null;
 
 const PLATFORMS = [
@@ -192,16 +193,18 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   const otherTitleRef = useRef<HTMLInputElement>(null);
 
   const isLeetCode = platform === 'LEETCODE';
-  const isOther = platform && !isLeetCode;
+  const isCodeforces = platform === 'CODEFORCES';
+  const isAutoSupported = isLeetCode || isCodeforces;
+  const isOther = platform && !isAutoSupported;
 
   // For other platforms, difficulty/topic pickers are always visible once platform is picked
   const otherReady = !!isOther;
 
   useEffect(() => {
     if (!platform) return;
-    if (isLeetCode) setTimeout(() => numRef.current?.focus(), 20);
+    if (isAutoSupported) setTimeout(() => numRef.current?.focus(), 20);
     else setTimeout(() => otherUrlRef.current?.focus(), 20);
-  }, [platform]);
+  }, [platform, isAutoSupported]);
 
   const triggerFlash = () => {
     setFlash(true);
@@ -209,15 +212,19 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     setTimeout(() => setOpenNotesFloating(true), 50);
   };
 
-  // ── LeetCode: number → resolve ─────────────────────────────────────────
+  // ── Auto-supported platforms: number/code → resolve ────────────────────
   const handleNumberKey = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { onCancel(); return; }
     if (e.key !== 'Enter') return;
-    const num = parseInt(problemNumber, 10);
-    if (isNaN(num)) return;
+    const query = problemNumber.trim();
+    if (!query) return;
+
     setLoading(true); setNotFound(false); setAutoFill(null);
     try {
-      const res = await fetch(`/api/leetcode/resolve?id=${num}`);
+      const endpoint = isLeetCode
+        ? `/api/leetcode/resolve?id=${parseInt(query, 10)}`
+        : `/api/codeforces/resolve?id=${encodeURIComponent(query)}`;
+      const res = await fetch(endpoint);
       const json = await res.json();
       if (json.found) {
         setAutoFill(json.data);
@@ -232,31 +239,49 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     finally { setLoading(false); }
   };
 
-  // ── LeetCode: URL fallback → LC GraphQL ───────────────────────────────
+  // ── LeetCode / Codeforces URL fallback ────────────────────────────────
   const handleLcUrl = async (url: string) => {
     setLcUrl(url);
-    const match = url.match(/leetcode\.com\/problems\/([^/]+)/);
-    if (!match) return;
-    try {
-      const res = await fetch('/api/leetcode/lookup', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titleSlug: match[1] }),
-      });
-      const json = await res.json();
-      if (!json.error) {
-        setAutoFill(json);
-        setDifficulty(json.difficulty);
-        setTopic(json.topic === 'General' ? '' : json.topic);
-        setNotFound(false);
-        triggerFlash();
-      }
-    } catch {}
+    if (isLeetCode) {
+      const match = url.match(/leetcode\.com\/problems\/([^/]+)/);
+      if (!match) return;
+      try {
+        const res = await fetch('/api/leetcode/lookup', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titleSlug: match[1] }),
+        });
+        const json = await res.json();
+        if (!json.error) {
+          setAutoFill(json);
+          setDifficulty(json.difficulty);
+          setTopic(json.topic === 'General' ? '' : json.topic);
+          setNotFound(false);
+          triggerFlash();
+        }
+      } catch {}
+    } else if (isCodeforces) {
+      // Match Codeforces problem URL: /problemset/problem/{contestId}/{index} or /contest/{contestId}/problem/{index}
+      const match = url.match(/(?:problemset\/problem|contest)\/(\d+)\/(?:problem\/)?([A-Za-z0-9]+)/);
+      if (!match) return;
+      const cfCode = `${match[1]}${match[2]}`;
+      try {
+        const res = await fetch(`/api/codeforces/resolve?id=${encodeURIComponent(cfCode)}`);
+        const json = await res.json();
+        if (json.found) {
+          setAutoFill(json.data);
+          setDifficulty(json.data.difficulty);
+          setTopic(json.data.topic === 'General' ? '' : json.data.topic);
+          setNotFound(false);
+          triggerFlash();
+        }
+      } catch {}
+    }
   };
 
   // ── Save ────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!platform) return;
-    if (isLeetCode && !autoFill) return;
+    if (isAutoSupported && !autoFill) return;
     if (isOther && (!otherTitle || !otherUrl)) {
       setError('Title and URL are required.');
       return;
@@ -267,10 +292,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     }
     setSaving(true); setError('');
     try {
-      if (isLeetCode && autoFill) {
+      if (isAutoSupported && autoFill) {
         await onSave({
           platform,
-          problemNumber: parseInt(problemNumber, 10),
+          problemNumber: autoFill.problemNumber ?? (isLeetCode ? parseInt(problemNumber, 10) : 0),
           title: autoFill.title,
           difficulty: difficulty || autoFill.difficulty,
           topic: topic || (autoFill.topic === 'General' ? '' : autoFill.topic),
@@ -384,7 +409,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         <td style={{ width: 320, padding: '0 12px', transition: 'background 0.4s', background: cellBg }}>
           {!platform ? (
             <span style={{ fontSize: 13, color: '#444' }}>← Select a platform</span>
-          ) : isLeetCode ? (
+          ) : isAutoSupported ? (
             !autoFill ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input
@@ -392,7 +417,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                   value={problemNumber}
                   onChange={(e) => setProblemNumber(e.target.value)}
                   onKeyDown={handleNumberKey}
-                  placeholder="Problem number..."
+                  placeholder={isLeetCode ? 'Problem number (e.g. 1)...' : 'Problem code (e.g. 4A)...'}
                   style={inputStyle}
                 />
                 {loading && <span style={{ color: '#555', fontSize: 12, letterSpacing: 2 }}>...</span>}
@@ -492,20 +517,20 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         <td style={{ width: 100 }} />
       </tr>
 
-      {/* ── LeetCode: number not found → URL fallback ── */}
-      {isLeetCode && notFound && (
+      {/* ── LeetCode / Codeforces: number/code not found → URL fallback ── */}
+      {isAutoSupported && notFound && (
         <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
             <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: '#888' }}>
-                Problem #{problemNumber} not found. Paste the URL to continue, or press Esc to cancel.
+                Problem &quot;{problemNumber}&quot; not found in dataset. Paste the URL to continue, or press Esc to cancel.
               </span>
             </div>
             <input
               ref={lcUrlRef}
               value={lcUrl}
               onChange={(e) => handleLcUrl(e.target.value)}
-              placeholder="https://leetcode.com/problems/..."
+              placeholder={isLeetCode ? 'https://leetcode.com/problems/...' : 'https://codeforces.com/problemset/problem/...'}
               onKeyDown={(e) => e.key === 'Escape' && onCancel()}
               style={{
                 background: 'none', border: 'none', color: '#fff',

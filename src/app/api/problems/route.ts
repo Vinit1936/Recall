@@ -90,12 +90,17 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const schedule = getInitialSchedule(now);
 
+    const finalProblemNumber =
+      typeof (meta as any).problemNumber === 'number'
+        ? (meta as any).problemNumber
+        : parseInt(String(problemNumber), 10) || 0;
+
     try {
       const problem = await prisma.problem.create({
         data: {
           userId,
           platform: platform as any,
-          problemNumber: parseInt(String(problemNumber), 10),
+          problemNumber: finalProblemNumber,
           title: meta.title,
           url: meta.url,
           difficulty: meta.difficulty as any,

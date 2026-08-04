@@ -7,6 +7,7 @@
 // It queries LeetCode's public GraphQL API server-side.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 const LEETCODE_GRAPHQL = 'https://leetcode.com/graphql';
 
@@ -24,9 +25,14 @@ const query = `
 `;
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { titleSlug } = await req.json();
-    if (!titleSlug || typeof titleSlug !== 'string') {
+    if (!titleSlug || typeof titleSlug !== 'string' || titleSlug.length > 200) {
       return NextResponse.json({ error: 'titleSlug required' }, { status: 400 });
     }
 

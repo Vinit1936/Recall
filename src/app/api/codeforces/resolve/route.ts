@@ -1,10 +1,9 @@
-// GET /api/leetcode/resolve?id=[number]
-// Thin server-side wrapper around the local LeetCode resolver.
-// The resolver + JSON dataset never gets sent to the client directly.
+// GET /api/codeforces/resolve?id=[code]
+// Thin server-side wrapper around the local Codeforces resolver.
 
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
-import { leetcodeResolver } from '@/lib/platforms/leetcode';
+import { codeforcesResolver } from '@/lib/platforms/codeforces';
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -18,11 +17,11 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'id query param required' }, { status: 400 });
     }
 
-    const result = leetcodeResolver.resolve(id);
-    console.log(`[GET /api/leetcode/resolve] id=${id} found=${result.found}`);
+    const result = codeforcesResolver.resolve(id);
+    console.log(`[GET /api/codeforces/resolve] id=${id} found=${result.found}`);
     return Response.json(result);
   } catch (e) {
-    console.error('[GET /api/leetcode/resolve]', e);
+    console.error('[GET /api/codeforces/resolve]', e);
     return Response.json({ error: 'Resolver failed' }, { status: 500 });
   }
 }
