@@ -133,6 +133,21 @@ export function Toolbar({
     debounceRef.current = setTimeout(() => onSearchChange(v), 150);
   };
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      const isSlash = e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA';
+      if (isCmdK || isSlash) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const activeFilters = [
     ...difficultyFilter.map((d) => ({ label: d.charAt(0) + d.slice(1).toLowerCase(), remove: () => toggleDifficulty(d) })),
     ...statusFilter.map((s) => ({ label: s.charAt(0) + s.slice(1).toLowerCase(), remove: () => toggleStatus(s) })),
@@ -144,12 +159,13 @@ export function Toolbar({
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Search */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#555', pointerEvents: 'none' }}>
             <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
             <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
           <input
+            ref={searchInputRef}
             value={searchVal}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search problems..."
@@ -159,11 +175,30 @@ export function Toolbar({
               borderRadius: 6,
               color: '#fff',
               fontSize: 13,
-              padding: '6px 12px 6px 32px',
+              padding: '6px 28px 6px 32px',
               outline: 'none',
               width: 220,
             }}
           />
+          {!searchVal && (
+            <kbd style={{
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: '#242424',
+              border: '1px solid #333',
+              borderRadius: 4,
+              padding: '1px 5px',
+              fontSize: 10,
+              color: '#666',
+              fontFamily: 'var(--font-geist-mono), monospace',
+              pointerEvents: 'none',
+              lineHeight: 1.2,
+            }}>
+              /
+            </kbd>
+          )}
         </div>
 
         {/* Filter dropdown */}
