@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
+
+export type SortOrder = 'asc' | 'desc';
 
 type ToolbarProps = {
   search: string;
@@ -11,15 +14,19 @@ type ToolbarProps = {
   onStatusChange: (v: string[]) => void;
   sort: string;
   onSortChange: (v: string) => void;
+  sortOrder: SortOrder;
+  onSortOrderToggle: () => void;
 };
 
 const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'];
 const STATUSES = ['ACTIVE', 'MASTERED', 'RETIRED'];
 const SORT_OPTIONS = [
-  { value: 'nextRevision', label: 'Next Revision (default)' },
-  { value: 'problemNumber', label: 'Problem Number' },
   { value: 'dateAdded', label: 'Date Added' },
+  { value: 'nextRevision', label: 'Next Revision' },
+  { value: 'problemNumber', label: 'Problem Number' },
   { value: 'difficulty', label: 'Difficulty' },
+  { value: 'status', label: 'Status' },
+  { value: 'topic', label: 'Topic' },
 ];
 
 function DropdownMenu({ label, children }: { label: string; children: React.ReactNode }) {
@@ -64,7 +71,7 @@ function DropdownMenu({ label, children }: { label: string; children: React.Reac
             left: 0,
             marginTop: 4,
             background: '#1a1a1a',
-            border: '1px solid #2a2a2a',
+            border: '1px solid #2a2a2e',
             borderRadius: 8,
             padding: '6px',
             zIndex: 50,
@@ -104,6 +111,7 @@ export function Toolbar({
   difficultyFilter, onDifficultyChange,
   statusFilter, onStatusChange,
   sort, onSortChange,
+  sortOrder, onSortOrderToggle,
 }: ToolbarProps) {
   const toggleDifficulty = (d: string) => {
     onDifficultyChange(difficultyFilter.includes(d)
@@ -129,6 +137,8 @@ export function Toolbar({
     ...difficultyFilter.map((d) => ({ label: d.charAt(0) + d.slice(1).toLowerCase(), remove: () => toggleDifficulty(d) })),
     ...statusFilter.map((s) => ({ label: s.charAt(0) + s.slice(1).toLowerCase(), remove: () => toggleStatus(s) })),
   ];
+
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort';
 
   return (
     <div>
@@ -170,7 +180,7 @@ export function Toolbar({
         </DropdownMenu>
 
         {/* Sort dropdown */}
-        <DropdownMenu label={SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort'}>
+        <DropdownMenu label={`Sort: ${currentSortLabel}`}>
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -192,6 +202,39 @@ export function Toolbar({
             </button>
           ))}
         </DropdownMenu>
+
+        {/* Arrow Toggle Button for Ascending / Descending */}
+        <button
+          onClick={onSortOrderToggle}
+          title={sortOrder === 'asc' ? 'Ascending Order (click for Descending)' : 'Descending Order (click for Ascending)'}
+          style={{
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: 6,
+            color: '#e5e5e5',
+            cursor: 'pointer',
+            fontSize: 12,
+            padding: '6px 10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            transition: 'background 0.15s ease, border-color 0.15s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#444')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+        >
+          {sortOrder === 'asc' ? (
+            <>
+              <ArrowUp size={14} style={{ color: '#4ade80' }} />
+              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 11 }}>ASC</span>
+            </>
+          ) : (
+            <>
+              <ArrowDown size={14} style={{ color: '#4ade80' }} />
+              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 11 }}>DESC</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Active filter pills */}
@@ -222,4 +265,3 @@ export function Toolbar({
     </div>
   );
 }
-

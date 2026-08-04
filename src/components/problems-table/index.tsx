@@ -1,16 +1,15 @@
 'use client';
 
 import useSWR from 'swr';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TabBar } from './tab-bar';
-import { Toolbar } from './toolbar';
+import { Toolbar, type SortOrder } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
-import { Star, MoreVertical, Trash2 } from 'lucide-react';
+import { Star, MoreVertical, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
-import { useEffect } from 'react';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -111,22 +110,59 @@ function ColumnHeaderMenu({ col, onDelete }: { col: any; onDelete: (id: string) 
   );
 }
 
-function sortProblems(problems: any[], sort: string) {
+function sortProblems(problems: any[], sort: string, sortOrder: SortOrder = 'asc') {
   const arr = [...problems];
-  switch (sort) {
-    case 'problemNumber': return arr.sort((a, b) => a.problemNumber - b.problemNumber);
-    case 'dateAdded':     return arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    case 'difficulty': {
-      const order = { EASY: 0, MEDIUM: 1, HARD: 2 };
-      return arr.sort((a, b) => (order[a.difficulty as keyof typeof order] ?? 0) - (order[b.difficulty as keyof typeof order] ?? 0));
+  const mult = sortOrder === 'asc' ? 1 : -1;
+
+  return arr.sort((a, b) => {
+    let cmp = 0;
+    switch (sort) {
+      case 'dateAdded': {
+        const timeA = new Date(a.dateSolved || a.createdAt).getTime();
+        const timeB = new Date(b.dateSolved || b.createdAt).getTime();
+        cmp = timeA - timeB;
+        break;
+      }
+      case 'problemNumber': {
+        const valA = typeof a.problemNumber === 'number' && a.problemNumber > 0 ? a.problemNumber : (a.code || a.title || '');
+        const valB = typeof b.problemNumber === 'number' && b.problemNumber > 0 ? b.problemNumber : (b.code || b.title || '');
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          cmp = valA - valB;
+        } else {
+          cmp = String(valA).localeCompare(String(valB), undefined, { numeric: true });
+        }
+        break;
+      }
+      case 'difficulty': {
+        const order = { EASY: 1, MEDIUM: 2, HARD: 3 };
+        const diffA = order[a.difficulty as keyof typeof order] ?? 0;
+        const diffB = order[b.difficulty as keyof typeof order] ?? 0;
+        cmp = diffA - diffB;
+        break;
+      }
+      case 'status': {
+        const order = { ACTIVE: 1, MASTERED: 2, RETIRED: 3 };
+        const statA = order[a.status as keyof typeof order] ?? 0;
+        const statB = order[b.status as keyof typeof order] ?? 0;
+        cmp = statA - statB;
+        break;
+      }
+      case 'topic': {
+        const topA = (a.topic || '').toLowerCase();
+        const topB = (b.topic || '').toLowerCase();
+        cmp = topA.localeCompare(topB);
+        break;
+      }
+      case 'nextRevision':
+      default: {
+        const timeA = a.nextRevisionAt ? new Date(a.nextRevisionAt).getTime() : Infinity;
+        const timeB = b.nextRevisionAt ? new Date(b.nextRevisionAt).getTime() : Infinity;
+        cmp = timeA - timeB;
+        break;
+      }
     }
-    default: // nextRevision
-      return arr.sort((a, b) => {
-        if (!a.nextRevisionAt) return 1;
-        if (!b.nextRevisionAt) return -1;
-        return new Date(a.nextRevisionAt).getTime() - new Date(b.nextRevisionAt).getTime();
-      });
-  }
+    return cmp * mult;
+  });
 }
 
 function SkeletonRow({ columns }: { columns: number }) {
@@ -267,11 +303,51 @@ export function ProblemsTable() {
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
-  const [sort, setSort] = useState('nextRevision');
+  const [sort, setSort] = useState('dateAdded');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [showNewRow, setShowNewRow] = useState(false);
   const [toast, setToast] = useState('');
   const [tableHovered, setTableHovered] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Restore user sort preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('recall_sort_config');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.sortBy) setSort(parsed.sortBy);
+        if (parsed.sortOrder) setSortOrder(parsed.sortOrder);
+      }
+    } catch {}
+  }, []);
+
+  const saveSortPreference = (newSort: string, newOrder: SortOrder) => {
+    try {
+      localStorage.setItem('recall_sort_config', JSON.stringify({ sortBy: newSort, sortOrder: newOrder }));
+    } catch {}
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort);
+    saveSortPreference(newSort, sortOrder);
+  };
+
+  const handleSortOrderToggle = () => {
+    const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(nextOrder);
+    saveSortPreference(sort, nextOrder);
+  };
+
+  const handleHeaderSortClick = (sortKey: string) => {
+    if (sort === sortKey) {
+      handleSortOrderToggle();
+    } else {
+      setSort(sortKey);
+      setSortOrder('asc');
+      saveSortPreference(sortKey, 'asc');
+    }
+  };
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -286,7 +362,7 @@ export function ProblemsTable() {
     if (statusFilter.length && !statusFilter.includes(p.status)) return false;
     return true;
   });
-  const sorted = sortProblems(filtered, sort);
+  const sorted = sortProblems(filtered, sort, sortOrder);
 
   const isAllSelected = sorted.length > 0 && sorted.every((p) => selectedIds.includes(p.id));
 
@@ -350,7 +426,7 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // Custom field save — call PATCH /api/problems/[id]/custom-fields with { key: columnName, value }
+  // Custom field save
   const handleCustomFieldSave = useCallback(async (id: string, columnName: string, value: string) => {
     try {
       const res = await fetch(`/api/problems/${id}/custom-fields`, {
@@ -368,7 +444,7 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // Notes save — Notion-style inline editable notes via PATCH /api/problems/[id] with { notes }
+  // Notes save
   const handleNotesSave = useCallback(async (id: string, notes: string) => {
     try {
       const res = await fetch(`/api/problems/${id}`, {
@@ -386,7 +462,7 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // New problem save — fixed Content-Type typo + always send dateSolved
+  // New problem save
   const handleNewProblemSave = useCallback(async (data: any) => {
     const payload = {
       ...data,
@@ -447,35 +523,54 @@ export function ProblemsTable() {
         </th>
         <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', width: 320 },
-          { label: 'DIFFICULTY', width: 100 },
-          { label: 'TOPIC', width: 130 },
-          { label: 'STATUS', width: 120 },
+          { label: 'PROBLEM', key: 'problemNumber', width: 320 },
+          { label: 'DIFFICULTY', key: 'difficulty', width: 100 },
+          { label: 'TOPIC', key: 'topic', width: 130 },
+          { label: 'STATUS', key: 'status', width: 120 },
           { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true },
-          { label: 'NEXT REVISION', width: 130 },
+          { label: 'NEXT REVISION', key: 'nextRevision', width: 130 },
           { label: 'NOTES', width: 180 },
-        ].map(({ label, icon, width, center }) => (
-          <th key={label} style={{
-            width,
-            padding: center ? '0' : '0 12px',
-            textAlign: center ? 'center' : 'left',
-            fontSize: 11,
-            fontFamily: 'var(--font-geist-mono), monospace',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            color: '#555',
-            fontWeight: 500,
-            whiteSpace: 'nowrap',
-          }}>
-            {icon ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {icon}
-              </div>
-            ) : (
-              label
-            )}
-          </th>
-        ))}
+        ].map(({ label, key, icon, width, center }) => {
+          const isActive = key && sort === key;
+          return (
+            <th
+              key={label}
+              onClick={() => key && handleHeaderSortClick(key)}
+              style={{
+                width,
+                padding: center ? '0' : '0 12px',
+                textAlign: center ? 'center' : 'left',
+                fontSize: 11,
+                fontFamily: 'var(--font-geist-mono), monospace',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: isActive ? '#6ee7b7' : '#555',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+                cursor: key ? 'pointer' : 'default',
+                userSelect: 'none',
+              }}
+              title={key ? `Sort by ${label}` : undefined}
+            >
+              {icon ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {icon}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span>{label}</span>
+                  {isActive && (
+                    sortOrder === 'asc' ? (
+                      <ArrowUp size={12} style={{ color: '#4ade80' }} />
+                    ) : (
+                      <ArrowDown size={12} style={{ color: '#4ade80' }} />
+                    )
+                  )}
+                </div>
+              )}
+            </th>
+          );
+        })}
         {columns.map((col) => (
           <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
             <ColumnHeaderMenu col={col} onDelete={handleDeleteColumn} />
@@ -553,69 +648,76 @@ export function ProblemsTable() {
   };
 
   const renderByTopic = () => {
-    const map: Record<string, any[]> = {};
-    sorted.forEach((p) => { (map[p.topic] = map[p.topic] ?? []).push(p); });
-    return Object.keys(map).sort().map((topic) => (
-      <CollapsibleGroup key={topic} title={topic} count={map[topic].length} topicColor={getTopicColor(topic)}>
-        {renderRows(map[topic])}
-      </CollapsibleGroup>
-    ));
+    const map = new Map<string, any[]>();
+    sorted.forEach((p) => {
+      const key = p.topic || 'General';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(p);
+    });
+    return Array.from(map.entries()).map(([topicName, problems]) => {
+      const color = getTopicColor(topicName);
+      return (
+        <CollapsibleGroup key={topicName} title={topicName} count={problems.length} topicColor={color}>
+          {renderRows(problems)}
+        </CollapsibleGroup>
+      );
+    });
   };
 
-  const isEmpty = !isLoading && Array.isArray(allProblems) && allProblems.length === 0;
-
   return (
-    <div style={{ position: 'relative' }}>
-      {/* Toast */}
+    <div style={{ padding: '24px 32px' }}>
+      {/* Toast notification */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, color: '#f87171', fontSize: 13, padding: '10px 16px', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        <div style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 1000,
+          background: '#1a1a1a', border: '1px solid #333', borderRadius: 6,
+          color: '#fff', fontSize: 13, padding: '10px 16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+        }}>
           {toast}
         </div>
       )}
 
-      {/* Floating Bulk Actions Toolbar (Notion Style) */}
+      {/* Floating action bar when rows selected */}
       {selectedIds.length > 0 && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 32,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#1a1a1a',
-            border: '1px solid #2a2a2a',
-            borderRadius: 8,
-            padding: '8px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            zIndex: 100,
-            boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
-          }}
-        >
-          <div style={{ fontSize: 13, color: '#e5e5e5', fontFamily: 'var(--font-geist-mono), monospace' }}>
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>{selectedIds.length}</span> {selectedIds.length === 1 ? 'selected' : 'selected'}
-          </div>
-          <div style={{ height: 16, width: 1, background: '#333' }} />
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 900,
+          background: '#1a1a1c',
+          border: '1px solid #2a2a2e',
+          borderRadius: 8,
+          padding: '8px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+        }}>
+          <span style={{ fontSize: 13, color: '#ccc', fontFamily: 'var(--font-geist-mono), monospace' }}>
+            {selectedIds.length} {selectedIds.length === 1 ? 'selected' : 'selected'}
+          </span>
+          <div style={{ width: 1, height: 16, background: '#333' }} />
           <button
             onClick={handleBulkDelete}
             style={{
-              background: '#3a0f0f',
-              border: '1px solid #5a1a1a',
-              borderRadius: 6,
+              background: '#2e1212',
+              border: '1px solid #4a1818',
+              borderRadius: 4,
               color: '#f87171',
               cursor: 'pointer',
               fontSize: 13,
-              fontWeight: 500,
-              padding: '6px 12px',
+              padding: '4px 10px',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
               transition: 'background 0.15s',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#3e1616')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#2e1212')}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M2 4h12M5.5 4V2.5a1 1 0 011-1h3a1 1 0 011 1V4M6 7v5M10 7v5M3.5 4l.8 10a1 1 0 001 .9h5.4a1 1 0 001-.9l.8-10" />
-            </svg>
+            <Trash2 size={13} />
             Delete
           </button>
           <button
@@ -625,8 +727,8 @@ export function ProblemsTable() {
               border: 'none',
               color: '#666',
               cursor: 'pointer',
-              fontSize: 16,
-              padding: '2px 4px',
+              fontSize: 13,
+              padding: 0,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -664,7 +766,8 @@ export function ProblemsTable() {
           search={search} onSearchChange={setSearch}
           difficultyFilter={difficultyFilter} onDifficultyChange={setDifficultyFilter}
           statusFilter={statusFilter} onStatusChange={setStatusFilter}
-          sort={sort} onSortChange={setSort}
+          sort={sort} onSortChange={handleSortChange}
+          sortOrder={sortOrder} onSortOrderToggle={handleSortOrderToggle}
         />
       </div>
 
@@ -679,101 +782,62 @@ export function ProblemsTable() {
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', minWidth: 1060 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1060 + COLUMN_COUNT * 140 }}>
           <TableHead />
           <tbody>
+            {showNewRow && (
+              <NewRow
+                onSave={handleNewProblemSave}
+                onCancel={() => setShowNewRow(false)}
+                columns={columns}
+              />
+            )}
             {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} columns={COLUMN_COUNT} />)
-            ) : isEmpty ? (
-              <>
-                {/* When empty, + New row trigger or inline row creation is at the top */}
-                {showNewRow ? (
-                  <NewRow
-                    onSave={handleNewProblemSave}
-                    onCancel={() => setShowNewRow(false)}
-                    columns={columns}
-                  />
-                ) : (
-                  <tr style={{ borderBottom: '1px solid #1c1c1c' }}>
-                    <td style={{ width: 36 }} />
-                    <td style={{ width: 40 }} />
-                    <td style={{ width: 320, padding: '12px 12px' }}>
-                      <button
-                        id="new-row-btn"
-                        onClick={() => setShowNewRow(true)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#444',
-                          cursor: 'pointer',
-                          fontSize: 13,
-                          padding: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          transition: 'color 0.15s',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = '#444')}
-                      >
-                        <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> New row
-                      </button>
-                    </td>
-                    <td colSpan={7 + COLUMN_COUNT} />
-                  </tr>
-                )}
-                <EmptyState />
-              </>
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonRow key={i} columns={COLUMN_COUNT} />
+              ))
+            ) : sorted.length === 0 && !showNewRow ? (
+              <EmptyState />
+            ) : activeTab === 'status' ? (
+              renderByStatus()
+            ) : activeTab === 'topic' ? (
+              renderByTopic()
             ) : (
-              <>
-                {/* When table has entries, problem rows first, then + New row at bottom */}
-                {activeTab === 'all'
-                  ? renderRows(sorted)
-                  : activeTab === 'status'
-                  ? renderByStatus()
-                  : renderByTopic()}
-
-                {showNewRow ? (
-                  <NewRow
-                    onSave={handleNewProblemSave}
-                    onCancel={() => setShowNewRow(false)}
-                    columns={columns}
-                  />
-                ) : (
-                  <tr style={{ borderTop: '1px solid #1c1c1c' }}>
-                    <td style={{ width: 36 }} />
-                    <td style={{ width: 40 }} />
-                    <td style={{ width: 320, padding: '12px 12px' }}>
-                      <button
-                        id="new-row-btn"
-                        onClick={() => setShowNewRow(true)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#444',
-                          cursor: 'pointer',
-                          fontSize: 13,
-                          padding: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          transition: 'color 0.15s',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = '#444')}
-                      >
-                        <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> New row
-                      </button>
-                    </td>
-                    <td colSpan={7 + COLUMN_COUNT} />
-                  </tr>
-                )}
-              </>
+              renderRows(sorted)
             )}
           </tbody>
         </table>
+
+        {/* Bottom hover bar — Notion style + New row */}
+        {!showNewRow && (
+          <div
+            onClick={() => setShowNewRow(true)}
+            style={{
+              padding: '8px 12px',
+              borderTop: '1px solid #1c1c1c',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              color: '#555',
+              transition: 'background 0.15s, color 0.15s',
+              background: '#0d0d0d',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#141414';
+              e.currentTarget.style.color = '#aaa';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#0d0d0d';
+              e.currentTarget.style.color = '#555';
+            }}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+            <span>New row</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
