@@ -211,6 +211,39 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     else setTimeout(() => otherUrlRef.current?.focus(), 20);
   }, [platform, isAutoSupported]);
 
+  // Global Escape key listener (captures Esc from anywhere)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel();
+      }
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown, true);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown, true);
+  }, [onCancel]);
+
+  // Global Click Outside listener (cancels draft if clicking anywhere outside NewRow)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const elements = document.querySelectorAll('[data-new-row="true"]');
+      let isInside = false;
+      elements.forEach((el) => {
+        if (el.contains(e.target as Node)) isInside = true;
+      });
+      if (!isInside) {
+        onCancel();
+      }
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onCancel]);
+
   const triggerFlash = () => {
     setFlash(true);
     setTimeout(() => setFlash(false), 400);
@@ -394,7 +427,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
   return (
     <>
-      <tr style={{
+      <tr data-new-row="true" style={{
         background: '#141414',
         borderBottom: '1px solid #1c1c1c',
         borderLeft: '1px solid #3a3a3a',
@@ -589,7 +622,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
       {/* ── LeetCode / Codeforces: number/code not found → URL fallback ── */}
       {isAutoSupported && notFound && (
-        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
+        <tr data-new-row="true" style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
             <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: '#888' }}>
@@ -624,7 +657,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
       {/* ── Other platforms: URL + Title inputs ── */}
       {isOther && (
-        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
+        <tr data-new-row="true" style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '8px 68px' }}>
             <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -672,7 +705,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
       {/* ── Save / cancel hint ── */}
       {(autoFill || (isOther && (otherTitle || otherUrl))) && (
-        <tr style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
+        <tr data-new-row="true" style={{ background: '#141414', borderBottom: '1px solid #1c1c1c', borderLeft: '1px solid #3a3a3a' }}>
           <td colSpan={9 + columns.length} style={{ padding: '4px 68px' }}>
             <span style={{ fontSize: 11, color: '#444' }}>
               Press <kbd style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#666' }}>Enter</kbd> to save &nbsp;
