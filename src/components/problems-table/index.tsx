@@ -813,33 +813,29 @@ export function ProblemsTable() {
           <span style={{ color: '#fff', fontWeight: 500 }}>All Problems</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Progress stats pill */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            background: '#161618', border: '1px solid #27272a', borderRadius: 6,
-            padding: '4px 10px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace',
-            color: '#888',
-          }}>
-            <span><strong style={{ color: '#fff' }}>{(allProblems ?? []).length}</strong> Total</span>
-            <span style={{ color: '#333' }}>•</span>
-            <span><strong style={{ color: '#34d399' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'EASY').length}</strong> Easy</span>
-            <span style={{ color: '#333' }}>•</span>
-            <span><strong style={{ color: '#fbbf24' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'MEDIUM').length}</strong> Med</span>
-            <span style={{ color: '#333' }}>•</span>
-            <span><strong style={{ color: '#f87171' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'HARD').length}</strong> Hard</span>
-            <span style={{ color: '#333' }}>•</span>
-            <span><strong style={{ color: '#60a5fa' }}>{(allProblems ?? []).filter((p) => p.status === 'MASTERED').length}</strong> Mastered</span>
-          </div>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={handleExportCSV}
             title="Export problems to CSV"
-            style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#aaa', cursor: 'pointer', fontSize: 13, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, transition: 'color 0.15s, border-color 0.15s' }}
+            style={{
+              background: '#161618',
+              border: '1px solid #27272a',
+              borderRadius: 6,
+              color: '#888',
+              cursor: 'pointer',
+              fontSize: 13,
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'color 0.15s, border-color 0.15s',
+              padding: 0,
+            }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#444'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.color = '#aaa'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#27272a'; e.currentTarget.style.color = '#888'; }}
           >
-            <Download size={14} /> Export CSV
+            <Download size={14} />
           </button>
 
           <button
