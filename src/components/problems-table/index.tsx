@@ -513,17 +513,17 @@ export function ProblemsTable() {
         </th>
         <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', width: 320 },
-          { label: 'DIFFICULTY', width: 100 },
-          { label: 'TOPIC', width: 130 },
-          { label: 'STATUS', width: 120 },
-          { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true },
-          { label: 'NEXT REVISION', width: 130 },
-          { label: 'NOTES', width: 180 },
-        ].map(({ label, icon, width, center }) => (
+          { label: 'PROBLEM', width: 320, padding: '0 12px' },
+          { label: 'DIFFICULTY', width: 100, padding: '0 8px' },
+          { label: 'TOPIC', width: 130, padding: '0 8px' },
+          { label: 'STATUS', width: 120, padding: '0 8px' },
+          { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
+          { label: 'NEXT REVISION', width: 130, padding: '0 8px' },
+          { label: 'NOTES', width: 180, padding: '0 8px' },
+        ].map(({ label, icon, width, center, padding }) => (
           <th key={label} style={{
             width,
-            padding: center ? '0' : '0 12px',
+            padding: padding ?? (center ? '0' : '0 8px'),
             textAlign: center ? 'center' : 'left',
             fontSize: 11,
             fontFamily: 'var(--font-geist-mono), monospace',
@@ -753,7 +753,7 @@ export function ProblemsTable() {
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1060 + COLUMN_COUNT * 140 }}>
+        <table style={{ width: '100%', minWidth: 1060 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
             {showNewRow && (
