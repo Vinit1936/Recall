@@ -1,6 +1,7 @@
 'use client';
 
 import { PlatformLogo } from '@/lib/platforms/logos';
+import { Bookmark } from 'lucide-react';
 
 export type TabKey =
   | 'all'
@@ -63,8 +64,8 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
                 borderLeft: 'none',
                 borderRight: 'none',
                 borderBottom: 'none',
-                boxShadow: isActive ? 'inset 0 -2px 0 #facc15' : 'none',
-                color: isActive ? '#facc15' : '#555',
+                boxShadow: isActive ? 'inset 0 -2px 0 #ffffff' : 'none',
+                color: isActive ? '#ffffff' : '#555555',
                 cursor: 'pointer',
                 fontSize: 14,
                 padding: '8px 10px',
@@ -76,13 +77,13 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
                 transition: 'color 0.15s, box-shadow 0.15s',
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = '#facc15';
+                if (!isActive) e.currentTarget.style.color = '#ffffff';
               }}
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = '#555';
+                if (!isActive) e.currentTarget.style.color = '#555555';
               }}
             >
-              ★
+              <Bookmark size={15} fill={isActive ? 'currentColor' : 'none'} />
             </button>
           );
         }
