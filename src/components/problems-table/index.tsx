@@ -8,7 +8,7 @@ import { Toolbar, type SortOrder } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
-import { Star, MoreVertical, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Star, MoreVertical, Trash2 } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -339,16 +339,6 @@ export function ProblemsTable() {
     saveSortPreference(sort, nextOrder);
   };
 
-  const handleHeaderSortClick = (sortKey: string) => {
-    if (sort === sortKey) {
-      handleSortOrderToggle();
-    } else {
-      setSort(sortKey);
-      setSortOrder('asc');
-      saveSortPreference(sortKey, 'asc');
-    }
-  };
-
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
@@ -523,54 +513,35 @@ export function ProblemsTable() {
         </th>
         <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', key: 'problemNumber', width: 320 },
-          { label: 'DIFFICULTY', key: 'difficulty', width: 100 },
-          { label: 'TOPIC', key: 'topic', width: 130 },
-          { label: 'STATUS', key: 'status', width: 120 },
+          { label: 'PROBLEM', width: 320 },
+          { label: 'DIFFICULTY', width: 100 },
+          { label: 'TOPIC', width: 130 },
+          { label: 'STATUS', width: 120 },
           { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true },
-          { label: 'NEXT REVISION', key: 'nextRevision', width: 130 },
+          { label: 'NEXT REVISION', width: 130 },
           { label: 'NOTES', width: 180 },
-        ].map(({ label, key, icon, width, center }) => {
-          const isActive = key && sort === key;
-          return (
-            <th
-              key={label}
-              onClick={() => key && handleHeaderSortClick(key)}
-              style={{
-                width,
-                padding: center ? '0' : '0 12px',
-                textAlign: center ? 'center' : 'left',
-                fontSize: 11,
-                fontFamily: 'var(--font-geist-mono), monospace',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: isActive ? '#6ee7b7' : '#555',
-                fontWeight: 500,
-                whiteSpace: 'nowrap',
-                cursor: key ? 'pointer' : 'default',
-                userSelect: 'none',
-              }}
-              title={key ? `Sort by ${label}` : undefined}
-            >
-              {icon ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {icon}
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>{label}</span>
-                  {isActive && (
-                    sortOrder === 'asc' ? (
-                      <ArrowUp size={12} style={{ color: '#4ade80' }} />
-                    ) : (
-                      <ArrowDown size={12} style={{ color: '#4ade80' }} />
-                    )
-                  )}
-                </div>
-              )}
-            </th>
-          );
-        })}
+        ].map(({ label, icon, width, center }) => (
+          <th key={label} style={{
+            width,
+            padding: center ? '0' : '0 12px',
+            textAlign: center ? 'center' : 'left',
+            fontSize: 11,
+            fontFamily: 'var(--font-geist-mono), monospace',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: '#555',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}>
+            {icon ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {icon}
+              </div>
+            ) : (
+              label
+            )}
+          </th>
+        ))}
         {columns.map((col) => (
           <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
             <ColumnHeaderMenu col={col} onDelete={handleDeleteColumn} />
