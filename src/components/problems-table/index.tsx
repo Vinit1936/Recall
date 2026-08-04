@@ -782,13 +782,34 @@ export function ProblemsTable() {
           <span style={{ color: '#333', margin: '0 8px' }}>/</span>
           <span style={{ color: '#fff', fontWeight: 500 }}>All Problems</span>
         </div>
-        <button
-          id="new-problem-btn"
-          onClick={() => setShowNewRow(true)}
-          style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 13, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> New Problem
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Progress stats pill */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            background: '#161618', border: '1px solid #27272a', borderRadius: 6,
+            padding: '4px 10px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace',
+            color: '#888',
+          }}>
+            <span><strong style={{ color: '#fff' }}>{(allProblems ?? []).length}</strong> Total</span>
+            <span style={{ color: '#333' }}>•</span>
+            <span><strong style={{ color: '#34d399' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'EASY').length}</strong> Easy</span>
+            <span style={{ color: '#333' }}>•</span>
+            <span><strong style={{ color: '#fbbf24' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'MEDIUM').length}</strong> Med</span>
+            <span style={{ color: '#333' }}>•</span>
+            <span><strong style={{ color: '#f87171' }}>{(allProblems ?? []).filter((p) => p.difficulty === 'HARD').length}</strong> Hard</span>
+            <span style={{ color: '#333' }}>•</span>
+            <span><strong style={{ color: '#60a5fa' }}>{(allProblems ?? []).filter((p) => p.status === 'MASTERED').length}</strong> Mastered</span>
+          </div>
+
+          <button
+            id="new-problem-btn"
+            onClick={() => setShowNewRow(true)}
+            style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 13, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> New Problem
+          </button>
+        </div>
       </div>
 
       {/* Tab bar */}
