@@ -322,6 +322,18 @@ export function ProblemsTable() {
     } catch {}
   }, []);
 
+  // Smooth scroll to bottom when new row is opened
+  useEffect(() => {
+    if (showNewRow) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth',
+        });
+      }, 50);
+    }
+  }, [showNewRow]);
+
   const saveSortPreference = (newSort: string, newOrder: SortOrder) => {
     try {
       localStorage.setItem('recall_sort_config', JSON.stringify({ sortBy: newSort, sortOrder: newOrder }));
