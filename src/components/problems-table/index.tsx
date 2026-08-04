@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TabBar } from './tab-bar';
+import { TabBar, type TabKey } from './tab-bar';
 import { Toolbar, type SortOrder } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
@@ -299,7 +299,7 @@ export function ProblemsTable() {
   const { data: rawColumns, mutate: mutateColumns } = useSWR('/api/columns', fetcher);
   const columns: any[] = Array.isArray(rawColumns) ? rawColumns : [];
 
-  const [activeTab, setActiveTab] = useState<'all' | 'status' | 'topic'>('all');
+  const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -350,6 +350,9 @@ export function ProblemsTable() {
     if (q && !p.title.toLowerCase().includes(q) && !String(p.problemNumber).includes(q)) return false;
     if (difficultyFilter.length && !difficultyFilter.includes(p.difficulty)) return false;
     if (statusFilter.length && !statusFilter.includes(p.status)) return false;
+    if (['LEETCODE', 'CODEFORCES', 'CODECHEF', 'GFG', 'HACKERRANK'].includes(activeTab)) {
+      if (p.platform !== activeTab) return false;
+    }
     return true;
   });
   const sorted = sortProblems(filtered, sort, sortOrder);
