@@ -1,0 +1,47 @@
+[
+  {
+    "code": "HR_001",
+    "numericId": 2001,
+    "title": "Solve Me First",
+    "slug": "solve-me-first",
+    "difficulty": "EASY",
+    "topic": "Basic Programming",
+    "url": "https://www.hackerrank.com/challenges/solve-me-first/problem"
+  },
+  {
+    "code": "HR_002",
+    "numericId": 2002,
+    "title": "Simple Array Sum",
+    "slug": "simple-array-sum",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.hackerrank.com/challenges/simple-array-sum/problem"
+  },
+  {
+    "code": "HR_003",
+    "numericId": 2003,
+    "title": "Compare the Triplets",
+    "slug": "compare-the-triplets",
+    "difficulty": "EASY",
+    "topic": "Implementation",
+    "url": "https://www.hackerrank.com/challenges/compare-the-triplets/problem"
+  },
+  {
+    "code": "HR_004",
+    "numericId": 2004,
+    "title": "A Very Big Sum",
+    "slug": "a-very-big-sum",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.hackerrank.com/challenges/a-very-big-sum/problem"
+  },
+  {
+    "code": "HR_005",
+    "numericId": 2005,
+    "title": "Diagonal Difference",
+    "slug": "diagonal-difference",
+    "difficulty": "EASY",
+    "topic": "Matrices",
+    "url": "https://www.hackerrank.com/challenges/diagonal-difference/problem"
+  }
+]

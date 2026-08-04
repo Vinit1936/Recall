@@ -13,6 +13,7 @@ type NewRowProps = {
     difficulty: string;
     topic: string;
     url: string;
+    code?: string;
     notes?: string;
     customFields?: Record<string, string>;
     dateSolved: string;
@@ -27,6 +28,7 @@ type AutoFillData = {
   topic: string;
   url: string;
   problemNumber?: number;
+  code?: string;
 } | null;
 
 const PLATFORMS = [
@@ -194,7 +196,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
   const isLeetCode = platform === 'LEETCODE';
   const isCodeforces = platform === 'CODEFORCES';
-  const isAutoSupported = isLeetCode || isCodeforces;
+  const isCodeChef = platform === 'CODECHEF';
+  const isGFG = platform === 'GFG';
+  const isHackerRank = platform === 'HACKERRANK';
+  const isAutoSupported = isLeetCode || isCodeforces || isCodeChef || isGFG || isHackerRank;
   const isOther = platform && !isAutoSupported;
 
   // For other platforms, difficulty/topic pickers are always visible once platform is picked
@@ -212,7 +217,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     setTimeout(() => setOpenNotesFloating(true), 50);
   };
 
-  // ── Auto-supported platforms: number/code → resolve ────────────────────
+  // ── Auto-supported platforms: number/code/URL → resolve ────────────────────
   const handleNumberKey = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { onCancel(); return; }
     if (e.key !== 'Enter') return;
@@ -222,8 +227,14 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     setLoading(true); setNotFound(false); setAutoFill(null);
     try {
       const endpoint = isLeetCode
-        ? `/api/leetcode/resolve?id=${parseInt(query, 10)}`
-        : `/api/codeforces/resolve?id=${encodeURIComponent(query)}`;
+        ? `/api/leetcode/resolve?id=${encodeURIComponent(query)}`
+        : isCodeforces
+          ? `/api/codeforces/resolve?id=${encodeURIComponent(query)}`
+          : isCodeChef
+            ? `/api/codechef/resolve?id=${encodeURIComponent(query)}`
+            : isGFG
+              ? `/api/gfg/resolve?id=${encodeURIComponent(query)}`
+              : `/api/hackerrank/resolve?id=${encodeURIComponent(query)}`;
       const res = await fetch(endpoint);
       const json = await res.json();
       if (json.found) {
@@ -275,6 +286,46 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           triggerFlash();
         }
       } catch {}
+    } else if (isCodeChef) {
+      // Match CodeChef problem URL: /problems/{CODE} or /[CONTEST]/problems/{CODE}
+      const match = url.match(/codechef\.com\/(?:[^/]+\/)?problems\/([A-Za-z0-9]+)/);
+      if (!match) return;
+      const ccCode = match[1];
+      try {
+        const res = await fetch(`/api/codechef/resolve?id=${encodeURIComponent(ccCode)}`);
+        const json = await res.json();
+        if (json.found) {
+          setAutoFill(json.data);
+          setDifficulty(json.data.difficulty);
+          setTopic(json.data.topic === 'General' ? '' : json.data.topic);
+          setNotFound(false);
+          triggerFlash();
+        }
+      } catch {}
+    } else if (isGFG) {
+      try {
+        const res = await fetch(`/api/gfg/resolve?id=${encodeURIComponent(url)}`);
+        const json = await res.json();
+        if (json.found) {
+          setAutoFill(json.data);
+          setDifficulty(json.data.difficulty);
+          setTopic(json.data.topic === 'General' ? '' : json.data.topic);
+          setNotFound(false);
+          triggerFlash();
+        }
+      } catch {}
+    } else if (isHackerRank) {
+      try {
+        const res = await fetch(`/api/hackerrank/resolve?id=${encodeURIComponent(url)}`);
+        const json = await res.json();
+        if (json.found) {
+          setAutoFill(json.data);
+          setDifficulty(json.data.difficulty);
+          setTopic(json.data.topic === 'General' ? '' : json.data.topic);
+          setNotFound(false);
+          triggerFlash();
+        }
+      } catch {}
     }
   };
 
@@ -295,7 +346,8 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
       if (isAutoSupported && autoFill) {
         await onSave({
           platform,
-          problemNumber: autoFill.problemNumber ?? (isLeetCode ? parseInt(problemNumber, 10) : 0),
+          problemNumber: autoFill.problemNumber ?? (isLeetCode ? (parseInt(problemNumber, 10) || 0) : 0),
+          code: autoFill.code ?? (isCodeforces || isCodeChef || isGFG || isHackerRank ? problemNumber.trim().toUpperCase() : undefined),
           title: autoFill.title,
           difficulty: difficulty || autoFill.difficulty,
           topic: topic || (autoFill.topic === 'General' ? '' : autoFill.topic),
@@ -417,14 +469,32 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                   value={problemNumber}
                   onChange={(e) => setProblemNumber(e.target.value)}
                   onKeyDown={handleNumberKey}
-                  placeholder={isLeetCode ? 'Problem number (e.g. 1)...' : 'Problem code (e.g. 4A)...'}
+                  placeholder={
+                    isLeetCode
+                      ? 'Problem number (e.g. 1)...'
+                      : isCodeforces
+                        ? 'Problem code (e.g. 4A)...'
+                        : isCodeChef
+                          ? 'Problem code (e.g. FLOW001)...'
+                          : isGFG
+                            ? 'Paste GFG problem URL...'
+                            : 'Paste HackerRank challenge URL...'
+                  }
                   style={inputStyle}
                 />
                 {loading && <span style={{ color: '#555', fontSize: 12, letterSpacing: 2 }}>...</span>}
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>{problemNumber}</span>
+                {(() => {
+                  const isUrl = problemNumber.startsWith('http') || problemNumber.startsWith('www.');
+                  const codeDisplay = !isUrl ? (autoFill.code || problemNumber) : (autoFill.code && autoFill.code.length <= 15 ? autoFill.code : null);
+                  return codeDisplay ? (
+                    <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>
+                      {codeDisplay}
+                    </span>
+                  ) : null;
+                })()}
                 <a
                   href={autoFill.url}
                   target="_blank"
@@ -530,7 +600,17 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
               ref={lcUrlRef}
               value={lcUrl}
               onChange={(e) => handleLcUrl(e.target.value)}
-              placeholder={isLeetCode ? 'https://leetcode.com/problems/...' : 'https://codeforces.com/problemset/problem/...'}
+              placeholder={
+                isLeetCode
+                  ? 'https://leetcode.com/problems/...'
+                  : isCodeforces
+                    ? 'https://codeforces.com/problemset/problem/...'
+                    : isCodeChef
+                      ? 'https://www.codechef.com/problems/...'
+                      : isGFG
+                        ? 'https://www.geeksforgeeks.org/problems/...'
+                        : 'https://www.hackerrank.com/challenges/...'
+              }
               onKeyDown={(e) => e.key === 'Escape' && onCancel()}
               style={{
                 background: 'none', border: 'none', color: '#fff',

@@ -1,0 +1,74 @@
+[
+  {
+    "code": "GFG_001",
+    "numericId": 1001,
+    "title": "Subarray with Given Sum",
+    "slug": "subarray-with-given-sum-1587115621",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1"
+  },
+  {
+    "code": "GFG_002",
+    "numericId": 1002,
+    "title": "Missing Number in Array",
+    "slug": "missing-number-in-array1416",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.geeksforgeeks.org/problems/missing-number-in-array1416/1"
+  },
+  {
+    "code": "GFG_003",
+    "numericId": 1003,
+    "title": "Kadane's Algorithm",
+    "slug": "kadanes-algorithm-1587115620",
+    "difficulty": "MEDIUM",
+    "topic": "Dynamic Programming",
+    "url": "https://www.geeksforgeeks.org/problems/kadanes-algorithm-1587115620/1"
+  },
+  {
+    "code": "GFG_004",
+    "numericId": 1004,
+    "title": "Count Inversions",
+    "slug": "inversion-of-array-1587115620",
+    "difficulty": "MEDIUM",
+    "topic": "Sorting",
+    "url": "https://www.geeksforgeeks.org/problems/inversion-of-array-1587115620/1"
+  },
+  {
+    "code": "GFG_005",
+    "numericId": 1005,
+    "title": "Sort an Array of 0s, 1s and 2s",
+    "slug": "sort-an-array-of-0s-1s-and-2s4231",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.geeksforgeeks.org/problems/sort-an-array-of-0s-1s-and-2s4231/1"
+  },
+  {
+    "code": "GFG_006",
+    "numericId": 1006,
+    "title": "Parenthesis Checker",
+    "slug": "parenthesis-checker2744",
+    "difficulty": "EASY",
+    "topic": "Stack",
+    "url": "https://www.geeksforgeeks.org/problems/parenthesis-checker2744/1"
+  },
+  {
+    "code": "GFG_007",
+    "numericId": 1007,
+    "title": "Reverse a Linked List",
+    "slug": "reverse-a-linked-list",
+    "difficulty": "EASY",
+    "topic": "Linked List",
+    "url": "https://www.geeksforgeeks.org/problems/reverse-a-linked-list/1"
+  },
+  {
+    "code": "GFG_008",
+    "numericId": 1008,
+    "title": "Two Sum",
+    "slug": "two-sum-gfg",
+    "difficulty": "EASY",
+    "topic": "Arrays",
+    "url": "https://www.geeksforgeeks.org/problems/two-sum-1587115621/1"
+  }
+]
