@@ -644,6 +644,26 @@ export function ProblemsTable() {
     });
   };
 
+  // Bulk status update
+  const handleBulkStatusChange = useCallback(async (newStatus: string) => {
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/problems/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          })
+        )
+      );
+      showToast(`Updated ${selectedIds.length} problem(s) to ${newStatus.toLowerCase()}`);
+      setSelectedIds([]);
+      mutate();
+    } catch {
+      showToast('Failed to update status');
+    }
+  }, [selectedIds, mutate]);
+
   return (
     <div style={{ padding: '24px 32px' }}>
       {/* Toast notification */}
@@ -672,13 +692,47 @@ export function ProblemsTable() {
           padding: '8px 16px',
           display: 'flex',
           alignItems: 'center',
-          gap: 16,
+          gap: 12,
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
         }}>
           <span style={{ fontSize: 13, color: '#ccc', fontFamily: 'var(--font-geist-mono), monospace' }}>
-            {selectedIds.length} {selectedIds.length === 1 ? 'selected' : 'selected'}
+            {selectedIds.length} selected
           </span>
           <div style={{ width: 1, height: 16, background: '#333' }} />
+
+          <button
+            onClick={() => handleBulkStatusChange('MASTERED')}
+            style={{
+              background: '#1a2e1a', border: '1px solid #2d5a2d',
+              borderRadius: 4, color: '#4ade80', cursor: 'pointer',
+              fontSize: 12, padding: '4px 8px', fontWeight: 500,
+            }}
+          >
+            Mark Mastered
+          </button>
+          <button
+            onClick={() => handleBulkStatusChange('ACTIVE')}
+            style={{
+              background: '#252525', border: '1px solid #333',
+              borderRadius: 4, color: '#ccc', cursor: 'pointer',
+              fontSize: 12, padding: '4px 8px', fontWeight: 500,
+            }}
+          >
+            Mark Active
+          </button>
+          <button
+            onClick={() => handleBulkStatusChange('RETIRED')}
+            style={{
+              background: '#2a251a', border: '1px solid #4a3d1a',
+              borderRadius: 4, color: '#fb923c', cursor: 'pointer',
+              fontSize: 12, padding: '4px 8px', fontWeight: 500,
+            }}
+          >
+            Mark Retired
+          </button>
+
+          <div style={{ width: 1, height: 16, background: '#333' }} />
+
           <button
             onClick={handleBulkDelete}
             style={{
