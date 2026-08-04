@@ -9,56 +9,106 @@ import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Bookmark, Pencil } from 'lucide-react';
 
 // Status dot + label — derives from problem.status and revisions[0].confidence
-function StatusCell({ problem }: { problem: any }) {
-  if (problem.status === 'MASTERED') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered</span>
-      </div>
-    );
-  }
-  if (problem.status === 'RETIRED') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#444', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>Retired</span>
-      </div>
-    );
-  }
+function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const latestConfidence = problem.revisions?.[0]?.confidence ?? null;
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
-  if (!latestConfidence || problem.revisionCount === 0) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>Not started</span>
-      </div>
-    );
-  }
+  const renderLabel = () => {
+    if (problem.status === 'MASTERED') {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered</span>
+        </div>
+      );
+    }
+    if (problem.status === 'RETIRED') {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#444', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>Retired</span>
+        </div>
+      );
+    }
 
-  if (latestConfidence === 'CLEAN') {
+    const latestConfidence = problem.revisions?.[0]?.confidence ?? null;
+
+    if (!latestConfidence || problem.revisionCount === 0) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>Not started</span>
+        </div>
+      );
+    }
+
+    if (latestConfidence === 'CLEAN') {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#4ade80', fontFamily: 'var(--font-geist-mono), monospace' }}>Clean</span>
+        </div>
+      );
+    }
+    if (latestConfidence === 'SHAKY') {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#fb923c', fontFamily: 'var(--font-geist-mono), monospace' }}>Shaky</span>
+        </div>
+      );
+    }
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#4ade80', fontFamily: 'var(--font-geist-mono), monospace' }}>Clean</span>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: '#f87171', fontFamily: 'var(--font-geist-mono), monospace' }}>Struggled</span>
       </div>
     );
-  }
-  if (latestConfidence === 'SHAKY') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#fb923c', fontFamily: 'var(--font-geist-mono), monospace' }}>Shaky</span>
-      </div>
-    );
-  }
-  // STRUGGLED
+  };
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
-      <span style={{ fontSize: 13, color: '#f87171', fontFamily: 'var(--font-geist-mono), monospace' }}>Struggled</span>
+    <div ref={ref} style={{ position: 'relative', cursor: onSave ? 'pointer' : 'default' }}>
+      <div onClick={() => onSave && setOpen((o) => !o)}>
+        {renderLabel()}
+      </div>
+      {open && onSave && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 100,
+          background: '#1a1a1c', border: '1px solid #2a2a2e', borderRadius: 6,
+          padding: 4, minWidth: 120, boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+        }}>
+          {[
+            { key: 'ACTIVE', label: 'Active', color: '#4ade80' },
+            { key: 'MASTERED', label: 'Mastered', color: '#a78bfa' },
+            { key: 'RETIRED', label: 'Retired', color: '#555555' },
+          ].map((s) => (
+            <button
+              key={s.key}
+              onClick={() => { onSave(s.key); setOpen(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px',
+                borderRadius: 4, color: s.color, fontSize: 13, textAlign: 'left',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#252525')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color }} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -336,13 +386,14 @@ type ProblemRowProps = {
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onStarToggle: (id: string, current: boolean) => void;
+  onStatusSave?: (id: string, status: string) => Promise<void> | void;
   onDifficultySave: (id: string, difficulty: string) => Promise<void> | void;
   onTopicSave: (id: string, topic: string) => Promise<void> | void;
   onNotesSave: (id: string, notes: string) => Promise<void> | void;
   onCustomFieldSave: (id: string, columnName: string, value: string) => Promise<void> | void;
 };
 
-export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onDifficultySave, onTopicSave, onNotesSave, onCustomFieldSave }: ProblemRowProps) {
+export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onStatusSave, onDifficultySave, onTopicSave, onNotesSave, onCustomFieldSave }: ProblemRowProps) {
   const [hovered, setHovered] = useState(false);
   const diffStyle = getDifficultyStyle(problem.difficulty);
   const topicColor = getTopicColor(problem.topic);
@@ -431,7 +482,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
 
       {/* Status */}
       <td style={{ width: 130, padding: '0 12px' }}>
-        <StatusCell problem={problem} />
+        <StatusCell problem={problem} onSave={onStatusSave ? (s) => onStatusSave(problem.id, s) : undefined} />
       </td>
 
       {/* Star */}

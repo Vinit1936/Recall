@@ -617,7 +617,23 @@ export function ProblemsTable() {
       await mutate();
     } catch (e: any) {
       showToast(e.message ?? 'Failed to update topic');
-      throw e;
+    }
+  }, [mutate]);
+
+  const handleStatusSave = useCallback(async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/problems/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update status');
+      }
+      showToast(`Status updated to ${status.toLowerCase()}`);
+      await mutate();
+    } catch (e: any) {
+      showToast(e.message ?? 'Failed to update status');
     }
   }, [mutate]);
 
@@ -630,6 +646,7 @@ export function ProblemsTable() {
         isSelected={selectedIds.includes(p.id)}
         onToggleSelect={handleToggleSelect}
         onStarToggle={handleStarToggle}
+        onStatusSave={handleStatusSave}
         onDifficultySave={handleDifficultySave}
         onTopicSave={handleTopicSave}
         onNotesSave={handleNotesSave}
