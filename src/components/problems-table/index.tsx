@@ -516,13 +516,13 @@ export function ProblemsTable() {
         </th>
         <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', width: 320, padding: '0 12px' },
-          { label: 'DIFFICULTY', width: 100, padding: '0 8px' },
-          { label: 'TOPIC', width: 130, padding: '0 8px' },
-          { label: 'STATUS', width: 120, padding: '0 8px' },
+          { label: 'PROBLEM', width: 340, padding: '0 16px' },
+          { label: 'DIFFICULTY', width: 115, padding: '0 12px' },
+          { label: 'TOPIC', width: 150, padding: '0 12px' },
+          { label: 'STATUS', width: 130, padding: '0 12px' },
           { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
-          { label: 'NEXT REVISION', width: 130, padding: '0 8px' },
-          { label: 'NOTES', width: 180, padding: '0 8px' },
+          { label: 'NEXT REVISION', width: 140, padding: '0 12px' },
+          { label: 'NOTES', width: 190, padding: '0 12px' },
         ].map(({ label, icon, width, center, padding }) => (
           <th key={label} style={{
             width,
@@ -756,7 +756,7 @@ export function ProblemsTable() {
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', minWidth: 1060 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', minWidth: 1185 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
             {isLoading ? (

@@ -458,7 +458,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Title / number area */}
-        <td style={{ width: 320, padding: '0 12px', transition: 'background 0.4s', background: cellBg }}>
+        <td style={{ width: 340, padding: '0 16px', transition: 'background 0.4s', background: cellBg }}>
           {!platform ? (
             <span style={{ fontSize: 13, color: '#444' }}>← Select a platform</span>
           ) : isAutoSupported ? (
@@ -527,7 +527,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Difficulty */}
-        <td style={{ width: 100, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+        <td style={{ width: 115, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
           {(autoFill || otherReady) && (
             <DifficultyPickerCell
               difficulty={difficulty || (autoFill?.difficulty ?? '')}
@@ -537,7 +537,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Topic */}
-        <td style={{ width: 130, padding: '0 8px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+        <td style={{ width: 150, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
           {(autoFill || otherReady) && (
             <TopicPickerCell
               topic={topic || (autoFill?.topic === 'General' ? '' : (autoFill?.topic ?? ''))}
@@ -547,19 +547,19 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Status */}
-        <td style={{ width: 120, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+        <td style={{ width: 130, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
         {/* Star */}
         <td style={{ width: 44, textAlign: 'center' }} />
         {/* Next Revision */}
-        <td style={{ width: 130, padding: '0 8px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+        <td style={{ width: 140, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Notes */}
-        <td style={{ width: 180, padding: '0 8px', position: 'relative' }}>
+        <td style={{ width: 190, padding: '0 12px', position: 'relative' }}>
           {(autoFill || otherReady) && (
             <NewRowFloatingCell
               value={notes}
               placeholder="Notes (optional)"
-              maxWidth={180}
+              maxWidth={190}
               autoOpen={openNotesFloating}
               onChange={(val) => setNotes(val)}
               onSaveRow={handleSave}

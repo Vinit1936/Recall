@@ -379,7 +379,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Problem cell: number + title */}
-      <td style={{ width: 320, padding: '0 12px' }}>
+      <td style={{ width: 340, padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
           {problem.problemNumber > 0 && (
             <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
@@ -415,7 +415,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Difficulty */}
-      <td style={{ width: 100, padding: '0 8px', position: 'relative' }}>
+      <td style={{ width: 115, padding: '0 12px', position: 'relative' }}>
         <DifficultyPickerCell
           difficulty={problem.difficulty}
           onSave={(newDiff) => onDifficultySave(problem.id, newDiff)}
@@ -423,7 +423,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Topic */}
-      <td style={{ width: 130, padding: '0 8px', position: 'relative' }}>
+      <td style={{ width: 150, padding: '0 12px', position: 'relative' }}>
         <TopicPickerCell
           topic={problem.topic}
           onSave={(newTopic) => onTopicSave(problem.id, newTopic)}
@@ -431,7 +431,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Status */}
-      <td style={{ width: 120, padding: '0 8px' }}>
+      <td style={{ width: 130, padding: '0 12px' }}>
         <StatusCell problem={problem} />
       </td>
 
@@ -441,15 +441,15 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Next Revision */}
-      <td style={{ width: 130, padding: '0 8px' }}>
+      <td style={{ width: 140, padding: '0 12px' }}>
         <NextRevisionCell problem={problem} />
       </td>
 
       {/* Notes — Notion-style in-place editable */}
-      <td style={{ width: 180, padding: '0 8px' }}>
+      <td style={{ width: 190, padding: '0 12px' }}>
         <InlineEditCell
           initialValue={problem.notes ?? ''}
-          maxWidth={180}
+          maxWidth={190}
           onSave={(val) => onNotesSave(problem.id, val)}
         />
       </td>
