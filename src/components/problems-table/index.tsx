@@ -8,7 +8,7 @@ import { Toolbar, type SortOrder } from './toolbar';
 import { ProblemRow } from './row';
 import { NewRow } from './new-row';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
-import { Star, MoreVertical, Trash2, Download } from 'lucide-react';
+import { Star, MoreVertical, Trash2, Download, Bookmark } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -548,7 +548,7 @@ export function ProblemsTable() {
           { label: 'DIFFICULTY', width: 115, padding: '0 12px' },
           { label: 'TOPIC', width: 150, padding: '0 12px' },
           { label: 'STATUS', width: 130, padding: '0 12px' },
-          { label: 'STAR', icon: <Star size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
+          { label: 'STAR', icon: <Bookmark size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
           { label: 'NEXT REVISION', width: 140, padding: '0 12px' },
           { label: 'NOTES', width: 190, padding: '0 12px' },
         ].map(({ label, icon, width, center, padding }) => (

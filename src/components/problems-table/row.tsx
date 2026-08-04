@@ -6,7 +6,7 @@ import { PlatformLogo } from '@/lib/platforms/logos';
 
 import { useState, useRef, useEffect } from 'react';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
-import { Star, Pencil } from 'lucide-react';
+import { Bookmark, Pencil } from 'lucide-react';
 
 // Status dot + label — derives from problem.status and revisions[0].confidence
 function StatusCell({ problem }: { problem: any }) {
@@ -121,12 +121,11 @@ function StarCell({ problem, onToggle }: { problem: any; onToggle: () => void })
         }}
         title={isFav ? 'Remove from favorites' : 'Add to favorites'}
       >
-        <Star
+        <Bookmark
           size={15}
-          fill={isFav ? '#facc15' : 'none'}
-          color={isFav ? '#facc15' : hovered ? '#a1a1aa' : '#3f3f46'}
+          fill={isFav ? '#ffffff' : 'none'}
+          color={isFav ? '#ffffff' : hovered ? '#a1a1aa' : '#3f3f46'}
           style={{
-            filter: isFav ? 'drop-shadow(0 0 5px rgba(250, 204, 21, 0.45))' : 'none',
             transition: 'transform 0.15s ease, color 0.15s ease, fill 0.15s ease',
             transform: hovered ? 'scale(1.15)' : 'scale(1)',
           }}
