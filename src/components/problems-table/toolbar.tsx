@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUpDown } from 'lucide-react';
+import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 
 export type SortOrder = 'asc' | 'desc';
 
@@ -87,22 +88,30 @@ function DropdownMenu({ label, children }: { label: string; children: React.Reac
 }
 
 function CheckItem({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <label
+    <div
+      onClick={onChange}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
-        padding: '5px 8px',
+        gap: 10,
+        padding: '6px 10px',
         cursor: 'pointer',
-        borderRadius: 4,
+        borderRadius: 5,
         fontSize: 13,
-        color: '#ccc',
+        color: checked ? '#ffffff' : hovered ? '#e5e5e5' : '#aaa',
+        background: hovered ? '#252525' : 'transparent',
+        transition: 'background 0.15s, color 0.15s',
+        userSelect: 'none',
       }}
     >
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ accentColor: '#ffffff' }} />
-      {label.charAt(0) + label.slice(1).toLowerCase()}
-    </label>
+      <CustomCheckbox checked={checked} onChange={onChange} size={15} />
+      <span>{label.charAt(0) + label.slice(1).toLowerCase()}</span>
+    </div>
   );
 }
 
