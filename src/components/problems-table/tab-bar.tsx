@@ -4,6 +4,7 @@ import { PlatformLogo } from '@/lib/platforms/logos';
 
 export type TabKey =
   | 'all'
+  | 'bookmarked'
   | 'due'
   | 'status'
   | 'topic'
@@ -18,7 +19,7 @@ type TabBarProps = {
   onChange: (tab: TabKey) => void;
 };
 
-const TABS: { key: TabKey; label: string; platform?: string; size?: number; padding?: number }[] = [
+const TABS: { key: TabKey; label: string; isSmallIcon?: boolean; platform?: string; size?: number; padding?: number }[] = [
   { key: 'all', label: 'All Problems' },
   { key: 'due', label: 'Due Today' },
   { key: 'status', label: 'By Status' },
@@ -28,6 +29,7 @@ const TABS: { key: TabKey; label: string; platform?: string; size?: number; padd
   { key: 'CODECHEF', label: 'CodeChef', platform: 'CODECHEF', size: 18, padding: 2 },
   { key: 'GFG', label: 'GeeksForGeeks', platform: 'GFG', size: 21, padding: 2 },
   { key: 'HACKERRANK', label: 'HackerRank', platform: 'HACKERRANK', size: 18, padding: 0 },
+  { key: 'bookmarked', label: 'Bookmarked', isSmallIcon: true },
 ];
 
 export function TabBar({ activeTab, onChange }: TabBarProps) {
@@ -46,7 +48,44 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
       {TABS.map((tab) => {
         const isActive = tab.key === activeTab;
         const isPlatformTab = !!tab.platform;
+        const isSmallIcon = !!tab.isSmallIcon;
         const defaultOpacity = isPlatformTab && !isActive ? 0.8 : 1;
+
+        if (isSmallIcon) {
+          return (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              title="Bookmarked problems"
+              style={{
+                background: 'none',
+                borderTop: 'none',
+                borderLeft: 'none',
+                borderRight: 'none',
+                borderBottom: 'none',
+                boxShadow: isActive ? 'inset 0 -2px 0 #facc15' : 'none',
+                color: isActive ? '#facc15' : '#555',
+                cursor: 'pointer',
+                fontSize: 14,
+                padding: '8px 10px',
+                marginLeft: 2,
+                marginRight: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'color 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) e.currentTarget.style.color = '#facc15';
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) e.currentTarget.style.color = '#555';
+              }}
+            >
+              ★
+            </button>
+          );
+        }
 
         return (
           <button

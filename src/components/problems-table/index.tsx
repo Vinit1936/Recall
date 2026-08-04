@@ -310,7 +310,7 @@ export function ProblemsTable() {
   const [tableHovered, setTableHovered] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Restore user sort preferences from localStorage on mount
+  // Restore user sort preferences and active tab from URL on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('recall_sort_config');
@@ -320,6 +320,14 @@ export function ProblemsTable() {
         if (parsed.sortOrder) setSortOrder(parsed.sortOrder);
       }
     } catch {}
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'bookmarked') {
+        setActiveTab('bookmarked');
+      }
+    }
   }, []);
 
   // Smooth scroll to bottom when new row is opened
@@ -361,7 +369,9 @@ export function ProblemsTable() {
     const q = search.toLowerCase();
     if (q && !p.title.toLowerCase().includes(q) && !String(p.problemNumber).includes(q)) return false;
     if (difficultyFilter.length && !difficultyFilter.includes(p.difficulty)) return false;
-    if (statusFilter.length && !statusFilter.includes(p.status)) return false;
+    if (activeTab === 'bookmarked') {
+      if (!p.isFavorite) return false;
+    }
     if (activeTab === 'due') {
       if (!p.nextRevisionAt) return false;
       const revDate = new Date(p.nextRevisionAt).getTime();

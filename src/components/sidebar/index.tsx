@@ -18,6 +18,15 @@ const navItems = [
     ),
   },
   {
+    label: 'Bookmarked',
+    href: '/?tab=bookmarked',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1.5l2.12 4.3 4.74.69-3.43 3.34.81 4.72L8 12.33 3.76 14.55l.81-4.72-3.43-3.34 4.74-.69L8 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Daily Revision',
     href: '/daily',
     icon: (
