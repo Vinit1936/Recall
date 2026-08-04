@@ -381,9 +381,11 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       {/* Problem cell: number + title */}
       <td style={{ width: 320, padding: '0 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-          <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
-            {problem.problemNumber}
-          </span>
+          {problem.problemNumber > 0 && (
+            <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
+              {problem.problemNumber}
+            </span>
+          )}
           {problem.url ? (
             <a
               href={problem.url}
