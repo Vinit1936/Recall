@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-
+import { createPortal } from 'react-dom';
 import { getTopicColor } from '@/lib/topic-colors';
+
 export { getTopicColor };
 
 export function getDifficultyStyle(difficulty: string): { bg: string; text: string; border: string } {
@@ -33,6 +34,95 @@ export function Pill({ bg, text, border, children }: { bg: string; text: string;
   );
 }
 
+// TopLevelPortal — renders any table pop up at root document.body level (zIndex: 99999)
+// so it overflows table barriers and is never clipped by table overflow/headers.
+export function TopLevelPortal({
+  anchorRef,
+  onClose,
+  children,
+  width = 160,
+  minHeight = 120,
+}: {
+  anchorRef: React.RefObject<HTMLElement | null>;
+  onClose: () => void;
+  children: React.ReactNode;
+  width?: number;
+  minHeight?: number;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!anchorRef.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const popupH = popoverRef.current?.offsetHeight ?? minHeight;
+      const popupW = popoverRef.current?.offsetWidth ?? width;
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openUpward = spaceBelow < popupH && rect.top > popupH;
+
+      let top = openUpward ? rect.top - popupH - 4 : rect.bottom + 4;
+      let left = rect.left;
+
+      if (top < 8) top = 8;
+      if (top + popupH > window.innerHeight - 8) top = window.innerHeight - popupH - 8;
+      if (left + popupW > window.innerWidth - 12) left = window.innerWidth - popupW - 12;
+      if (left < 8) left = 8;
+
+      setPos({ top, left });
+    };
+
+    updatePosition();
+    const handleScrollOrResize = () => updatePosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node) &&
+        anchorRef.current &&
+        !anchorRef.current.contains(e.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    const timer = setTimeout(() => document.addEventListener('mousedown', handleClickOutside), 10);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [anchorRef, onClose, width, minHeight]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      ref={popoverRef}
+      data-portal="true"
+      style={{
+        position: 'fixed',
+        top: pos?.top ?? -9999,
+        left: pos?.left ?? -9999,
+        zIndex: 99999,
+        background: '#1a1a1c',
+        border: '1px solid #2a2a2e',
+        borderRadius: 8,
+        padding: 6,
+        boxShadow: '0 12px 32px rgba(0,0,0,0.85)',
+        visibility: pos ? 'visible' : 'hidden',
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'] as const;
 
 export function DifficultyPickerCell({
@@ -45,18 +135,7 @@ export function DifficultyPickerCell({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hoveredOpt, setHoveredOpt] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleSelect = async (newDiff: string) => {
     setOpen(false);
@@ -74,8 +153,9 @@ export function DifficultyPickerCell({
   const diffStyle = getDifficultyStyle(difficulty);
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ display: 'inline-block' }}>
       <button
+        ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((o) => !o);
@@ -93,65 +173,50 @@ export function DifficultyPickerCell({
         }}
       >
         <Pill bg={diffStyle.bg} text={diffStyle.text} border={diffStyle.border}>
-          {difficulty.charAt(0) + difficulty.slice(1).toLowerCase()}
+          {difficulty ? difficulty.charAt(0) + difficulty.slice(1).toLowerCase() : 'Select'}
         </Pill>
       </button>
 
       {open && (
-        <div
-          ref={containerRef}
-          style={{
-            position: 'absolute',
-            top: -4,
-            left: -4,
-            zIndex: 100,
-            background: '#1a1a1c',
-            border: '1px solid #2a2a2e',
-            borderRadius: 6,
-            padding: 4,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            minWidth: 120,
-          }}
-        >
-          {DIFFICULTIES.map((d) => {
-            const st = getDifficultyStyle(d);
-            const isSelected = d === difficulty;
-            const isHovered = hoveredOpt === d;
-            return (
-              <button
-                key={d}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect(d);
-                }}
-                onMouseEnter={() => setHoveredOpt(d)}
-                onMouseLeave={() => setHoveredOpt(null)}
-                style={{
-                  background: isHovered ? 'rgba(255, 255, 255, 0.08)' : 'none',
-                  border: 'none',
-                  borderRadius: 4,
-                  padding: '6px 10px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  textAlign: 'left',
-                  outline: 'none',
-                  transition: 'background 0.15s ease',
-                }}
-              >
-                <Pill bg={st.bg} text={st.text} border={st.border}>
-                  {d.charAt(0) + d.slice(1).toLowerCase()}
-                </Pill>
-                {isSelected && <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>}
-              </button>
-            );
-          })}
-        </div>
+        <TopLevelPortal anchorRef={buttonRef} onClose={() => setOpen(false)} width={120}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {DIFFICULTIES.map((d) => {
+              const st = getDifficultyStyle(d);
+              const isSelected = d === difficulty;
+              const isHovered = hoveredOpt === d;
+              return (
+                <button
+                  key={d}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect(d);
+                  }}
+                  onMouseEnter={() => setHoveredOpt(d)}
+                  onMouseLeave={() => setHoveredOpt(null)}
+                  style={{
+                    background: isHovered ? 'rgba(255, 255, 255, 0.08)' : 'none',
+                    border: 'none',
+                    borderRadius: 4,
+                    padding: '6px 10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    textAlign: 'left',
+                    outline: 'none',
+                    transition: 'background 0.15s ease',
+                  }}
+                >
+                  <Pill bg={st.bg} text={st.text} border={st.border}>
+                    {d.charAt(0) + d.slice(1).toLowerCase()}
+                  </Pill>
+                  {isSelected && <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </TopLevelPortal>
       )}
     </div>
   );
@@ -195,21 +260,14 @@ export function TopicPickerCell({
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [hoveredOpt, setHoveredOpt] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!open) return;
-    setSearch('');
-    setTimeout(() => inputRef.current?.focus(), 20);
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (open) {
+      setSearch('');
+      setTimeout(() => inputRef.current?.focus(), 30);
+    }
   }, [open]);
 
   const handleSelect = async (newTopic: string) => {
@@ -234,8 +292,9 @@ export function TopicPickerCell({
   const showCreateOption = query.length > 0 && !hasExactMatch;
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ display: 'inline-block' }}>
       <button
+        ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((o) => !o);
@@ -258,165 +317,105 @@ export function TopicPickerCell({
       </button>
 
       {open && (
-        <div
-          ref={containerRef}
-          style={{
-            position: 'absolute',
-            top: -4,
-            left: -4,
-            zIndex: 100,
-            background: '#1a1a1c',
-            border: '1px solid #2a2a2e',
-            borderRadius: 6,
-            padding: 8,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-            width: 220,
-          }}
-        >
-          {/* Search / Create Input */}
-          <input
-            ref={inputRef}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && search.trim()) {
-                e.preventDefault();
-                handleSelect(search.trim());
-              } else if (e.key === 'Escape') {
-                setOpen(false);
-              }
-            }}
-            placeholder="Search or add topic..."
-            style={{
-              background: '#111',
-              border: '1px solid #2a2a2e',
-              borderRadius: 4,
-              color: '#fff',
-              fontSize: 12,
-              padding: '5px 8px',
-              width: '100%',
-              outline: 'none',
-              boxSizing: 'border-box',
-              caretColor: '#ffffff',
-            }}
-          />
-
-          {/* Topics List */}
-          <div
-            style={{
-              maxHeight: 180,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              paddingRight: 2,
-            }}
-          >
-            {/* Create new option */}
-            {showCreateOption && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
+        <TopLevelPortal anchorRef={buttonRef} onClose={() => setOpen(false)} width={220} minHeight={200}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: 208 }}>
+            {/* Search / Create Input */}
+            <input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && search.trim()) {
+                  e.preventDefault();
                   handleSelect(search.trim());
-                }}
-                onMouseEnter={() => setHoveredOpt('CREATE_NEW')}
-                onMouseLeave={() => setHoveredOpt(null)}
-                style={{
-                  background: hoveredOpt === 'CREATE_NEW' ? 'rgba(255, 255, 255, 0.15)' : 'none',
-                  border: '1px dashed #ffffff',
-                  borderRadius: 4,
-                  padding: '6px 8px',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  textAlign: 'left',
-                  width: '100%',
-                  outline: 'none',
-                  transition: 'background 0.15s ease',
-                }}
-              >
-                <span>+ Create</span>
-                <Pill bg={getTopicColor(search.trim()).bg} text={getTopicColor(search.trim()).text} border={getTopicColor(search.trim()).border}>
-                  {search.trim()}
-                </Pill>
-              </button>
-            )}
+                } else if (e.key === 'Escape') {
+                  setOpen(false);
+                }
+              }}
+              placeholder="Search or add topic..."
+              style={{
+                background: '#111',
+                border: '1px solid #2a2a2e',
+                borderRadius: 4,
+                color: '#fff',
+                fontSize: 12,
+                padding: '5px 8px',
+                width: '100%',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
 
-            {filtered.map((t) => {
-              const tc = getTopicColor(t);
-              const isSelected = t === topic;
-              const isHovered = hoveredOpt === t;
-              return (
+            {/* List options */}
+            <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {showCreateOption && (
                 <button
-                  key={t}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSelect(t);
+                    handleSelect(search.trim());
                   }}
-                  onMouseEnter={() => setHoveredOpt(t)}
+                  onMouseEnter={() => setHoveredOpt('__create__')}
                   onMouseLeave={() => setHoveredOpt(null)}
                   style={{
-                    background: isHovered ? 'rgba(255, 255, 255, 0.08)' : 'none',
-                    border: 'none',
+                    background: hoveredOpt === '__create__' ? 'rgba(74, 222, 128, 0.12)' : 'none',
+                    border: '1 border-dashed rgba(74, 222, 128, 0.4)',
                     borderRadius: 4,
-                    padding: '5px 8px',
+                    padding: '6px 8px',
                     cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
+                    color: '#4ade80',
+                    fontSize: 12,
                     textAlign: 'left',
                     outline: 'none',
-                    transition: 'background 0.15s ease',
+                    fontWeight: 500,
                   }}
                 >
-                  <Pill bg={tc.bg} text={tc.text} border={tc.border}>
-                    {t}
-                  </Pill>
-                  {isSelected && <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>}
+                  Create &quot;{search.trim()}&quot;
                 </button>
-              );
-            })}
+              )}
 
-            {/* Current topic if custom and not in default list */}
-            {topic && !DEFAULT_TOPICS.includes(topic) && !showCreateOption && (
-              <button
-                key={topic}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect(topic);
-                }}
-                onMouseEnter={() => setHoveredOpt(topic)}
-                onMouseLeave={() => setHoveredOpt(null)}
-                style={{
-                  background: hoveredOpt === topic ? 'rgba(255, 255, 255, 0.08)' : 'none',
-                  border: 'none',
-                  borderRadius: 4,
-                  padding: '5px 8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  textAlign: 'left',
-                  outline: 'none',
-                  transition: 'background 0.15s ease',
-                }}
-              >
-                <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>
-                  {topic}
-                </Pill>
-                <span style={{ color: '#ffffff', fontSize: 12, marginLeft: 8 }}>✓</span>
-              </button>
-            )}
+              {filtered.map((t) => {
+                const tc = getTopicColor(t);
+                const isSelected = t === topic;
+                const isHovered = hoveredOpt === t;
+                return (
+                  <button
+                    key={t}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(t);
+                    }}
+                    onMouseEnter={() => setHoveredOpt(t)}
+                    onMouseLeave={() => setHoveredOpt(null)}
+                    style={{
+                      background: isHovered ? 'rgba(255, 255, 255, 0.08)' : 'none',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '5px 8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      textAlign: 'left',
+                      outline: 'none',
+                    }}
+                  >
+                    <Pill bg={tc.bg} text={tc.text} border={tc.border}>
+                      {t}
+                    </Pill>
+                    {isSelected && <span style={{ color: '#fff', fontSize: 12 }}>✓</span>}
+                  </button>
+                );
+              })}
+
+              {filtered.length === 0 && !showCreateOption && (
+                <div style={{ padding: 8, fontSize: 12, color: '#555', textAlign: 'center' }}>
+                  No matching topics
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </TopLevelPortal>
       )}
     </div>
   );

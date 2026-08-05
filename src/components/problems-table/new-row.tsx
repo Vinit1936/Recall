@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { DifficultyPickerCell, TopicPickerCell } from './columns';
+import { TopLevelPortal, DifficultyPickerCell, TopicPickerCell } from './columns';
 import { PlatformLogo } from '@/lib/platforms/logos';
 import { Pencil } from 'lucide-react';
 
@@ -193,6 +193,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   const lcUrlRef = useRef<HTMLInputElement>(null);
   const otherUrlRef = useRef<HTMLInputElement>(null);
   const otherTitleRef = useRef<HTMLInputElement>(null);
+  const platformBtnRef = useRef<HTMLButtonElement>(null);
 
   const isLeetCode = platform === 'LEETCODE';
   const isCodeforces = platform === 'CODEFORCES';
@@ -223,10 +224,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     return () => document.removeEventListener('keydown', handleGlobalKeyDown, true);
   }, [onCancel]);
 
-  // Global Click Outside listener (cancels draft if clicking anywhere outside NewRow)
+  // Global Click Outside listener (cancels draft if clicking anywhere outside NewRow or its portals)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const elements = document.querySelectorAll('[data-new-row="true"]');
+      const elements = document.querySelectorAll('[data-new-row="true"], [data-portal="true"]');
       let isInside = false;
       elements.forEach((el) => {
         if (el.contains(e.target as Node)) isInside = true;
@@ -438,7 +439,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         <td style={{ width: 36, textAlign: 'center', padding: '0 4px' }} />
 
         {/* Platform logo / selector */}
-        <td style={{ width: 40, textAlign: 'center', padding: '0 4px', position: 'relative' }}>
+        <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
           {platform ? (
             <button
               onClick={resetState}
@@ -448,8 +449,9 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
               <PlatformLogo platform={platform} />
             </button>
           ) : (
-            <div style={{ position: 'relative' }}>
+            <div>
               <button
+                ref={platformBtnRef}
                 onClick={() => setPlatformOpen((o) => !o)}
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -461,30 +463,27 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
                 +
               </button>
               {platformOpen && (
-                <div style={{
-                  position: 'absolute', bottom: 28, left: -4, zIndex: 200,
-                  background: '#1a1a1c', border: '1px solid #2a2a2e',
-                  borderRadius: 8, padding: 6, minWidth: 160,
-                  boxShadow: '0 -8px 24px rgba(0,0,0,0.6)',
-                }}>
-                  {PLATFORMS.map((p) => (
-                    <button
-                      key={p.value}
-                      onClick={() => { setPlatform(p.value); setPlatformOpen(false); }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        width: '100%', background: 'none', border: 'none',
-                        cursor: 'pointer', padding: '6px 8px', borderRadius: 4,
-                        color: '#ccc', fontSize: 13, textAlign: 'left',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = '#252525')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
-                    >
-                      <PlatformLogo platform={p.value} size={20} />
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
+                <TopLevelPortal anchorRef={platformBtnRef} onClose={() => setPlatformOpen(false)} width={165}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {PLATFORMS.map((p) => (
+                      <button
+                        key={p.value}
+                        onClick={() => { setPlatform(p.value); setPlatformOpen(false); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          width: '100%', background: 'none', border: 'none',
+                          cursor: 'pointer', padding: '6px 8px', borderRadius: 4,
+                          color: '#ccc', fontSize: 13, textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#252525')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+                      >
+                        <PlatformLogo platform={p.value} size={20} />
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </TopLevelPortal>
               )}
             </div>
           )}

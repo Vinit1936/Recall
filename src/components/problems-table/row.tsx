@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDistanceToNow, startOfDay } from 'date-fns';
-import { getDifficultyStyle, getTopicColor, Pill, DifficultyPickerCell, TopicPickerCell } from './columns';
+import { getDifficultyStyle, getTopicColor, Pill, DifficultyPickerCell, TopicPickerCell, TopLevelPortal } from './columns';
 import { PlatformLogo } from '@/lib/platforms/logos';
 
 import { useState, useRef, useEffect } from 'react';
@@ -11,17 +11,7 @@ import { Bookmark, Pencil } from 'lucide-react';
 // Status dot + label — derives from problem.status and revisions[0].confidence
 function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: string) => void }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const renderLabel = () => {
     if (problem.status === 'MASTERED') {
@@ -77,37 +67,39 @@ function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: strin
   };
 
   return (
-    <div ref={ref} style={{ position: 'relative', cursor: onSave ? 'pointer' : 'default' }}>
+    <div ref={triggerRef} style={{ position: 'relative', cursor: onSave ? 'pointer' : 'default', display: 'inline-block' }}>
       <div onClick={() => onSave && setOpen((o) => !o)}>
         {renderLabel()}
       </div>
       {open && onSave && (
-        <div style={{
-          position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 100,
-          background: '#1a1a1c', border: '1px solid #2a2a2e', borderRadius: 6,
-          padding: 4, minWidth: 120, boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-        }}>
-          {[
-            { key: 'ACTIVE', label: 'Active', color: '#4ade80' },
-            { key: 'MASTERED', label: 'Mastered', color: '#a78bfa' },
-            { key: 'RETIRED', label: 'Retired', color: '#555555' },
-          ].map((s) => (
-            <button
-              key={s.key}
-              onClick={() => { onSave(s.key); setOpen(false); }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px',
-                borderRadius: 4, color: s.color, fontSize: 13, textAlign: 'left',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#252525')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
-            >
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color }} />
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <TopLevelPortal anchorRef={triggerRef} onClose={() => setOpen(false)} width={130}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[
+              { key: 'ACTIVE', label: 'Active', color: '#4ade80' },
+              { key: 'MASTERED', label: 'Mastered', color: '#a78bfa' },
+              { key: 'RETIRED', label: 'Retired', color: '#555555' },
+            ].map((s) => (
+              <button
+                key={s.key}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave(s.key);
+                  setOpen(false);
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                  background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px',
+                  borderRadius: 4, color: s.color, fontSize: 13, textAlign: 'left',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#252525')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              >
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color }} />
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </TopLevelPortal>
       )}
     </div>
   );
