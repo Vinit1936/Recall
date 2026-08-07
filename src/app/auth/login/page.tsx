@@ -293,8 +293,8 @@ export default function LoginPage() {
             margin: '0 auto',
           }}
         >
-          <div style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255, 255, 255, 0.85)', marginBottom: 12 }}>
-            You can easily
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255, 255, 255, 0.85)', marginBottom: 12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+            Spaced Repetition Tracker
           </div>
           <h2
             style={{
@@ -306,7 +306,7 @@ export default function LoginPage() {
               margin: 0,
             }}
           >
-            Get access to your personal hub for clarity and productivity
+            Your personal hub for problem solving, revision, and mastery
           </h2>
         </div>
       </div>
