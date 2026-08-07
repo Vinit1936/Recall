@@ -12,9 +12,9 @@ const LOGO_CONFIG: Record<string, { src: string; bg: string; padding: number }> 
   CODECHEF:   { src: '/CodeChef.png',   bg: '#f5f0eb', padding: 3 },
 };
 
-export function PlatformLogo({ platform, size = 24, padding }: PlatformLogoProps) {
-  const cfg = LOGO_CONFIG[platform];
-  if (!cfg) return null;
+export function PlatformLogo({ platform = 'LEETCODE', size = 24, padding }: PlatformLogoProps) {
+  const upper = (platform || 'LEETCODE').toUpperCase();
+  const cfg = LOGO_CONFIG[upper] || LOGO_CONFIG['LEETCODE'];
 
   const pad = padding ?? cfg.padding;
 
