@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ExternalLink, Check } from 'lucide-react';
 import { getDifficultyStyle, getTopicColor, Pill } from '@/components/problems-table/columns';
 import { PlatformLogo } from '@/lib/platforms/logos';
 
@@ -13,11 +14,45 @@ type ProblemRowProps = {
   onToast: (msg: string) => void;
 };
 
-// Confidence button colors
-const CONF_COLORS: Record<Confidence, { done_bg: string; done_text: string; label: string }> = {
-  CLEAN:     { done_bg: '#1a3a1a', done_text: '#4ade80', label: 'Clean' },
-  SHAKY:     { done_bg: '#3a2a0a', done_text: '#fb923c', label: 'Shaky' },
-  STRUGGLED: { done_bg: '#3a0a0a', done_text: '#f87171', label: 'Struggled' },
+const CONF_BUTTONS: Record<
+  Confidence,
+  {
+    label: string;
+    hint: string;
+    hoverBg: string;
+    hoverBorder: string;
+    hoverText: string;
+    doneBg: string;
+    doneText: string;
+  }
+> = {
+  CLEAN: {
+    label: 'Clean',
+    hint: '+7d',
+    hoverBg: 'rgba(16, 185, 129, 0.12)',
+    hoverBorder: '#10b981',
+    hoverText: '#34d399',
+    doneBg: 'rgba(16, 185, 129, 0.15)',
+    doneText: '#34d399',
+  },
+  SHAKY: {
+    label: 'Shaky',
+    hint: '+3d',
+    hoverBg: 'rgba(245, 158, 11, 0.12)',
+    hoverBorder: '#f59e0b',
+    hoverText: '#fbbf24',
+    doneBg: 'rgba(245, 158, 11, 0.15)',
+    doneText: '#fbbf24',
+  },
+  STRUGGLED: {
+    label: 'Struggled',
+    hint: 'Tomorrow',
+    hoverBg: 'rgba(248, 113, 113, 0.12)',
+    hoverBorder: '#f87171',
+    hoverText: '#f87171',
+    doneBg: 'rgba(248, 113, 113, 0.15)',
+    doneText: '#f87171',
+  },
 };
 
 export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowProps) {
@@ -56,121 +91,159 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: '70px minmax(180px, 1fr) 95px 125px 220px 32px',
         alignItems: 'center',
-        height: 52,
-        background: done ? '#0d0d0d' : hovered ? '#0f0f0f' : '#111111',
-        border: '1px solid #1e1e1e',
-        borderRadius: 8,
-        marginBottom: 6,
+        height: 48,
         padding: '0 16px',
-        gap: 12,
-        transition: 'background 0.1s',
+        background: done ? '#0d0d0d' : hovered ? '#151517' : '#111112',
+        borderBottom: '1px solid #1c1c1e',
+        transition: 'background 0.12s ease',
       }}
     >
-      {/* Left side */}
-      <PlatformLogo platform={problem.platform ?? 'LEETCODE'} size={20} />
+      {/* 1. ID / Number */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <PlatformLogo platform={problem.platform ?? 'LEETCODE'} size={19} padding={1} />
+        <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 12, color: '#888' }}>
+          {problem.problemNumber}
+        </span>
+      </div>
 
-      <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 12, color: '#666', flexShrink: 0 }}>
-        {problem.problemNumber}
-      </span>
+      {/* 2. Title */}
+      <div style={{ paddingRight: 12, overflow: 'hidden' }}>
+        <span
+          style={{
+            fontSize: 13.5,
+            fontWeight: done ? 400 : 500,
+            color: done ? '#555' : '#ececec',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'block',
+            textDecoration: done ? 'line-through' : 'none',
+          }}
+          title={problem.title}
+        >
+          {problem.title}
+        </span>
+      </div>
 
-      <span
-        style={{
-          fontSize: 14,
-          color: done ? '#555' : '#fff',
-          maxWidth: 320,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          textDecoration: done ? 'line-through' : 'none',
-          transition: 'color 0.2s, text-decoration 0.2s',
-        }}
-      >
-        {problem.title}
-      </span>
-
-      {/* Right side */}
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* 3. Difficulty */}
+      <div>
         <Pill bg={diffStyle.bg} text={diffStyle.text} border={diffStyle.border}>
           {problem.difficulty.charAt(0) + problem.difficulty.slice(1).toLowerCase()}
         </Pill>
+      </div>
 
-        <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>{problem.topic}</Pill>
+      {/* 4. Topic */}
+      <div>
+        <Pill bg={topicColor.bg} text={topicColor.text} border={topicColor.border}>
+          {problem.topic}
+        </Pill>
+      </div>
 
-        {/* Confidence buttons / done badge */}
+      {/* 5. Tactile Action Buttons */}
+      <div>
         <AnimatePresence mode="wait">
           {done && chosenConf ? (
             <motion.span
               key="done-badge"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
-                background: CONF_COLORS[chosenConf].done_bg,
-                color: CONF_COLORS[chosenConf].done_text,
-                borderRadius: 999,
+                background: CONF_BUTTONS[chosenConf].doneBg,
+                color: CONF_BUTTONS[chosenConf].doneText,
+                border: `1px solid ${CONF_BUTTONS[chosenConf].doneText}40`,
+                borderRadius: 6,
                 fontSize: 12,
-                fontWeight: 500,
+                fontWeight: 600,
                 padding: '3px 10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
               }}
             >
-              {CONF_COLORS[chosenConf].label} ✓
+              <Check size={12} /> {CONF_BUTTONS[chosenConf].label}
             </motion.span>
           ) : (
             <motion.div
               key="conf-buttons"
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ display: 'flex', gap: 6 }}
+              style={{ display: 'flex', gap: 6, alignItems: 'center' }}
             >
-              {(['CLEAN', 'SHAKY', 'STRUGGLED'] as Confidence[]).map((conf) => (
-                <button
-                  key={conf}
-                  onClick={() => handleConfidence(conf)}
-                  disabled={loadingConf !== null}
-                  style={{
-                    background: 'none',
-                    border: '1px solid #2a2a2a',
-                    borderRadius: 5,
-                    color: loadingConf === conf ? '#555' : '#888',
-                    cursor: loadingConf !== null ? 'not-allowed' : 'pointer',
-                    fontSize: 12,
-                    padding: '3px 10px',
-                    transition: 'color 0.1s, border-color 0.1s',
-                  }}
-                >
-                  {loadingConf === conf ? '…' : conf.charAt(0) + conf.slice(1).toLowerCase()}
-                </button>
-              ))}
+              {(['CLEAN', 'SHAKY', 'STRUGGLED'] as Confidence[]).map((conf) => {
+                const confCfg = CONF_BUTTONS[conf];
+                return (
+                  <button
+                    key={conf}
+                    onClick={() => handleConfidence(conf)}
+                    disabled={loadingConf !== null}
+                    style={{
+                      background: '#1a1a1d',
+                      border: '1px solid #2a2a30',
+                      borderRadius: 6,
+                      color: loadingConf === conf ? '#555' : '#ccc',
+                      cursor: loadingConf !== null ? 'not-allowed' : 'pointer',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      padding: '4px 10px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                      transition: 'all 0.12s ease-in-out',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (loadingConf === null) {
+                        e.currentTarget.style.background = confCfg.hoverBg;
+                        e.currentTarget.style.borderColor = confCfg.hoverBorder;
+                        e.currentTarget.style.color = confCfg.hoverText;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (loadingConf === null) {
+                        e.currentTarget.style.background = '#1a1a1d';
+                        e.currentTarget.style.borderColor = '#2a2a30';
+                        e.currentTarget.style.color = '#ccc';
+                      }
+                    }}
+                  >
+                    {loadingConf === conf ? '…' : confCfg.label}
+                  </button>
+                );
+              })}
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
 
-        {/* Link icon */}
+      {/* 6. Link */}
+      <div style={{ textAlign: 'right' }}>
         {problem.url && (
           <a
             href={problem.url}
             target="_blank"
             rel="noopener noreferrer"
-            title="Open problem"
+            title="Open problem in new tab"
             style={{
-              color: '#444',
-              display: 'flex',
+              color: '#555',
+              display: 'inline-flex',
               alignItems: 'center',
-              transition: 'color 0.1s',
+              justifyContent: 'center',
+              padding: 4,
+              borderRadius: 4,
+              transition: 'color 0.12s',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#444')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#555')}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 2H2a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-              <path d="M8 1h5m0 0v5m0-5L7 7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <ExternalLink size={14} />
           </a>
         )}
       </div>
     </div>
   );
 }
+
+
