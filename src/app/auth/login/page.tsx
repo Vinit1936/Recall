@@ -231,37 +231,83 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Left panel — branding */}
+      {/* Left panel — inspiration design with download.jpg */}
       <div
         style={{
           width: '50%',
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #111827 100%)',
+          backgroundImage: 'url("/login-bg.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px',
-          position: 'relative',
+          justifyContent: 'space-between',
+          padding: '56px 48px',
+          boxSizing: 'border-box',
         }}
       >
-        <div style={{ textAlign: 'center', maxWidth: 360 }}>
-          {/* Wordmark */}
-          <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 32, fontWeight: 600, color: '#fff', marginBottom: 12, letterSpacing: '-0.03em' }}>
-            recall<span style={{ color: '#F7981E' }}>.</span>
-          </div>
-          {/* Tagline */}
-          <div style={{ fontSize: 16, color: '#888', lineHeight: 1.5 }}>
-            Never forget a problem you&apos;ve solved.
-          </div>
-          {/* Fake heatmap */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
-            <FakeHeatmap />
+        {/* Dark subtle overlay for crisp text contrast */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.65) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Top Brand Logo */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-geist-mono), monospace',
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#ffffff',
+              letterSpacing: '-0.03em',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 22 }}>✦</span> recall<span style={{ color: '#F7981E' }}>.</span>
           </div>
         </div>
 
-        {/* Bottom tagline */}
-        <div style={{ position: 'absolute', bottom: 32, fontFamily: 'var(--font-geist-mono), monospace', fontSize: 11, color: '#444', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Track · Revise · Master
+        {/* Bottom Hero Headline */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            textAlign: 'center',
+            maxWidth: 480,
+            margin: '0 auto',
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255, 255, 255, 0.85)', marginBottom: 12 }}>
+            You can easily
+          </div>
+          <h2
+            style={{
+              fontSize: 34,
+              fontWeight: 600,
+              color: '#ffffff',
+              lineHeight: 1.25,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            Get access to your personal hub for clarity and productivity
+          </h2>
         </div>
       </div>
 
