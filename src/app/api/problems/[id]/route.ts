@@ -3,6 +3,7 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { invalidateUserProblems } from '@/lib/cache';
 
 export async function PATCH(
   request: NextRequest,
@@ -39,6 +40,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.problem.update({ where: { id }, data });
+    invalidateUserProblems(userId);
     return Response.json(updated);
   } catch (e) {
     console.error('[PATCH /api/problems/[id]]', e);
@@ -61,6 +63,7 @@ export async function DELETE(
     if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
     await prisma.problem.delete({ where: { id } });
+    invalidateUserProblems(userId);
     return Response.json({ success: true, message: 'Problem deleted' });
   } catch (e) {
     console.error('[DELETE /api/problems/[id]]', e);

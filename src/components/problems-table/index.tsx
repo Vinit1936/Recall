@@ -299,6 +299,7 @@ export function ProblemsTable() {
   const { data: rawColumns, mutate: mutateColumns } = useSWR('/api/columns', fetcher);
   const columns: any[] = Array.isArray(rawColumns) ? rawColumns : [];
 
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([]);
@@ -309,6 +310,13 @@ export function ProblemsTable() {
   const [toast, setToast] = useState('');
   const [tableHovered, setTableHovered] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Set mounted on client to prevent SSR hydration mismatch with SWR client cache
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showSkeleton = !mounted || (isLoading && !allProblems);
 
   // Restore user sort preferences and active tab from URL on mount
   useEffect(() => {
@@ -915,7 +923,7 @@ export function ProblemsTable() {
         <table style={{ width: '100%', minWidth: 1185 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
-            {isLoading ? (
+            {showSkeleton ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <SkeletonRow key={i} columns={COLUMN_COUNT} />
               ))

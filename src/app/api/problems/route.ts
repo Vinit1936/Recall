@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { getResolver } from '@/lib/platforms';
 import { getInitialSchedule } from '@/lib/scheduling';
+import { getCachedUserProblems, invalidateUserProblems } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,22 +18,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') ?? undefined;
     const topic = searchParams.get('topic') ?? undefined;
 
-    const problems = await prisma.problem.findMany({
-      where: {
-        userId,
-        ...(status ? { status: status as any } : {}),
-        ...(topic ? { topic } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        revisions: {
-          orderBy: { revisedAt: 'desc' },
-          take: 1,
-        },
+    const problems = await getCachedUserProblems(userId, status, topic);
+
+    return Response.json(problems, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
       },
     });
-
-    return Response.json(problems);
   } catch (e) {
     console.error('[GET /api/problems]', e);
     return Response.json({ error: 'Failed to fetch problems' }, { status: 500 });
@@ -113,6 +105,10 @@ export async function POST(request: NextRequest) {
           status: schedule.status,
         },
       });
+
+      // Invalidate server cache for user problems
+      invalidateUserProblems(userId);
+
       return Response.json(problem, { status: 201 });
     } catch (e: any) {
       if (e?.code === 'P2002') {
@@ -145,6 +141,9 @@ export async function DELETE(request: NextRequest) {
         userId,
       },
     });
+
+    // Invalidate server cache for user problems
+    invalidateUserProblems(userId);
 
     return Response.json({ count: deleted.count, message: `Successfully deleted ${deleted.count} problems` });
   } catch (e) {

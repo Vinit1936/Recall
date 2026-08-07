@@ -15,7 +15,11 @@ export async function GET(_request: NextRequest) {
       where: { userId },
       orderBy: { order: 'asc' },
     });
-    return Response.json(columns);
+    return Response.json(columns, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=300',
+      },
+    });
   } catch (e) {
     console.error('[GET /api/columns]', e);
     return Response.json({ error: 'Failed to fetch columns' }, { status: 500 });

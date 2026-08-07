@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR, { useSWRConfig } from 'swr';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { StatsStrip } from '@/components/daily/stats-strip';
@@ -20,8 +20,15 @@ export default function DailyRevisionPage() {
   const { data: streakData } = useSWR('/api/streak', fetcher);
   const { data: activity } = useSWR('/api/activity', fetcher);
 
+  const [mounted, setMounted] = useState(false);
   const [revisedIds, setRevisedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDailyLoading = !mounted || (dueLoading && !dueProblems);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -97,7 +104,7 @@ export default function DailyRevisionPage() {
 
       {/* Hero Questions Table Area */}
       <AnimatePresence mode="wait">
-        {dueLoading ? (
+        {isDailyLoading ? (
           <div style={{ border: '1px solid #1e1e1e', borderRadius: 8, background: '#111112', overflow: 'hidden' }}>
             <NotionTableHeader />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
