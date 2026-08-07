@@ -4,6 +4,13 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
+function toDateKey(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
@@ -11,37 +18,61 @@ export async function GET(_request: NextRequest) {
     const userId = session.user.id;
 
     const today = new Date();
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayKey = toDateKey(today);
 
+    // Get yesterday's key
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayKey = toDateKey(yesterday);
+
+    // Fetch streak logs
     const logs = await prisma.streakLog.findMany({
-      where: { userId },
-      orderBy: { date: 'desc' },
+      where: { userId, completed: true },
     });
 
-    const logMap = new Map<string, boolean>();
+    // Also fetch revisions for the user to count any problem revised on a date
+    const problems = await prisma.problem.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    const problemIds = problems.map((p) => p.id);
+
+    const revisions = problemIds.length > 0 ? await prisma.revision.findMany({
+      where: { problemId: { in: problemIds } },
+      select: { revisedAt: true },
+    }) : [];
+
+    const activeDates = new Set<string>();
     for (const log of logs) {
-      const key = log.date.toISOString().split('T')[0];
-      logMap.set(key, log.completed);
+      activeDates.add(toDateKey(log.date));
+    }
+    for (const rev of revisions) {
+      activeDates.add(toDateKey(rev.revisedAt));
     }
 
-    const todayKey = todayMidnight.toISOString().split('T')[0];
-    const todayCompleted = logMap.get(todayKey) ?? false;
+    const todayCompleted = activeDates.has(todayKey);
+    const yesterdayCompleted = activeDates.has(yesterdayKey);
 
     let streak = 0;
-    const cursor = new Date(todayMidnight);
-    cursor.setDate(cursor.getDate() - 1);
+    const cursor = new Date(today);
 
-    while (true) {
-      const key = cursor.toISOString().split('T')[0];
-      if (logMap.get(key) === true) {
+    if (todayCompleted) {
+      // Today is done — count backwards starting from today
+      while (activeDates.has(toDateKey(cursor))) {
         streak++;
         cursor.setDate(cursor.getDate() - 1);
-      } else {
-        break;
       }
+    } else if (yesterdayCompleted) {
+      // Today is pending, but streak is active through yesterday
+      cursor.setDate(cursor.getDate() - 1);
+      while (activeDates.has(toDateKey(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+    } else {
+      // Streak broken
+      streak = 0;
     }
-
-    if (todayCompleted) streak++;
 
     return Response.json({ currentStreak: streak, todayCompleted });
   } catch (e) {
@@ -49,3 +80,5 @@ export async function GET(_request: NextRequest) {
     return Response.json({ error: 'Failed to fetch streak' }, { status: 500 });
   }
 }
+
+

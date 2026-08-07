@@ -58,19 +58,17 @@ export async function PATCH(
       });
     });
 
-    // Mark today's streak complete if all due problems are now done
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const remainingDue = await prisma.problem.count({
-      where: { userId, status: 'ACTIVE', nextRevisionAt: { lte: today } },
-    });
+    // Mark today's streak complete when any problem revision is submitted
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const dateNum = today.getDate();
+    const todayDateObj = new Date(Date.UTC(year, month, dateNum, 12, 0, 0));
 
-    if (remainingDue === 0) {
-      await prisma.streakLog.upsert({
-        where: { userId_date: { userId, date: todayMidnight } },
-        create: { userId, date: todayMidnight, completed: true },
-        update: { completed: true },
-      });
-    }
+    await prisma.streakLog.upsert({
+      where: { userId_date: { userId, date: todayDateObj } },
+      create: { userId, date: todayDateObj, completed: true },
+      update: { completed: true },
+    });
 
     return Response.json(updatedProblem);
   } catch (e) {
