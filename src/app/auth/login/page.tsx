@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'motion/react';
+import downloadImg from '../../../../utils/download.jpg';
 
 // Fake decorative heatmap for the left panel
 function FakeHeatmap() {
@@ -67,7 +70,8 @@ function PrimaryButton({ children, onClick, loading, disabled }: { children: Rea
         width: '100%',
         background: loading || disabled ? '#ccc' : '#fff',
         color: '#000',
-        border: 'none',
+        borderWidth: 0,
+        outline: 'none',
         borderRadius: 6,
         fontSize: 14,
         fontWeight: 500,
@@ -94,7 +98,10 @@ function OAuthButton({ provider, label, onClick }: { provider: 'google' | 'githu
       style={{
         width: '100%',
         background: 'transparent',
-        border: '1px solid #2a2a2a',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#2a2a2a',
+        outline: 'none',
         borderRadius: 6,
         color: '#fff',
         fontSize: 14,
@@ -214,151 +221,184 @@ export default function LoginPage() {
     }
   };
 
-  const inputStyle = {
-    tabButton: (active: boolean): React.CSSProperties => ({
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: 15,
-      fontWeight: 500,
-      color: active ? '#fff' : '#555',
-      padding: '0 0 10px 0',
-      borderBottom: active ? '2px solid #fff' : '2px solid transparent',
-      transition: 'color 0.15s, border-color 0.15s',
-      marginRight: 24,
-    }),
-  };
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Left panel — inspiration design with download.jpg */}
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#09090b' }}>
+      {/* Left panel — smaller width (40%) in a box with 24px corner radius */}
       <div
         style={{
-          width: '50%',
-          backgroundImage: 'url("/login-bg.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          position: 'relative',
+          width: '40%',
+          height: '100vh',
+          padding: '20px 10px 20px 20px',
+          boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '56px 48px',
-          boxSizing: 'border-box',
         }}
       >
-        {/* Dark subtle overlay for crisp text contrast */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.65) 100%)',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Top Brand Logo */}
         <div
           style={{
             position: 'relative',
-            zIndex: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
+            width: '100%',
+            height: '100%',
+            borderRadius: 24,
+            overflow: 'hidden',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
           }}
         >
-          <div
-            style={{
-              fontFamily: 'var(--font-geist-mono), monospace',
-              fontSize: 28,
-              fontWeight: 700,
-              color: '#ffffff',
-              letterSpacing: '-0.03em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 22 }}>✦</span> recall<span style={{ color: '#F7981E' }}>.</span>
-          </div>
-        </div>
-
-        {/* Bottom Hero Headline */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            textAlign: 'center',
-            maxWidth: 480,
-            margin: '0 auto',
-          }}
-        >
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255, 255, 255, 0.85)', marginBottom: 12, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-            Spaced Repetition Tracker
-          </div>
-          <h2
-            style={{
-              fontSize: 34,
-              fontWeight: 600,
-              color: '#ffffff',
-              lineHeight: 1.25,
-              letterSpacing: '-0.02em',
-              margin: 0,
-            }}
-          >
-            Your personal hub for problem solving, revision, and mastery
-          </h2>
+          <Image
+            src={downloadImg}
+            alt="Recall background"
+            fill
+            priority
+            sizes="40vw"
+            style={{ objectFit: 'cover' }}
+          />
         </div>
       </div>
 
-      {/* Right panel — form */}
+      {/* Right panel — larger form area (60%) in a matching box with 24px corner radius */}
       <div
         style={{
-          width: '50%',
-          background: '#0f0f0f',
+          width: '60%',
+          height: '100vh',
+          padding: '20px 20px 20px 10px',
+          boxSizing: 'border-box',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px',
+          flexDirection: 'column',
         }}
       >
-        <div style={{ width: '100%', maxWidth: 400, minHeight: 530 }}>
-          {/* Tab switcher */}
-          <div style={{ display: 'flex', marginBottom: 32, borderBottom: '1px solid #1e1e1e', paddingBottom: 0 }}>
-            <button style={inputStyle.tabButton(tab === 'signin')} onClick={() => setTab('signin')}>Sign in</button>
-            <button style={inputStyle.tabButton(tab === 'signup')} onClick={() => setTab('signup')}>Sign up</button>
-          </div>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: 24,
+            background: '#131315',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '48px',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div style={{ width: '100%', maxWidth: 400 }}>
+            {/* Tab switcher */}
+            <div style={{ display: 'flex', marginBottom: 32, borderBottom: '1px solid #1e1e1e', paddingBottom: 0, position: 'relative' }}>
+              <button
+                onClick={() => setTab('signin')}
+                style={{
+                  background: 'none',
+                  borderWidth: 0,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: tab === 'signin' ? '#ffffff' : '#666666',
+                  padding: '0 0 10px 0',
+                  marginRight: 24,
+                  position: 'relative',
+                  transition: 'color 0.15s ease',
+                }}
+              >
+                Sign in
+                {tab === 'signin' && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    style={{
+                      position: 'absolute',
+                      bottom: -1,
+                      left: 0,
+                      right: 0,
+                      height: 2,
+                      background: '#ffffff',
+                      borderRadius: 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </button>
 
-          {tab === 'signin' ? (
-            <>
-              <Input label="Email" type="email" value={siEmail} onChange={setSiEmail} placeholder="you@example.com" />
-              <Input label="Password" type="password" value={siPassword} onChange={setSiPassword} placeholder="••••••••" />
-              {siError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{siError}</div>}
-              <PrimaryButton onClick={handleSignIn} loading={siLoading}>Sign in →</PrimaryButton>
-              <Divider />
-              <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
-              <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
-              <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
-                Don&apos;t have an account?{' '}
-                <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <Input label="Name (optional)" type="text" value={suName} onChange={setSuName} placeholder="Your name" />
-              <Input label="Email" type="email" value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
-              <Input label="Password (min 8 characters)" type="password" value={suPassword} onChange={setSuPassword} placeholder="••••••••" />
-              {suError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{suError}</div>}
-              <PrimaryButton onClick={handleSignUp} loading={suLoading}>Create account →</PrimaryButton>
-              <Divider />
-              <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
-              <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
-              <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
-                Already have an account?{' '}
-                <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>
-              </div>
-            </>
-          )}
+              <button
+                onClick={() => setTab('signup')}
+                style={{
+                  background: 'none',
+                  borderWidth: 0,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: tab === 'signup' ? '#ffffff' : '#666666',
+                  padding: '0 0 10px 0',
+                  position: 'relative',
+                  transition: 'color 0.15s ease',
+                }}
+              >
+                Sign up
+                {tab === 'signup' && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    style={{
+                      position: 'absolute',
+                      bottom: -1,
+                      left: 0,
+                      right: 0,
+                      height: 2,
+                      background: '#ffffff',
+                      borderRadius: 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </button>
+            </div>
+
+            {/* Smooth Form Content Transition */}
+            <AnimatePresence mode="wait">
+              {tab === 'signin' ? (
+                <motion.div
+                  key="signin"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Input label="Email" type="email" value={siEmail} onChange={setSiEmail} placeholder="you@example.com" />
+                  <Input label="Password" type="password" value={siPassword} onChange={setSiPassword} placeholder="••••••••" />
+                  {siError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{siError}</div>}
+                  <PrimaryButton onClick={handleSignIn} loading={siLoading}>Sign in →</PrimaryButton>
+                  <Divider />
+                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
+                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
+                  <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
+                    Don&apos;t have an account?{' '}
+                    <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="signup"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Input label="Name (optional)" type="text" value={suName} onChange={setSuName} placeholder="Your name" />
+                  <Input label="Email" type="email" value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
+                  <Input label="Password (min 8 characters)" type="password" value={suPassword} onChange={setSuPassword} placeholder="••••••••" />
+                  {suError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{suError}</div>}
+                  <PrimaryButton onClick={handleSignUp} loading={suLoading}>Create account →</PrimaryButton>
+                  <Divider />
+                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
+                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
+                  <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
+                    Already have an account?{' '}
+                    <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
