@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 type StatsStripProps = {
   streak: number;
   totalProblems: number;
@@ -17,7 +19,18 @@ export function StatsStrip({
   overdueCount = 0,
   todayCompleted = false,
 }: StatsStripProps) {
-  const isFlameLit = streak > 0 || todayCompleted;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const displayStreak = mounted ? streak : 0;
+  const displayTotal = mounted ? totalProblems : 0;
+  const displayMastered = mounted ? masteredCount : 0;
+  const displayDue = mounted ? dueCount : 0;
+  const displayOverdue = mounted ? overdueCount : 0;
+  const isFlameLit = mounted && (streak > 0 || todayCompleted);
 
   return (
     <div style={{ marginBottom: 28 }}>
@@ -36,10 +49,10 @@ export function StatsStrip({
             lineHeight: 1,
           }}
         >
-          {streak}
+          {displayStreak}
         </span>
         <span style={{ fontSize: 18, fontWeight: 600, color: '#888', letterSpacing: '-0.01em' }}>
-          {streak === 1 ? 'day streak' : 'day streak'}
+          {displayStreak === 1 ? 'day streak' : 'day streak'}
         </span>
       </div>
 
@@ -47,21 +60,21 @@ export function StatsStrip({
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#777' }}>
         <span>
           <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontWeight: 600, color: '#ececec' }}>
-            {dueCount}
+            {displayDue}
           </span>{' '}
-          due today {overdueCount > 0 && <span style={{ color: '#666' }}>({overdueCount} overdue)</span>}
+          due today {displayOverdue > 0 && <span style={{ color: '#666' }}>({displayOverdue} overdue)</span>}
         </span>
         <span style={{ color: '#333' }}>·</span>
         <span>
           <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontWeight: 600, color: '#ececec' }}>
-            {totalProblems}
+            {displayTotal}
           </span>{' '}
           total problems
         </span>
         <span style={{ color: '#333' }}>·</span>
         <span>
           <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontWeight: 600, color: '#ececec' }}>
-            {masteredCount}
+            {displayMastered}
           </span>{' '}
           mastered
         </span>

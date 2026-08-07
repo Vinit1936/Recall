@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 type ActivityEntry = { date: string; count: number };
@@ -27,6 +27,11 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export function ContributionHeatmap({ activity }: HeatmapProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const { weeks, monthLabels, todayStr, totalSubmissions, totalActiveDays, maxStreak } = useMemo(() => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -86,6 +91,10 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
     return { weeks, monthLabels, todayStr, totalSubmissions, totalActiveDays, maxStreak };
   }, [activity]);
 
+  const displaySubmissions = mounted ? totalSubmissions : 0;
+  const displayActiveDays = mounted ? totalActiveDays : 0;
+  const displayMaxStreak = mounted ? maxStreak : 0;
+
   const CELL = 11;
   const GAP = 3;
   const DAY_LABEL_W = 28;
@@ -114,7 +123,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
           {/* Left: Total Submissions */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, fontSize: 14, color: '#aaa' }}>
             <span style={{ fontSize: 20, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-geist-mono), monospace' }}>
-              {totalSubmissions}
+              {displaySubmissions}
             </span>
             <span>revisions in the past one year</span>
           </div>
@@ -124,13 +133,13 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
             <div>
               Total active days:{' '}
               <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
-                {totalActiveDays}
+                {displayActiveDays}
               </strong>
             </div>
             <div>
               Max streak:{' '}
               <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
-                {maxStreak}
+                {displayMaxStreak}
               </strong>
             </div>
           </div>
