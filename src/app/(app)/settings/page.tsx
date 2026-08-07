@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
+import { PlatformLogo } from '@/lib/platforms/logos';
 
-const PLATFORMS = ['LEETCODE', 'CODEFORCES', 'GFG', 'HACKERRANK', 'CODECHEF'];
+const PLATFORMS = [
+  { id: 'LEETCODE', label: 'LeetCode' },
+  { id: 'CODEFORCES', label: 'Codeforces' },
+  { id: 'GFG', label: 'GeeksforGeeks' },
+  { id: 'HACKERRANK', label: 'HackerRank' },
+  { id: 'CODECHEF', label: 'CodeChef' },
+];
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
@@ -15,6 +22,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [savingName, setSavingName] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     // Load local storage preferences
@@ -57,9 +65,10 @@ export default function SettingsPage() {
     }
   };
 
-  const handlePlatformChange = (val: string) => {
-    setDefaultPlatform(val);
-    localStorage.setItem('recall_default_platform', val);
+  const handlePlatformSelect = (id: string) => {
+    setDefaultPlatform(id);
+    localStorage.setItem('recall_default_platform', id);
+    setDropdownOpen(false);
   };
 
   const handleTargetChange = (val: string) => {
@@ -71,17 +80,18 @@ export default function SettingsPage() {
     window.location.href = '/api/export';
   };
 
+  const selectedPlatformObj = PLATFORMS.find((p) => p.id === defaultPlatform) || PLATFORMS[0];
   const initial = name ? name.charAt(0).toUpperCase() : email ? email.charAt(0).toUpperCase() : 'U';
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 24px' }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: 32 }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 36 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 6 }}>
           Settings
         </h1>
-        <p style={{ fontSize: 13, color: '#666' }}>
-          Manage your account profile, preferences, and data backup.
+        <p style={{ fontSize: 13, color: '#777' }}>
+          Manage your account profile, system preferences, and data backups.
         </p>
       </div>
 
@@ -91,32 +101,37 @@ export default function SettingsPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Section 1: Account Profile */}
+          {/* Card 1: Account Profile */}
           <div
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
-              borderRadius: 8,
+              borderRadius: 10,
               padding: 24,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 18 }}>
-              Account Profile
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#888' }}>
+                <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Account Profile</div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
               <div
                 style={{
-                  width: 48,
-                  height: 48,
+                  width: 52,
+                  height: 52,
                   borderRadius: '50%',
-                  background: '#222226',
-                  border: '1px solid #2a2a30',
+                  background: 'linear-gradient(135deg, #222226 0%, #18181b 100%)',
+                  border: '1px solid #2e2e34',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 18,
-                  fontWeight: 600,
+                  fontSize: 20,
+                  fontWeight: 700,
                   color: '#fff',
                   fontFamily: 'var(--font-geist-mono), monospace',
                 }}
@@ -124,12 +139,12 @@ export default function SettingsPage() {
                 {initial}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{name || 'User'}</div>
-                <div style={{ fontSize: 12, color: '#666' }}>{email}</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{name || 'User'}</div>
+                <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>{email}</div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 400 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
                   Display Name
@@ -139,16 +154,17 @@ export default function SettingsPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
+                    placeholder="Your display name"
                     style={{
                       flex: 1,
                       background: '#161618',
-                      border: '1px solid #26262a',
+                      border: '1px solid #28282c',
                       borderRadius: 6,
-                      padding: '7px 12px',
+                      padding: '8px 12px',
                       fontSize: 13,
                       color: '#fff',
                       outline: 'none',
+                      transition: 'border-color 0.15s',
                     }}
                   />
                   <button
@@ -161,16 +177,17 @@ export default function SettingsPage() {
                       color: '#fff',
                       fontSize: 12,
                       fontWeight: 500,
-                      padding: '0 14px',
+                      padding: '0 16px',
                       cursor: 'pointer',
+                      transition: 'background 0.15s',
                     }}
                   >
                     {savingName ? 'Saving...' : 'Save'}
                   </button>
                 </div>
                 {savedMessage && (
-                  <div style={{ fontSize: 12, color: '#10b981', marginTop: 6 }}>
-                    {savedMessage}
+                  <div style={{ fontSize: 12, color: '#10b981', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>✓</span> {savedMessage}
                   </div>
                 )}
               </div>
@@ -188,7 +205,7 @@ export default function SettingsPage() {
                     background: '#141415',
                     border: '1px solid #202024',
                     borderRadius: 6,
-                    padding: '7px 12px',
+                    padding: '8px 12px',
                     fontSize: 13,
                     color: '#555',
                     cursor: 'not-allowed',
@@ -200,129 +217,225 @@ export default function SettingsPage() {
                 <button
                   onClick={() => signOut({ callbackUrl: '/auth/login' })}
                   style={{
-                    background: 'transparent',
-                    border: '1px solid #2a2a2e',
+                    background: '#181414',
+                    border: '1px solid #2c1a1a',
                     borderRadius: 6,
-                    color: '#ef4444',
+                    color: '#f87171',
                     fontSize: 12,
                     fontWeight: 500,
-                    padding: '7px 14px',
+                    padding: '8px 14px',
                     cursor: 'pointer',
+                    transition: 'background 0.15s, border-color 0.15s',
                   }}
                 >
-                  Sign Out
+                  Sign Out of Account
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Section 2: Preferences */}
+          {/* Card 2: Preferences */}
           <div
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
-              borderRadius: 8,
+              borderRadius: 10,
               padding: 24,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 18 }}>
-              Preferences
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#888' }}>
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M5 6h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Preferences</div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400 }}>
-              <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 420 }}>
+              {/* Custom Platform Dropdown */}
+              <div style={{ position: 'relative' }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
                   Default Coding Platform
                 </label>
-                <select
-                  value={defaultPlatform}
-                  onChange={(e) => handlePlatformChange(e.target.value)}
+
+                {/* Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
                   style={{
                     width: '100%',
                     background: '#161618',
-                    border: '1px solid #26262a',
+                    border: '1px solid #28282c',
                     borderRadius: 6,
-                    padding: '7px 12px',
+                    padding: '8px 12px',
                     fontSize: 13,
                     color: '#fff',
-                    outline: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                     cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
-                  {PLATFORMS.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-                <span style={{ fontSize: 11, color: '#555', marginTop: 4, display: 'block' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <PlatformLogo platform={selectedPlatformObj.id} size={18} padding={1} />
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>{selectedPlatformObj.label}</span>
+                  </div>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    style={{
+                      color: '#888',
+                      transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.15s ease',
+                    }}
+                  >
+                    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Options Popup */}
+                {dropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: 4,
+                      background: '#18181c',
+                      border: '1px solid #2a2a30',
+                      borderRadius: 8,
+                      padding: 4,
+                      zIndex: 30,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    {PLATFORMS.map((plat) => {
+                      const isSelected = plat.id === defaultPlatform;
+                      return (
+                        <div
+                          key={plat.id}
+                          onClick={() => handlePlatformSelect(plat.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 10px',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            background: isSelected ? '#222228' : 'transparent',
+                            transition: 'background 0.1s',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = '#1e1e22';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <PlatformLogo platform={plat.id} size={18} padding={1} />
+                            <span style={{ fontSize: 13, color: isSelected ? '#fff' : '#ccc', fontWeight: isSelected ? 600 : 400 }}>
+                              {plat.label}
+                            </span>
+                          </div>
+                          {isSelected && <span style={{ fontSize: 12, color: '#10b981', fontWeight: 700 }}>✓</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <span style={{ fontSize: 11, color: '#555', marginTop: 6, display: 'block' }}>
                   Pre-selected platform when adding new problems.
                 </span>
               </div>
 
+              {/* Daily Revision Goal */}
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
                   Daily Revision Goal
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={dailyTarget}
-                  onChange={(e) => handleTargetChange(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: '#161618',
-                    border: '1px solid #26262a',
-                    borderRadius: 6,
-                    padding: '7px 12px',
-                    fontSize: 13,
-                    color: '#fff',
-                    outline: 'none',
-                  }}
-                />
-                <span style={{ fontSize: 11, color: '#555', marginTop: 4, display: 'block' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {['3', '5', '10', '15'].map((targetVal) => {
+                    const active = dailyTarget === targetVal;
+                    return (
+                      <button
+                        key={targetVal}
+                        type="button"
+                        onClick={() => handleTargetChange(targetVal)}
+                        style={{
+                          flex: 1,
+                          padding: '7px 0',
+                          borderRadius: 6,
+                          background: active ? '#1f1f23' : '#141416',
+                          border: active ? '1px solid #3b82f6' : '1px solid #222226',
+                          color: active ? '#fff' : '#777',
+                          fontSize: 13,
+                          fontWeight: active ? 600 : 400,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-geist-mono), monospace',
+                          transition: 'all 0.12s ease',
+                        }}
+                      >
+                        {targetVal} / day
+                      </button>
+                    );
+                  })}
+                </div>
+                <span style={{ fontSize: 11, color: '#555', marginTop: 6, display: 'block' }}>
                   Target number of problem revisions per day.
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Data Export */}
+          {/* Card 3: Data Export */}
           <div
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
-              borderRadius: 8,
+              borderRadius: 10,
               padding: 24,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
             }}
           >
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 6 }}>
-              Data Backup & Export
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#888' }}>
+                <path d="M3 13h10M8 2v8M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Data Backup & Export</div>
             </div>
-            <p style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
-              Download a complete JSON export of all your tracked problems, notes, and revision history logs.
+
+            <p style={{ fontSize: 12.5, color: '#666', marginBottom: 18, lineHeight: 1.5 }}>
+              Download a complete JSON export of all your tracked problems, custom notes, revisions, and daily streak logs.
             </p>
 
             <button
               onClick={handleExportData}
               style={{
-                background: '#1f1f23',
-                border: '1px solid #2e2e34',
+                background: '#19191c',
+                border: '1px solid #2a2a30',
                 borderRadius: 6,
                 color: '#fff',
-                fontSize: 12,
+                fontSize: 12.5,
                 fontWeight: 500,
-                padding: '8px 16px',
+                padding: '9px 18px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                transition: 'background 0.15s',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M8 2v8M4 7l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ color: '#38bdf8' }}>
+                <path d="M8 2v8M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               Export All Data (.json)
             </button>
@@ -332,3 +445,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
