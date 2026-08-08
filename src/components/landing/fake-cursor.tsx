@@ -15,7 +15,7 @@ const FakeCursor = forwardRef<CursorHandle>((_, ref) => {
 
   useImperativeHandle(ref, () => ({
     async moveTo(x, y, duration = 0.5) {
-      await controls.start({ x: x - 4, y: y - 6, transition: { duration, ease: [0.25, 0.1, 0.25, 1] } });
+      await controls.start({ x: x - 15, y: y - 20, transition: { duration, ease: [0.25, 0.1, 0.25, 1] } });
     },
     async click() {
       await controls.start({ scale: 0.75, transition: { duration: 0.08 } });
