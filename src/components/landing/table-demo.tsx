@@ -544,7 +544,3 @@ export function TableDemo() {
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
