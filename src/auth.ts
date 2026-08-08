@@ -54,37 +54,60 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if ((account?.provider === 'google' || account?.provider === 'github') && user?.email) {
+      if ((account?.provider === 'google' || account?.provider === 'github') && account?.providerAccountId) {
         try {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            include: { accounts: true },
+          // 1. Check if an account already exists for this provider & providerAccountId
+          const existingAccount = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+            include: { user: true },
           });
 
-          if (existingUser) {
-            const hasAccount = existingUser.accounts.some(
-              (acc) => acc.provider === account.provider
-            );
+          if (existingAccount && existingAccount.user) {
+            // Force user identity to the account owner
+            user.id = existingAccount.user.id;
+            user.email = existingAccount.user.email;
+            return true;
+          }
 
-            if (!hasAccount) {
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state as string | undefined,
-                },
-              });
+          // 2. If no account exists for providerAccountId, check by email
+          if (user.email) {
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email },
+              include: { accounts: true },
+            });
+
+            if (existingUser) {
+              user.id = existingUser.id;
+
+              const hasAccount = existingUser.accounts.some(
+                (acc) => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+              );
+
+              if (!hasAccount) {
+                await prisma.account.create({
+                  data: {
+                    userId: existingUser.id,
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                    session_state: account.session_state as string | undefined,
+                  },
+                });
+              }
             }
           }
         } catch (error) {
-          console.error('Error auto-linking OAuth account:', error);
+          console.error('Error in signIn callback:', error);
         }
       }
       return true;
