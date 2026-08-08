@@ -6,14 +6,13 @@ import { motion } from 'motion/react';
 export function Navbar() {
   return (
     <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: -20, x: '-50%' }}
+      animate={{ opacity: 1, y: 0, x: '-50%' }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
       style={{
         position: 'fixed',
         top: '20px',
         left: '50%',
-        transform: 'translateX(-50%)',
         zIndex: 100,
         width: 'calc(100% - 32px)',
         maxWidth: '920px',
@@ -28,7 +27,6 @@ export function Navbar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 8px 0 24px',
-        margin: '0 auto',
       }}
     >
       {/* Left: Dashboard-Style Wordmark (Geist Mono + Orange Period) */}
@@ -47,15 +45,12 @@ export function Navbar() {
         recall<span style={{ color: '#F7981E' }}>.</span>
       </Link>
 
-      {/* Dead-Center: Navigation Links */}
+      {/* Center: Navigation Links */}
       <nav
         style={{
-          position: 'absolute',
-          left: '50%',
-          transform: 'translateX(-50%)',
           display: 'flex',
           alignItems: 'center',
-          gap: '20px',
+          gap: '24px',
         }}
       >
         <a
