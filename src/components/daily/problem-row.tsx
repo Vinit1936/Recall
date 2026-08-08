@@ -104,9 +104,11 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
       {/* 1. ID / Number */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <PlatformLogo platform={problem.platform ?? 'LEETCODE'} size={19} padding={1} />
-        <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 12, color: '#888' }}>
-          {problem.problemNumber}
-        </span>
+        {(problem.platform === 'LEETCODE' || problem.platform === 'CODEFORCES') && (problem.problemNumber ?? 0) > 0 && (
+          <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 12, color: '#888' }}>
+            {problem.problemNumber}
+          </span>
+        )}
       </div>
 
       {/* 2. Title */}

@@ -519,8 +519,9 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
                 {(() => {
+                  const isLeetCodeOrCF = platform === 'LEETCODE' || platform === 'CODEFORCES';
                   const isUrl = problemNumber.startsWith('http') || problemNumber.startsWith('www.');
-                  const codeDisplay = !isUrl ? (autoFill.code || problemNumber) : (autoFill.code && autoFill.code.length <= 15 ? autoFill.code : null);
+                  const codeDisplay = isLeetCodeOrCF && !isUrl ? (autoFill.code || problemNumber) : null;
                   return codeDisplay ? (
                     <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', flexShrink: 0 }}>
                       {codeDisplay}

@@ -134,9 +134,11 @@ export function FocusDeck({ problems, revisedIds, onRevised, onToast, onExitFocu
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <PlatformLogo platform={currentProblem.platform ?? 'LEETCODE'} size={22} />
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14, color: '#888' }}>
-                #{currentProblem.problemNumber}
-              </span>
+              {(currentProblem.platform === 'LEETCODE' || currentProblem.platform === 'CODEFORCES') && (currentProblem.problemNumber ?? 0) > 0 && (
+                <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14, color: '#888' }}>
+                  #{currentProblem.problemNumber}
+                </span>
+              )}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

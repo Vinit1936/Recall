@@ -423,7 +423,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       {/* Problem cell: number + title */}
       <td style={{ width: 340, padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-          {problem.problemNumber > 0 && (
+          {(problem.platform === 'LEETCODE' || problem.platform === 'CODEFORCES') && problem.problemNumber > 0 && (
             <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
               {problem.problemNumber}
             </span>
