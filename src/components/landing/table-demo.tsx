@@ -6,10 +6,20 @@ import { PlatformLogo } from '@/lib/platforms/logos';
 import { getTopicColor, getDifficultyStyle } from './demo-styles';
 import { FakeCursor, CursorHandle } from './fake-cursor';
 
-const FAKE_PROBLEMS = [
-  { id: 1, number: 1, title: 'Two Sum', difficulty: 'EASY', topic: 'Array', status: 'CLEAN', nextRevision: 'in 2 days', statusColor: '#4ade80' },
-  { id: 2, number: 21, title: 'Merge Two Sorted Lists', difficulty: 'EASY', topic: 'Linked List', status: 'SHAKY', nextRevision: 'today', statusColor: '#fb923c' },
-  { id: 3, number: 124, title: 'Binary Tree Max Path Sum', difficulty: 'HARD', topic: 'Binary Tree', status: 'STRUGGLED', nextRevision: 'overdue', statusColor: '#f87171' },
+const INITIAL_PROBLEMS = [
+  { id: 1, platform: 'CODEFORCES', number: '187303', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', nextRevision: 'in 2d', statusColor: '#22c55e' },
+  { id: 2, platform: 'CODECHEF', number: '', title: 'Triple Xor', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
+  { id: 3, platform: 'HACKERRANK', number: '474076679', title: 'Luck Balance', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
+  { id: 4, platform: 'GFG', number: '170210165', title: 'Program To Print First N Fibonacci', difficulty: 'MEDIUM', topic: '', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
+  { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'General', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
+];
+
+const PLATFORMS_LIST = [
+  { id: 'LEETCODE', label: 'LeetCode' },
+  { id: 'CODEFORCES', label: 'Codeforces' },
+  { id: 'GFG', label: 'GeeksForGeeks' },
+  { id: 'HACKERRANK', label: 'HackerRank' },
+  { id: 'CODECHEF', label: 'CodeChef' },
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -19,26 +29,25 @@ export function TableDemo() {
   const cursorRef = useRef<CursorHandle>(null);
   const isInView = useInView(containerRef, { amount: 0.3 });
 
-  // References for cursor targets
-  const newRowBtnRef = useRef<HTMLDivElement>(null);
-  const platformCellRef = useRef<HTMLDivElement>(null);
-  const dropdownOptionRef = useRef<HTMLDivElement>(null);
-  const numberCellRef = useRef<HTMLDivElement>(null);
+  // Refs for cursor targets
+  const newRowTriggerRef = useRef<HTMLDivElement>(null);
+  const leetCodeOptionRef = useRef<HTMLDivElement>(null);
+  const inputCellRef = useRef<HTMLDivElement>(null);
   const notesCellRef = useRef<HTMLDivElement>(null);
 
-  // States
-  const [newRowVisible, setNewRowVisible] = useState(false);
-  const [newRowPlatform, setNewRowPlatform] = useState<'LEETCODE' | null>(null);
+  // Demo animation states
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [newRowNumber, setNewRowNumber] = useState('');
+  const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
+
+  const [newRowActive, setNewRowActive] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
   const [isTypingNumber, setIsTypingNumber] = useState(false);
-  const [isShimmering, setIsShimmering] = useState(false);
-  const [titleVisible, setTitleVisible] = useState(false);
-  const [easyPillVisible, setEasyPillVisible] = useState(false);
-  const [topicPillVisible, setTopicPillVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
   const [greenFlash, setGreenFlash] = useState(false);
+  const [notesValue, setNotesValue] = useState('');
   const [isTypingNotes, setIsTypingNotes] = useState(false);
-  const [newRowNotes, setNewRowNotes] = useState('');
   const [rowFinalized, setRowFinalized] = useState(false);
 
   const getRelativePos = (el: HTMLElement | null) => {
@@ -52,18 +61,17 @@ export function TableDemo() {
   };
 
   const resetAll = () => {
-    setNewRowVisible(false);
-    setNewRowPlatform(null);
     setDropdownOpen(false);
-    setNewRowNumber('');
+    setHoveredPlatform(null);
+    setNewRowActive(false);
+    setSelectedPlatform(null);
+    setInputValue('');
     setIsTypingNumber(false);
-    setIsShimmering(false);
-    setTitleVisible(false);
-    setEasyPillVisible(false);
-    setTopicPillVisible(false);
+    setIsLoading(false);
+    setAutoFilled(false);
     setGreenFlash(false);
+    setNotesValue('');
     setIsTypingNotes(false);
-    setNewRowNotes('');
     setRowFinalized(false);
     cursorRef.current?.hide();
   };
@@ -81,132 +89,109 @@ export function TableDemo() {
       await sleep(800);
       if (isCancelled) return;
 
-      // t=800ms: cursor fades in at "+ New row" position
-      const btnPos = getRelativePos(newRowBtnRef.current);
-      cursorRef.current?.moveTo(btnPos.x - 10, btnPos.y + 10, 0);
+      // t=800ms: cursor fades in near "+ Select a platform"
+      const trigPos = getRelativePos(newRowTriggerRef.current);
+      cursorRef.current?.moveTo(trigPos.x + 30, trigPos.y + 40, 0);
       cursorRef.current?.show();
-
-      // t=1200ms: cursor moves to "+ New row" (smooth 0.4s)
-      await sleep(400);
-      if (isCancelled) return;
-      await cursorRef.current?.moveTo(btnPos.x, btnPos.y, 0.4);
-      await sleep(400);
-      if (isCancelled) return;
-
-      // t=1600ms: cursor click -> new empty row 4 appears
-      await cursorRef.current?.click();
-      setNewRowVisible(true);
-      await sleep(400);
-      if (isCancelled) return;
-
-      // t=2000ms: cursor moves to Platform cell of row 4
-      const pCellPos = getRelativePos(platformCellRef.current);
-      await cursorRef.current?.moveTo(pCellPos.x, pCellPos.y, 0.4);
       await sleep(300);
       if (isCancelled) return;
 
-      // t=2300ms: click -> platform dropdown opens
+      // t=1100ms: move cursor to + platform trigger
+      await cursorRef.current?.moveTo(trigPos.x, trigPos.y, 0.4);
+      await sleep(300);
+      if (isCancelled) return;
+
+      // t=1500ms: click + platform trigger -> dropdown opens
       await cursorRef.current?.click();
       setDropdownOpen(true);
-      await sleep(300);
+      setNewRowActive(true);
+      await sleep(400);
       if (isCancelled) return;
 
-      // t=2600ms: cursor moves to LeetCode option
-      const dropPos = getRelativePos(dropdownOptionRef.current);
-      await cursorRef.current?.moveTo(dropPos.x, dropPos.y, 0.3);
-      await sleep(300);
+      // t=1900ms: move cursor to LeetCode option in dropdown
+      const lcPos = getRelativePos(leetCodeOptionRef.current);
+      await cursorRef.current?.moveTo(lcPos.x, lcPos.y, 0.35);
+      setHoveredPlatform('LEETCODE');
+      await sleep(350);
       if (isCancelled) return;
 
-      // t=2900ms: click -> dropdown closes, LeetCode badge appears
+      // t=2300ms: click LeetCode option -> dropdown closes, LC logo appears
       await cursorRef.current?.click();
+      setHoveredPlatform(null);
       setDropdownOpen(false);
-      setNewRowPlatform('LEETCODE');
+      setSelectedPlatform('LEETCODE');
+      await sleep(400);
+      if (isCancelled) return;
+
+      // t=2700ms: move cursor to input cell
+      const inputPos = getRelativePos(inputCellRef.current);
+      await cursorRef.current?.moveTo(inputPos.x + 20, inputPos.y, 0.3);
       await sleep(300);
       if (isCancelled) return;
 
-      // t=3200ms: cursor moves to Problem Number cell
-      const numPos = getRelativePos(numberCellRef.current);
-      await cursorRef.current?.moveTo(numPos.x, numPos.y, 0.3);
-      await sleep(300);
-      if (isCancelled) return;
-
-      // t=3500ms: click -> text cursor blinks in cell
+      // t=3000ms: click input cell -> text cursor blinks
       await cursorRef.current?.click();
       setIsTypingNumber(true);
-      await sleep(100);
-
-      // t=3600ms: "2" types in
-      setNewRowNumber('2');
-      await sleep(150);
-      // t=3750ms: "3" types in
-      setNewRowNumber('23');
-      await sleep(150);
-      // t=3900ms: "4" types in
-      setNewRowNumber('234');
       await sleep(150);
 
-      // t=4050ms: loading shimmer appears
+      // Type "234"
+      setInputValue('2');
+      await sleep(150);
+      setInputValue('23');
+      await sleep(150);
+      setInputValue('234');
+      await sleep(150);
+
+      // t=3600ms: loading dots appear
       setIsTypingNumber(false);
-      setIsShimmering(true);
-      await sleep(300);
+      setIsLoading(true);
+      await sleep(400);
+      if (isCancelled) return;
 
-      // t=4350ms: shimmer disappears
-      setIsShimmering(false);
-      await sleep(10);
-      // t=4360ms: title "Palindrome Linked List" appears
-      setTitleVisible(true);
-      await sleep(20);
-      // t=4380ms: Easy pill fades in
-      setEasyPillVisible(true);
-      await sleep(120);
-      // t=4500ms: "Linked List" topic pill fades in
-      setTopicPillVisible(true);
-      await sleep(50);
-
-      // t=4550ms: green overlay flash on title/difficulty/topic cells
+      // t=4000ms: title & pills auto-fill, green flash overlay
+      setIsLoading(false);
+      setAutoFilled(true);
       setGreenFlash(true);
       await sleep(650);
       setGreenFlash(false);
       if (isCancelled) return;
 
-      // t=5200ms: cursor moves to Notes cell
+      // t=4800ms: move cursor to Notes cell
       const notesPos = getRelativePos(notesCellRef.current);
       await cursorRef.current?.moveTo(notesPos.x, notesPos.y, 0.4);
       await sleep(400);
       if (isCancelled) return;
 
-      // t=5600ms: click
+      // t=5300ms: click notes cell -> type "two pointer"
       await cursorRef.current?.click();
       setIsTypingNotes(true);
       await sleep(200);
 
-      // Type "two pointer"
-      const notesText = 'two pointer';
-      for (let i = 1; i <= notesText.length; i++) {
+      const noteText = 'two pointer';
+      for (let i = 1; i <= noteText.length; i++) {
         if (isCancelled) return;
-        setNewRowNotes(notesText.slice(0, i));
-        await sleep(150);
+        setNotesValue(noteText.slice(0, i));
+        await sleep(140);
       }
       setIsTypingNotes(false);
       await sleep(500);
       if (isCancelled) return;
 
-      // t=7800ms: cursor moves away, row finalizes
+      // t=7500ms: cursor moves away, row finalizes
       setRowFinalized(true);
-      const awayPos = { x: notesPos.x + 120, y: notesPos.y + 40 };
+      const awayPos = { x: notesPos.x + 100, y: notesPos.y + 40 };
       await cursorRef.current?.moveTo(awayPos.x, awayPos.y, 0.4);
       await sleep(400);
 
-      // t=8200ms: cursor fades out
+      // t=8000ms: cursor fades out
       cursorRef.current?.hide();
-      await sleep(800);
+      await sleep(1200);
       if (isCancelled) return;
 
-      // t=9000ms: row fades out gently
-      setNewRowVisible(false);
-      await sleep(500);
+      // t=9200ms: new row resets and sequence loops
+      resetAll();
+      await sleep(600);
 
-      // t=9500ms: loop restarts
       if (!isCancelled) {
         runSequence();
       }
@@ -225,7 +210,7 @@ export function TableDemo() {
       style={{
         height: '480px',
         width: '100%',
-        background: '#0a0a0a',
+        background: '#0a0a0b',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: 'var(--font-geist-sans), sans-serif',
@@ -240,58 +225,64 @@ export function TableDemo() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '52px minmax(180px, 1.2fr) 90px 110px 100px 100px 1fr',
-          height: '32px',
+          gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
+          height: '34px',
           alignItems: 'center',
           padding: '0 16px',
-          background: '#0d0d0d',
-          borderBottom: '1px solid #1a1a1a',
+          background: '#0d0d0e',
+          borderBottom: '1px solid #18181a',
           fontSize: '11px',
           fontFamily: 'var(--font-geist-mono), monospace',
-          color: '#444444',
+          color: '#555555',
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
         }}
       >
-        <div>Plat</div>
+        <div style={{ textAlign: 'center' }}>Plat</div>
         <div>Problem</div>
         <div>Diff</div>
         <div>Topic</div>
         <div>Status</div>
-        <div>Revision</div>
-        <div>Notes</div>
+        <div style={{ textAlign: 'right' }}>Revision</div>
       </div>
 
       {/* Rows List */}
       <div>
-        {FAKE_PROBLEMS.map((prob) => {
+        {INITIAL_PROBLEMS.map((prob) => {
           const diff = getDifficultyStyle(prob.difficulty);
-          const topic = getTopicColor(prob.topic);
+          const topic = prob.topic ? getTopicColor(prob.topic) : null;
 
           return (
             <div
               key={prob.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '52px minmax(180px, 1.2fr) 90px 110px 100px 100px 1fr',
+                gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
                 height: '44px',
                 alignItems: 'center',
                 padding: '0 16px',
-                background: '#0a0a0a',
-                borderBottom: '1px solid #141414',
+                background: '#0a0a0b',
+                borderBottom: '1px solid #151517',
               }}
             >
-              <div>
-                <PlatformLogo platform="LEETCODE" size={18} padding={1} />
+              {/* Platform Logo */}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <PlatformLogo platform={prob.platform} size={18} padding={1} />
               </div>
+
+              {/* Number + Title */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                <span style={{ fontFamily: 'var(--font-geist-mono), monospace', color: '#666666', fontSize: '12px' }}>
-                  #{prob.number}
-                </span>
-                <span style={{ color: '#e5e5e5', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                {prob.number && (
+                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', color: '#555555', fontSize: '12px' }}>
+                    {prob.number}
+                  </span>
+                )}
+                <span style={{ color: '#ececec', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                   {prob.title}
                 </span>
               </div>
+
+              {/* Difficulty */}
               <div>
                 <span
                   style={{
@@ -304,238 +295,250 @@ export function TableDemo() {
                     fontWeight: 600,
                   }}
                 >
-                  {prob.difficulty}
+                  {prob.difficulty.charAt(0) + prob.difficulty.slice(1).toLowerCase()}
                 </span>
               </div>
+
+              {/* Topic */}
               <div>
-                <span
-                  style={{
-                    background: topic.bg,
-                    color: topic.text,
-                    border: `1px solid ${topic.border}`,
-                    borderRadius: '4px',
-                    padding: '2px 8px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                  }}
-                >
-                  {prob.topic}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: prob.statusColor }} />
-                <span style={{ fontSize: '12px', color: '#888888' }}>{prob.status}</span>
-              </div>
-              <div style={{ fontSize: '12px', color: prob.nextRevision === 'overdue' ? '#f87171' : prob.nextRevision === 'today' ? '#fb923c' : '#666666' }}>
-                {prob.nextRevision}
-              </div>
-              <div style={{ fontSize: '12px', color: '#444444', fontStyle: 'italic' }}>-</div>
-            </div>
-          );
-        })}
-
-        {/* Row 4 - Animated Interactive Row */}
-        <AnimatePresence>
-          {newRowVisible && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 44 }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '52px minmax(180px, 1.2fr) 90px 110px 100px 100px 1fr',
-                alignItems: 'center',
-                padding: '0 16px',
-                background: rowFinalized ? '#0a0a0a' : '#111111',
-                borderBottom: '1px solid #141414',
-                borderLeft: rowFinalized ? 'none' : '2px solid #2a2a2a',
-                position: 'relative',
-              }}
-            >
-              {/* Green Overlay Flash on auto fill */}
-              <AnimatePresence>
-                {greenFlash && (
-                  <motion.div
-                    initial={{ opacity: 0.15 }}
-                    animate={{ opacity: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6 }}
+                {topic ? (
+                  <span
                     style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: '#4ade80',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-
-              {/* Cell 1: Platform */}
-              <div ref={platformCellRef} style={{ position: 'relative' }}>
-                {newRowPlatform ? (
-                  <PlatformLogo platform={newRowPlatform} size={18} padding={1} />
-                ) : (
-                  <span style={{ color: '#333333', fontSize: '12px' }}>+</span>
-                )}
-
-                {/* Dropdown Menu */}
-                {dropdownOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '28px',
-                      left: 0,
-                      background: '#161616',
-                      border: '1px solid #2a2a2a',
-                      borderRadius: '6px',
-                      padding: '4px',
-                      zIndex: 100,
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.6)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2px',
-                    }}
-                  >
-                    <div
-                      ref={dropdownOptionRef}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 8px',
-                        background: '#222222',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        color: '#ffffff',
-                      }}
-                    >
-                      <PlatformLogo platform="LEETCODE" size={16} padding={1} />
-                      LeetCode
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Cell 2: Problem title / number */}
-              <div ref={numberCellRef} style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                {newRowNumber ? (
-                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', color: '#666666', fontSize: '12px' }}>
-                    #{newRowNumber}
-                    {isTypingNumber && (
-                      <span style={{ display: 'inline-block', width: '2px', height: '12px', background: '#ffffff', marginLeft: '2px', animation: 'blink 1s infinite' }} />
-                    )}
-                  </span>
-                ) : (
-                  <span style={{ color: '#333333', fontFamily: 'var(--font-geist-mono), monospace', fontSize: '12px' }}>#...</span>
-                )}
-
-                {isShimmering && (
-                  <span style={{ color: '#555555', fontSize: '12px', fontStyle: 'italic', display: 'inline-flex', gap: '2px' }}>
-                    fetching...
-                  </span>
-                )}
-
-                {titleVisible && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.15 }}
-                    style={{ color: '#e5e5e5', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
-                  >
-                    Palindrome Linked List
-                  </motion.span>
-                )}
-              </div>
-
-              {/* Cell 3: Difficulty */}
-              <div>
-                {easyPillVisible && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    style={{
-                      background: '#1c3a1c',
-                      color: '#4ade80',
-                      border: '1px solid #2d5a2d',
-                      borderRadius: '4px',
-                      padding: '2px 8px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                    }}
-                  >
-                    EASY
-                  </motion.span>
-                )}
-              </div>
-
-              {/* Cell 4: Topic */}
-              <div>
-                {topicPillVisible && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    style={{
-                      background: getTopicColor('Linked List').bg,
-                      color: getTopicColor('Linked List').text,
-                      border: `1px solid ${getTopicColor('Linked List').border}`,
+                      background: topic.bg,
+                      color: topic.text,
+                      border: `1px solid ${topic.border}`,
                       borderRadius: '4px',
                       padding: '2px 8px',
                       fontSize: '11px',
                       fontWeight: 500,
                     }}
                   >
-                    Linked List
-                  </motion.span>
-                )}
-              </div>
-
-              {/* Cell 5: Status */}
-              <div>
-                {topicPillVisible && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80' }} />
-                    <span style={{ fontSize: '12px', color: '#888888' }}>NEW</span>
+                    {prob.topic}
                   </span>
+                ) : (
+                  <span style={{ color: '#333333', fontSize: '12px' }}>—</span>
                 )}
               </div>
 
-              {/* Cell 6: Revision */}
-              <div>
-                {topicPillVisible && <span style={{ fontSize: '12px', color: '#666666' }}>in 1 day</span>}
+              {/* Status */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: prob.statusColor }} />
+                <span style={{ fontSize: '12px', color: '#888888' }}>{prob.status}</span>
               </div>
 
-              {/* Cell 7: Notes */}
-              <div ref={notesCellRef}>
-                {newRowNotes || isTypingNotes ? (
-                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '12px', color: '#aaaaaa' }}>
-                    {newRowNotes}
-                    {isTypingNotes && (
+              {/* Revision Urgency */}
+              <div
+                style={{
+                  textAlign: 'right',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-geist-mono), monospace',
+                  color: prob.nextRevision === 'Today' ? '#fb923c' : prob.nextRevision === '1d' ? '#f87171' : '#666666',
+                }}
+              >
+                {prob.nextRevision}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* New Row / Platform Dropdown Demo */}
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
+              height: '44px',
+              alignItems: 'center',
+              padding: '0 16px',
+              background: rowFinalized ? '#0a0a0b' : newRowActive ? '#121214' : '#0a0a0b',
+              borderBottom: '1px solid #151517',
+              borderLeft: newRowActive && !rowFinalized ? '2px solid #3a3a3a' : 'none',
+              position: 'relative',
+            }}
+          >
+            {/* Green Overlay Flash on auto fill */}
+            <AnimatePresence>
+              {greenFlash && (
+                <motion.div
+                  initial={{ opacity: 0.18 }}
+                  animate={{ opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6 }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: '#22c55e',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Platform Selector Trigger */}
+            <div style={{ display: 'flex', justifyContent: 'center' }} ref={newRowTriggerRef}>
+              {selectedPlatform ? (
+                <PlatformLogo platform={selectedPlatform} size={18} padding={1} />
+              ) : (
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    background: '#1e1e1e',
+                    border: '1px solid #333333',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#888888',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  +
+                </div>
+              )}
+            </div>
+
+            {/* Title / Input area */}
+            <div ref={inputCellRef} style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+              {!selectedPlatform ? (
+                <span style={{ fontSize: '13px', color: '#444444' }}>← Select a platform</span>
+              ) : !autoFilled ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px', color: inputValue ? '#ffffff' : '#555555' }}>
+                    {inputValue || 'Problem number (e.g. 1)...'}
+                    {isTypingNumber && (
                       <span style={{ display: 'inline-block', width: '2px', height: '12px', background: '#ffffff', marginLeft: '2px' }} />
                     )}
                   </span>
-                ) : (
-                  <span style={{ color: '#333333', fontSize: '12px', fontStyle: 'italic' }}>add notes...</span>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  {isLoading && <span style={{ color: '#555555', fontSize: '12px', letterSpacing: '2px' }}>...</span>}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', color: '#555555', fontSize: '12px' }}>
+                    #234
+                  </span>
+                  <span style={{ color: '#ececec', fontWeight: 500, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    Palindrome Linked List
+                  </span>
+                </div>
+              )}
+            </div>
 
-        {/* "+ New row" Footer trigger */}
-        <div
-          ref={newRowBtnRef}
-          style={{
-            padding: '10px 16px',
-            fontSize: '12px',
-            fontFamily: 'var(--font-geist-mono), monospace',
-            color: '#333333',
-            display: 'inline-block',
-          }}
-        >
-          + New row
+            {/* Difficulty */}
+            <div>
+              {autoFilled && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    background: '#1c3a1c',
+                    color: '#4ade80',
+                    border: '1px solid #2d5a2d',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Easy
+                </motion.span>
+              )}
+            </div>
+
+            {/* Topic */}
+            <div>
+              {autoFilled && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    background: getTopicColor('Linked List').bg,
+                    color: getTopicColor('Linked List').text,
+                    border: `1px solid ${getTopicColor('Linked List').border}`,
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                  }}
+                >
+                  Linked List
+                </motion.span>
+              )}
+            </div>
+
+            {/* Status */}
+            <div>
+              {autoFilled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#666666' }} />
+                  <span style={{ fontSize: '12px', color: '#888888' }}>Not started</span>
+                </div>
+              )}
+            </div>
+
+            {/* Revision / Notes */}
+            <div ref={notesCellRef} style={{ textAlign: 'right' }}>
+              {notesValue || isTypingNotes ? (
+                <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '12px', color: '#aaaaaa' }}>
+                  {notesValue}
+                </span>
+              ) : autoFilled ? (
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-geist-mono), monospace', color: '#f87171' }}>1d</span>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Real Platform Dropdown Card (matching real app screenshot 1:1) */}
+          <AnimatePresence>
+            {dropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  position: 'absolute',
+                  top: '40px',
+                  left: '12px',
+                  zIndex: 200,
+                  width: '165px',
+                  background: '#161618',
+                  border: '1px solid #26262a',
+                  borderRadius: '8px',
+                  padding: '6px',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.85)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                }}
+              >
+                {PLATFORMS_LIST.map((p) => {
+                  const isHovered = hoveredPlatform === p.id;
+                  return (
+                    <div
+                      key={p.id}
+                      ref={p.id === 'LEETCODE' ? leetCodeOptionRef : undefined}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        background: isHovered ? '#252528' : 'transparent',
+                        color: isHovered ? '#ffffff' : '#cccccc',
+                        fontSize: '13px',
+                        transition: 'background 0.1s ease',
+                      }}
+                    >
+                      <PlatformLogo platform={p.id} size={18} padding={1} />
+                      {p.label}
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
