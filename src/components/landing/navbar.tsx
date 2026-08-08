@@ -15,8 +15,8 @@ export function Navbar() {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 100,
-        width: 'calc(100% - 40px)',
-        maxWidth: '960px',
+        width: 'calc(100% - 32px)',
+        maxWidth: '920px',
         height: '52px',
         borderRadius: '9999px',
         background: 'rgba(12, 12, 14, 0.85)',
@@ -28,24 +28,24 @@ export function Navbar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 8px 0 24px',
+        margin: '0 auto',
       }}
     >
-      {/* Left: Italic Brand Wordmark + Nav Links */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
+      {/* Left: Dashboard-Style Wordmark (Geist Mono + Orange Period) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
         <Link
           href="/"
           style={{
-            fontFamily: 'var(--font-instrument-serif), Georgia, serif',
-            fontStyle: 'italic',
-            fontSize: '24px',
-            fontWeight: 400,
+            fontFamily: 'var(--font-geist-mono), monospace',
+            fontSize: '17px',
+            fontWeight: 600,
             color: '#ffffff',
             textDecoration: 'none',
             letterSpacing: '-0.02em',
             lineHeight: 1,
           }}
         >
-          recall<span style={{ color: '#555555' }}>.</span>
+          recall<span style={{ color: '#F7981E' }}>.</span>
         </Link>
 
         {/* Nav Links */}
@@ -126,8 +126,8 @@ export function Navbar() {
             color: '#0a0a0b',
             fontSize: '13px',
             fontWeight: 600,
-            height: '38px',
-            padding: '0 20px',
+            height: '36px',
+            padding: '0 18px',
             borderRadius: '9999px',
             display: 'inline-flex',
             alignItems: 'center',
