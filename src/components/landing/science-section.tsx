@@ -4,11 +4,11 @@ import { motion, useInView } from 'motion/react';
 import { useRef, useState } from 'react';
 
 const MILESTONES = [
-  { day: 'Day 0', title: 'Initial Solve', retention: '100%', desc: 'Problem solved and added to Recall.' },
-  { day: 'Day 3', title: '1st Review', retention: '95%', desc: 'First memory refresh prevents steep 70% drop.' },
-  { day: 'Day 7', title: '2nd Review', retention: '98%', desc: 'Reinforces pattern recognition into medium-term memory.' },
-  { day: 'Day 14', title: '3rd Review', retention: '99%', desc: 'Decay curve flattens drastically.' },
-  { day: 'Day 30', title: 'Mastered', retention: '100%', desc: 'Permanent long-term retention established.' },
+  { day: 'Day 0', title: 'Solve', retention: '100%' },
+  { day: 'Day 3', title: 'Review 1', retention: '95%' },
+  { day: 'Day 7', title: 'Review 2', retention: '98%' },
+  { day: 'Day 14', title: 'Review 3', retention: '99%' },
+  { day: 'Day 30', title: 'Mastered', retention: '100%' },
 ];
 
 export function ScienceSection() {
@@ -22,352 +22,246 @@ export function ScienceSection() {
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '100px 32px 40px',
+        padding: '80px 32px',
         borderTop: '1px solid #1a1a1a',
       }}
     >
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
-        style={{ textAlign: 'center', marginBottom: '56px' }}
-      >
-        <div
-          style={{
-            fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '11px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.12em',
-            color: '#a1a1aa',
-            marginBottom: '12px',
-          }}
-        >
-          The Science
-        </div>
-
-        <h2
-          style={{
-            fontFamily: 'var(--font-instrument-serif), Georgia, serif',
-            fontStyle: 'italic',
-            fontWeight: 400,
-            fontSize: 'clamp(32px, 4vw, 48px)',
-            color: '#ffffff',
-            lineHeight: 1.1,
-            margin: 0,
-          }}
-        >
-          Why traditional cramming fails.
-        </h2>
-
-        <p
-          style={{
-            fontFamily: 'var(--font-geist-sans), sans-serif',
-            fontSize: '15px',
-            color: '#a1a1aa',
-            maxWidth: '520px',
-            margin: '16px auto 0',
-            lineHeight: 1.6,
-          }}
-        >
-          Hermann Ebbinghaus proved memory exponentially decays without review. Spaced repetition flattens the forgetting curve.
-        </p>
-      </motion.div>
-
-      {/* Interactive Ebbinghaus Forgetting Curve Graph Container */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-        transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+      <div
+        className="revision-section-grid"
         style={{
-          background: '#0c0c0e',
-          border: '1px solid #1c1c20',
-          borderRadius: '12px',
-          padding: '36px 32px',
-          marginBottom: '64px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '64px',
         }}
       >
-        {/* Legend & Title */}
-        <div
+        {/* Left Column (42%) — Text Content */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '28px',
-            flexWrap: 'wrap',
-            gap: '12px',
+            flex: '0 0 42%',
+            maxWidth: '42%',
           }}
         >
-          <div>
-            <div
-              style={{
-                fontFamily: 'var(--font-geist-sans), sans-serif',
-                fontSize: '16px',
-                fontWeight: 500,
-                color: '#ffffff',
-              }}
-            >
-              Memory Retention Curve
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-geist-mono), monospace',
-                fontSize: '12px',
-                color: '#71717a',
-                marginTop: '4px',
-              }}
-            >
-              Comparing unassisted memory decay vs. Recall spaced repetition
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '12px', height: '2px', background: '#f87171', display: 'inline-block' }} />
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '11px', color: '#a1a1aa' }}>
-                Without Recall (Decay)
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '12px', height: '2px', background: '#4ade80', display: 'inline-block' }} />
-              <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '11px', color: '#a1a1aa' }}>
-                With Recall (Spaced)
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* SVG Graph Visualizer */}
-        <div style={{ position: 'relative', width: '100%', height: '220px', margin: '20px 0 10px' }}>
-          <svg
-            viewBox="0 0 800 200"
-            style={{ width: '100%', height: '100%', overflow: 'visible' }}
-            preserveAspectRatio="none"
-          >
-            {/* Grid lines */}
-            <line x1="0" y1="20" x2="800" y2="20" stroke="#1a1a1e" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="0" y1="90" x2="800" y2="90" stroke="#1a1a1e" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="0" y1="160" x2="800" y2="160" stroke="#1a1a1e" strokeWidth="1" strokeDasharray="4 4" />
-
-            {/* Y-axis Labels */}
-            <text x="0" y="15" fill="#555" fontSize="10" fontFamily="monospace">100%</text>
-            <text x="0" y="85" fill="#555" fontSize="10" fontFamily="monospace">50%</text>
-            <text x="0" y="155" fill="#555" fontSize="10" fontFamily="monospace">10%</text>
-
-            {/* Without Recall Line (Red Exponential Decay) */}
-            <path
-              d="M 40 20 Q 150 160 800 175"
-              fill="none"
-              stroke="#f87171"
-              strokeWidth="2"
-              strokeDasharray="6 4"
-              opacity="0.75"
-            />
-
-            {/* With Recall Line (Green Resets) */}
-            {/* Day 0 (20) -> Day 3 (90) reset to (20) -> Day 7 (60) reset to (20) -> Day 14 (35) reset to (20) -> Day 30 flat (20) */}
-            <path
-              d="M 40 20 Q 120 100 180 90 L 180 20 Q 280 65 360 55 L 360 20 Q 520 38 600 32 L 600 20 Q 700 24 800 22"
-              fill="none"
-              stroke="#4ade80"
-              strokeWidth="2.5"
-            />
-
-            {/* Nodes / Dots */}
-            {[
-              { x: 40, y: 20, index: 0 },
-              { x: 180, y: 20, index: 1 },
-              { x: 360, y: 20, index: 2 },
-              { x: 600, y: 20, index: 3 },
-              { x: 800, y: 22, index: 4 },
-            ].map((pt) => (
-              <g key={pt.index} style={{ cursor: 'pointer' }} onClick={() => setActiveStep(pt.index)}>
-                <circle
-                  cx={pt.x}
-                  cy={pt.y}
-                  r={activeStep === pt.index ? 6 : 4}
-                  fill={activeStep === pt.index ? '#4ade80' : '#141416'}
-                  stroke="#4ade80"
-                  strokeWidth="2"
-                />
-              </g>
-            ))}
-          </svg>
-        </div>
-
-        {/* X-axis Milestone Selector */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '12px',
-            marginTop: '24px',
-            borderTop: '1px solid #1a1a1a',
-            paddingTop: '20px',
-          }}
-        >
-          {MILESTONES.map((m, idx) => {
-            const isActive = activeStep === idx;
-            return (
-              <div
-                key={m.day}
-                onClick={() => setActiveStep(idx)}
-                style={{
-                  cursor: 'pointer',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  background: isActive ? '#141417' : 'transparent',
-                  border: isActive ? '1px solid #282830' : '1px solid transparent',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-geist-mono), monospace',
-                    fontSize: '11px',
-                    color: isActive ? '#4ade80' : '#71717a',
-                    fontWeight: 600,
-                  }}
-                >
-                  {m.day}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-geist-sans), sans-serif',
-                    fontSize: '13px',
-                    color: isActive ? '#ffffff' : '#a1a1aa',
-                    fontWeight: 500,
-                    marginTop: '4px',
-                  }}
-                >
-                  {m.title}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Active Milestone Highlight Explanation */}
-        <div
-          style={{
-            marginTop: '16px',
-            background: '#080809',
-            border: '1px solid #18181c',
-            borderRadius: '8px',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontFamily: 'var(--font-geist-sans), sans-serif',
-            fontSize: '13px',
-          }}
-        >
-          <span style={{ color: '#e5e5e5' }}>{MILESTONES[activeStep].desc}</span>
-          <span
+          <div
             style={{
               fontFamily: 'var(--font-geist-mono), monospace',
               fontSize: '11px',
-              color: '#4ade80',
-              background: 'rgba(74, 222, 128, 0.1)',
-              border: '1px solid rgba(74, 222, 128, 0.2)',
-              padding: '2px 8px',
-              borderRadius: '4px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              color: '#a1a1aa',
+              marginBottom: '12px',
             }}
           >
-            Retention: {MILESTONES[activeStep].retention}
-          </span>
-        </div>
-      </motion.div>
+            The Science
+          </div>
 
-      {/* 3 Columns Takeaways Row matching HowItWorks architecture */}
-      <div
-        className="how-it-works-grid"
-        style={{
-          display: 'flex',
-          gap: 0,
-          borderTop: '1px solid #1a1a1a',
-          paddingTop: '40px',
-        }}
-      >
-        <div
+          <h2
+            style={{
+              fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+              fontStyle: 'italic',
+              fontWeight: 400,
+              fontSize: 'clamp(32px, 3.8vw, 46px)',
+              color: '#ffffff',
+              lineHeight: 1.1,
+              margin: '0 0 16px 0',
+            }}
+          >
+            Why traditional cramming fails.
+          </h2>
+
+          <p
+            style={{
+              fontFamily: 'var(--font-geist-sans), sans-serif',
+              fontSize: '14.5px',
+              color: '#a1a1aa',
+              lineHeight: 1.65,
+              margin: '0 0 24px 0',
+            }}
+          >
+            Hermann Ebbinghaus proved memory decays exponentially after solving a problem. Spaced repetition resets the curve before key concepts fade.
+          </p>
+
+          {/* Key Facts List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#e5e5e5', fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+              <span style={{ color: '#f87171', fontSize: '8px' }}>●</span>
+              <span><strong>90% lost</strong> within 7 days without timely revision.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#e5e5e5', fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+              <span style={{ color: '#4ade80', fontSize: '8px' }}>●</span>
+              <span><strong>4 reviews</strong> build permanent pattern retention.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#e5e5e5', fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+              <span style={{ color: '#60a5fa', fontSize: '8px' }}>●</span>
+              <span><strong>Automated intervals</strong> recalculate based on confidence.</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Right Column (58%) — Vibrant Compact Graph Visualizer */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
           style={{
-            flex: 1,
-            padding: '16px 40px 16px 0',
-            borderRight: '1px solid #1a1a1a',
+            flex: '0 0 58%',
+            maxWidth: '58%',
           }}
         >
           <div
             style={{
-              fontFamily: 'var(--font-geist-mono), monospace',
-              fontSize: '10px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#71717a',
-              marginBottom: '8px',
+              background: '#09090b',
+              border: '1px solid #1a1a1e',
+              borderRadius: '12px',
+              padding: '24px 28px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6)',
             }}
           >
-            THE PROBLEM
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '16px', color: '#ffffff', margin: '0 0 6px 0' }}>
-            90% Forgotten in 7 Days
-          </h3>
-          <p style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '13px', color: '#a1a1aa', margin: 0, lineHeight: 1.55 }}>
-            Without active revision intervals, most solved DSA problems fade completely from memory within a week.
-          </p>
-        </div>
+            {/* Graph Header / Legend */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-geist-mono), monospace',
+                  fontSize: '11px',
+                  color: '#a1a1aa',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Forgetting Curve vs. Recall
+              </div>
 
-        <div
-          style={{
-            flex: 1,
-            padding: '16px 40px',
-            borderRight: '1px solid #1a1a1a',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'var(--font-geist-mono), monospace',
-              fontSize: '10px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#71717a',
-              marginBottom: '8px',
-            }}
-          >
-            THE SOLUTION
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '16px', color: '#ffffff', margin: '0 0 6px 0' }}>
-            4 Timely Touchpoints
-          </h3>
-          <p style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '13px', color: '#a1a1aa', margin: 0, lineHeight: 1.55 }}>
-            Only 4 spaced reviews are required to lock a complex pattern permanently into long-term recall.
-          </p>
-        </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '2px', background: '#f87171' }} />
+                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '10px', color: '#71717a' }}>
+                    Decay
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '2px', background: '#4ade80' }} />
+                  <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '10px', color: '#4ade80' }}>
+                    Recall
+                  </span>
+                </div>
+              </div>
+            </div>
 
-        <div
-          style={{
-            flex: 1,
-            padding: '16px 0 16px 40px',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'var(--font-geist-mono), monospace',
-              fontSize: '10px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#71717a',
-              marginBottom: '8px',
-            }}
-          >
-            AUTOMATED
+            {/* Vibrant SVG Graph Line */}
+            <div style={{ position: 'relative', width: '100%', height: '160px', margin: '12px 0' }}>
+              <svg
+                viewBox="0 0 500 150"
+                style={{ width: '100%', height: '100%', overflow: 'visible' }}
+                preserveAspectRatio="none"
+              >
+                {/* Horizontal reference lines */}
+                <line x1="0" y1="15" x2="500" y2="15" stroke="#16161a" strokeWidth="1" strokeDasharray="3 3" />
+                <line x1="0" y1="75" x2="500" y2="75" stroke="#16161a" strokeWidth="1" strokeDasharray="3 3" />
+                <line x1="0" y1="135" x2="500" y2="135" stroke="#16161a" strokeWidth="1" strokeDasharray="3 3" />
+
+                {/* Without Recall Line (Exponential Decay) */}
+                <path
+                  d="M 20 15 Q 100 120 500 135"
+                  fill="none"
+                  stroke="#f87171"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 3"
+                  opacity="0.7"
+                />
+
+                {/* Vibrant Glowing Recall Curve */}
+                <path
+                  d="M 20 15 Q 70 75 110 65 L 110 15 Q 180 50 230 40 L 230 15 Q 330 30 380 25 L 380 15 Q 440 18 500 16"
+                  fill="none"
+                  stroke="#4ade80"
+                  strokeWidth="2.5"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(74, 222, 128, 0.4))' }}
+                />
+
+                {/* Interactive Milestone Nodes */}
+                {[
+                  { x: 20, y: 15, index: 0 },
+                  { x: 110, y: 15, index: 1 },
+                  { x: 230, y: 15, index: 2 },
+                  { x: 380, y: 15, index: 3 },
+                  { x: 500, y: 16, index: 4 },
+                ].map((pt) => (
+                  <g key={pt.index} style={{ cursor: 'pointer' }} onClick={() => setActiveStep(pt.index)}>
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={activeStep === pt.index ? 5 : 3.5}
+                      fill={activeStep === pt.index ? '#4ade80' : '#09090b'}
+                      stroke="#4ade80"
+                      strokeWidth="2"
+                    />
+                  </g>
+                ))}
+              </svg>
+            </div>
+
+            {/* Compact Milestone Pills */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: '12px',
+                borderTop: '1px solid #16161a',
+                paddingTop: '12px',
+              }}
+            >
+              {MILESTONES.map((m, idx) => {
+                const isActive = activeStep === idx;
+                return (
+                  <button
+                    key={m.day}
+                    onClick={() => setActiveStep(idx)}
+                    style={{
+                      background: isActive ? '#141418' : 'transparent',
+                      border: isActive ? '1px solid #2e2e34' : '1px solid transparent',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      transition: 'all 0.15s ease',
+                      outline: 'none',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-geist-mono), monospace',
+                        fontSize: '10px',
+                        color: isActive ? '#4ade80' : '#71717a',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {m.day}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-geist-sans), sans-serif',
+                        fontSize: '11px',
+                        color: isActive ? '#ffffff' : '#555555',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {m.title}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <h3 style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '16px', color: '#ffffff', margin: '0 0 6px 0' }}>
-            Zero Manual Math
-          </h3>
-          <p style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '13px', color: '#a1a1aa', margin: 0, lineHeight: 1.55 }}>
-            Recall calculates your next optimal review date automatically so you focus strictly on solving.
-          </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
