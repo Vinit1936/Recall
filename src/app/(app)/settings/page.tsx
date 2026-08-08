@@ -215,7 +215,7 @@ export default function SettingsPage() {
 
               <div style={{ marginTop: 8 }}>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                  onClick={() => signOut({ callbackUrl: '/' })}
                   style={{
                     background: '#181414',
                     border: '1px solid #2c1a1a',

@@ -55,6 +55,7 @@ export function FAQSection() {
         margin: '0 auto',
         padding: '100px 32px',
         borderTop: '1px solid #1a1a1a',
+        scrollMarginTop: '80px',
       }}
     >
       {/* Header */}

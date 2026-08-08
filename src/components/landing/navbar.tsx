@@ -60,6 +60,13 @@ export function Navbar() {
           <a
             key={link.label}
             href={link.href}
+            onClick={(e) => {
+              e.preventDefault();
+              const target = document.querySelector(link.href);
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
             style={{
               fontSize: '12px',
               color: '#a1a1aa',

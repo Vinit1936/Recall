@@ -1,307 +1,152 @@
-## Integrate the <GridDistortion /> component from React Bits
+Looking at all 7 screenshots carefully and analytically. Let me call out every specific issue I see:
 
-You are helping integrate an open-source React component into an existing application.
+**Hero (Image 1):**
+- The browser chrome demo is getting cut off on the right — the STATUS column and beyond are clipped. The demo needs to be contained within visible bounds.
+- The hero has too much empty space below the CTA buttons and above the demo. The two columns aren't vertically centered together — the left text sits high while the demo floats in the middle.
+- "Get started for free" button has no secondary button next to it anymore — the "View on GitHub" ghost button from the spec is missing. This makes the CTA feel lonely and the left column bottom-heavy with just one button then a lot of white space.
+- The badge `✦ Spaced repetition for DSA` is fine but the `✦` glyph is rendering slightly misaligned vertically with the text.
+- The dot grid is noticeably denser in the hero right side behind the demo — creates an unintentional two-tone feel.
 
-### Component: GridDistortion
-### Variant: JavaScript + Tailwind
-### Dependencies: three
+**Daily Revision section (Image 2):**
+- The browser chrome on the left has a visible thick rounded border that looks like a card component, not a floating chrome mockup. The border radius is too large — looks like a panel, not a browser window.
+- "Show up. Every day." is running off the right edge of the viewport — the text is overflowing. This is a critical layout bug.
+- The right column text is not vertically centered with the left chrome. Text starts at the top while the chrome is much taller.
+- The "Sign in" CTA button in this section is too wide and too tall — takes up disproportionate space compared to the text above it.
+- The streak number "14" in the demo looks great but "day streak" text next to it is too large — almost as big as the number itself.
+
+**Capabilities (Image 3):**
+- The ghost numbers `01`, `02`, `03`, `04` behind the card titles are rendering too large and too visible — `rgba(255,255,255,0.02)` should be nearly invisible but they're clearly legible. Reduce opacity further or remove them — they're becoming visual noise rather than a subtle depth element.
+- Too much vertical whitespace above "CAPABILITIES" label — the section feels like it starts too late.
+- The vertical dividers between the four columns are inconsistent — some appear darker than others.
+- Body text color is too close to white — should be `#777` to create hierarchy between titles and descriptions.
+
+**Science/Ebbinghaus section (Image 4):**
+- This is the strongest section. The chart is beautiful. Only issues:
+- The browser chrome here correctly has a smaller border-radius — inconsistent with the Daily Revision section chrome which is too rounded.
+- The "Day 3" marker is highlighted in teal/blue which looks great, but the highlighted day box at bottom should animate through the days rather than sitting static on Day 3.
+- Left column text body `#777` color is too light against the dark background — slightly hard to read at normal distance.
+
+**How It Works + Platform strip (Image 5):**
+- The `→` arrows between steps are too small and too low — they're positioned at the vertical divider line midpoint but look accidental, not intentional. They need to be more deliberately placed, either horizontally centered between step titles or removed entirely.
+- The platform badge buttons are inconsistent width — "GeeksForGeeks" is much wider than "LeetCode" because the name is longer. Either truncate names or use fixed widths.
+- Too much vertical gap between How It Works and Works With platforms sections — feels disconnected.
+
+**FAQ (Image 6):**
+- The open answer has `border-left` applied correctly but the left border color is barely visible — needs to be `#2a2a2a` minimum.
+- Answer text `color` is too dark — reading `#555` or darker against the black background at `15px` is straining. Bring it to `#888`.
+- The `−` close icon on the open question is properly sized but sits too high — not vertically centered with the question text.
+- Spacing between FAQ items is uneven — the open item has more bottom padding than the closed items.
+
+**Final CTA (Image 7):**
+- "Get started free →" button is too wide — it's nearly the full content width on a centered section. Max-width should be `220px`, not stretching.
+- The button border-radius is too large — `border-radius: 100px` makes it look pill-shaped, which conflicts with the `border-radius: 6px` on navbar buttons. Consistency matters — pick one radius system.
+- `recall. © 2026` in the footer bottom-left — the `recall.` wordmark here is too small and the period is same color as text. Should match the navbar wordmark treatment exactly.
+- Too much empty space between "Start remembering" headline and the button — the section feels vertically padded to fill space rather than breathe.
+
+Here's the fix prompt:
 
 ---
 
-### Usage Example
-```jsx
-import GridDistortion from './GridDistortion';
+Fix all UI/spacing issues on the landing page. Read `ui.md` first. Do not add new sections or features — fix what exists only.
 
-<div style={{ width: '100%', height: '600px', position: 'relative' }}>
-  <GridDistortion
-    imageSrc="https://picsum.photos/1920/1080?grayscale"
-    grid={10}
-    mouse={0.1}
-    strength={0.15}
-    relaxation={0.9}
-    className="custom-class"
-  />
-</div>
-```
+**Fix 1 — Hero demo getting clipped**
 
-### Props
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| imgageSrc | string | — | The image you want to render inside the container. |
-| grid | number | 15 | The number of cells present in the distortion grid |
-| mouse | number | 0.1 | The size of the distortion effect that follows the cursor. |
-| relaxation | number | 0.9 | The speed at which grid cells return to their initial state. |
-| strength | number | 0.15 | The overall strength of the distortion effect. |
-| className | string | — | Any custom class(es) you want to apply to the container. |
+The browser chrome mockup on the right is overflowing its container. The demo content (table) is wider than the chrome bounds. Fix:
+- Set `overflow: hidden` on the browser chrome content area
+- Reduce the demo table's column widths proportionally so all columns fit within the chrome width
+- The REVISION/NOTES columns should be hidden inside the chrome — the table should only show PLAT, PROBLEM, DIFF, TOPIC, STATUS columns within the visible chrome width
+- Chrome width: `min(580px, 50vw)`
 
-### Full Component Source
-```jsx
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+**Fix 2 — Hero layout vertical alignment**
 
-const vertexShader = `
-uniform float time;
-varying vec2 vUv;
-varying vec3 vPosition;
+Both columns must be vertically centered relative to each other. The left column text currently sits near the top while the right demo is taller. Fix:
+- Add `align-items: center` to the hero two-column flex container
+- Add back the secondary "View on GitHub ↗" ghost button next to "Get started for free" — it was in the original spec but is missing. `border: 1px solid #222`, `color: #666`, `height: 40px`, `padding: 0 18px`, `border-radius: 6px`, `font-size: 13px`
 
-void main() {
-  vUv = uv;
-  vPosition = position;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
+**Fix 3 — Daily Revision section: text overflow**
 
-const fragmentShader = `
-uniform sampler2D uDataTexture;
-uniform sampler2D uTexture;
-uniform vec4 resolution;
-varying vec2 vUv;
+"Show up. Every day." is overflowing the right column. Fix:
+- Add `overflow: hidden` and `word-break: break-word` to the right column container
+- Reduce headline font-size: `clamp(36px, 4vw, 56px)` — it's currently too large for the column width
+- Add `max-width: 100%` to the headline element
 
-void main() {
-  vec2 uv = vUv;
-  vec4 offset = texture2D(uDataTexture, vUv);
-  gl_FragColor = texture2D(uTexture, uv - 0.02 * offset.rg);
-}`;
+**Fix 4 — Daily Revision section: chrome border**
 
-const GridDistortion = ({ grid = 15, mouse = 0.1, strength = 0.15, relaxation = 0.9, imageSrc, className = '' }) => {
-  const containerRef = useRef(null);
-  const sceneRef = useRef(null);
-  const rendererRef = useRef(null);
-  const cameraRef = useRef(null);
-  const planeRef = useRef(null);
-  const imageAspectRef = useRef(1);
-  const animationIdRef = useRef(null);
-  const resizeObserverRef = useRef(null);
+The browser chrome border-radius is inconsistent with the hero section. Standardize ALL browser chrome mockups across the page:
+- `border-radius: 10px` on every chrome container (hero, daily revision, science section)
+- `border: 1px solid #1e1e1e`
+- `box-shadow: 0 0 0 1px #111, 0 24px 48px rgba(0,0,0,0.4)`
+- No exceptions — all three chrome mockups must look identical structurally
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+**Fix 5 — Daily Revision section: CTA button**
 
-    const container = containerRef.current;
+The "Sign in" button in the daily revision right column:
+- Change text to "Get started free"
+- Width: `auto`, not full width — `display: inline-block`
+- Height: `44px`, `padding: 0 24px`
+- `border-radius: 6px`
+- `font-size: 14px`, `font-weight: 600`
 
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+**Fix 6 — Capabilities section: ghost numbers**
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance'
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
-    rendererRef.current = renderer;
+The `01`/`02`/`03`/`04` background numbers are too visible. Either:
+- Reduce opacity to `rgba(255,255,255,0.015)` — nearly invisible
+- OR remove them entirely if they still look prominent at that opacity
 
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+Also fix body text color in capability cards: `color: #666`, `font-size: 14px`, `line-height: 1.7`. Currently too bright.
 
-    const camera = new THREE.OrthographicCamera(0, 0, 0, 0, -1000, 1000);
-    camera.position.z = 2;
-    cameraRef.current = camera;
+Also remove the extra vertical whitespace above "CAPABILITIES" label — reduce top padding of the section from current value to `80px`.
 
-    const uniforms = {
-      time: { value: 0 },
-      resolution: { value: new THREE.Vector4() },
-      uTexture: { value: null },
-      uDataTexture: { value: null }
-    };
+**Fix 7 — How It Works: arrows**
 
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(imageSrc, texture => {
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.wrapS = THREE.ClampToEdgeWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      imageAspectRef.current = texture.image.width / texture.image.height;
-      uniforms.uTexture.value = texture;
-      handleResize();
-    });
+The `→` arrows between steps are too small and positioned awkwardly. Replace them with a more intentional treatment:
+- Position each arrow horizontally centered between the vertical divider and the next step's content
+- Size: `18px`, color: `#2a2a2a`
+- Vertically align at the same level as the step number badge (`01`, `02`)
+- If they still look accidental, remove entirely — empty space between steps is cleaner than a weak arrow
 
-    const size = grid;
-    const data = new Float32Array(4 * size * size);
-    for (let i = 0; i < size * size; i++) {
-      data[i * 4] = Math.random() * 255 - 125;
-      data[i * 4 + 1] = Math.random() * 255 - 125;
-    }
+**Fix 8 — Platform strip: consistent badge widths**
 
-    const dataTexture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType);
-    dataTexture.needsUpdate = true;
-    uniforms.uDataTexture.value = dataTexture;
+Platform badges have inconsistent widths because names differ in length. Fix:
+- Set `min-width: 140px` on each badge with `justify-content: center`
+- This makes all five badges the same width regardless of name length
+- Reduce badge height to `36px`, font-size `12px`, logo `16px`
 
-    const material = new THREE.ShaderMaterial({
-      side: THREE.DoubleSide,
-      uniforms,
-      vertexShader,
-      fragmentShader,
-      transparent: true
-    });
+**Fix 9 — FAQ: spacing and text**
 
-    const geometry = new THREE.PlaneGeometry(1, 1, size - 1, size - 1);
-    const plane = new THREE.Mesh(geometry, material);
-    planeRef.current = plane;
-    scene.add(plane);
+- Open answer text color: `#777`, `line-height: 1.8`, `font-size: 14px`
+- Left border on open answer: `border-left: 2px solid #222`, `padding-left: 20px`
+- The `−` close icon: ensure `vertical-align: middle` with the question text — currently sits too high
+- Standardize spacing between all FAQ items: `padding: 24px 0` on each item regardless of open/closed state
+- Remove the extra bottom padding that appears on the open item
 
-    const handleResize = () => {
-      if (!container || !renderer || !camera) return;
+**Fix 10 — Final CTA button width and shape**
 
-      const rect = container.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+- Button max-width: `200px` — it should NOT stretch to content width or be full-width
+- `border-radius: 8px` — not pill-shaped, consistent with rest of page buttons
+- Reduce vertical padding around the entire CTA section: `padding: 100px 32px` (currently too much empty space above and below)
+- Thin decorative line above section: `width: 40px` (shorter, more elegant), `height: 1px`, `background: #222`, `margin: 0 auto 48px`
 
-      if (width === 0 || height === 0) return;
+**Fix 11 — Footer wordmark**
 
-      const containerAspect = width / height;
+`recall. © 2026` — the wordmark should match the navbar exactly:
+- `recall` in Geist Mono, `13px`, `color: #e5e5e5`, font-weight 500
+- `.` in `#555`
+- ` © 2026` in `#333`, same size
+- GitHub, Twitter, LinkedIn links: `#444`, hover `#888`, `13px`, Geist Mono
 
-      renderer.setSize(width, height);
+**Fix 12 — Global spacing consistency**
 
-      if (plane) {
-        plane.scale.set(containerAspect, 1, 1);
-      }
+Every major section currently has inconsistent top/bottom padding. Standardize:
+- All section top padding: `100px`
+- All section bottom padding: `100px`
+- Exception: hero is `min-height: 100vh` so no fixed padding needed
+- This creates a predictable rhythm as you scroll — each section takes the same "breath"
 
-      const frustumHeight = 1;
-      const frustumWidth = frustumHeight * containerAspect;
-      camera.left = -frustumWidth / 2;
-      camera.right = frustumWidth / 2;
-      camera.top = frustumHeight / 2;
-      camera.bottom = -frustumHeight / 2;
-      camera.updateProjectionMatrix();
+**Fix 13 — Dot grid density**
 
-      uniforms.resolution.value.set(width, height, 1, 1);
-    };
+The dot grid appears denser behind the demo in the hero and behind certain sections. This should be uniform:
+- Single dot grid component, single opacity, same density everywhere
+- If there are multiple instances or the opacity varies by section, consolidate to one fixed background applied to the `<body>` or the main `<main>` container — not repeated per section
 
-    if (window.ResizeObserver) {
-      const resizeObserver = new ResizeObserver(() => {
-        handleResize();
-      });
-      resizeObserver.observe(container);
-      resizeObserverRef.current = resizeObserver;
-    } else {
-      window.addEventListener('resize', handleResize);
-    }
-
-    const mouseState = {
-      x: 0,
-      y: 0,
-      prevX: 0,
-      prevY: 0,
-      vX: 0,
-      vY: 0
-    };
-
-    const handleMouseMove = e => {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1 - (e.clientY - rect.top) / rect.height;
-      mouseState.vX = x - mouseState.prevX;
-      mouseState.vY = y - mouseState.prevY;
-      Object.assign(mouseState, { x, y, prevX: x, prevY: y });
-    };
-
-    const handleMouseLeave = () => {
-      if (dataTexture) {
-        dataTexture.needsUpdate = true;
-      }
-      Object.assign(mouseState, {
-        x: 0,
-        y: 0,
-        prevX: 0,
-        prevY: 0,
-        vX: 0,
-        vY: 0
-      });
-    };
-
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
-
-    handleResize();
-
-    const animate = () => {
-      animationIdRef.current = requestAnimationFrame(animate);
-
-      if (!renderer || !scene || !camera) return;
-
-      uniforms.time.value += 0.05;
-
-      const data = dataTexture.image.data;
-      for (let i = 0; i < size * size; i++) {
-        data[i * 4] *= relaxation;
-        data[i * 4 + 1] *= relaxation;
-      }
-
-      const gridMouseX = size * mouseState.x;
-      const gridMouseY = size * mouseState.y;
-      const maxDist = size * mouse;
-
-      for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-          const distSq = Math.pow(gridMouseX - i, 2) + Math.pow(gridMouseY - j, 2);
-          if (distSq < maxDist * maxDist) {
-            const index = 4 * (i + size * j);
-            const power = Math.min(maxDist / Math.sqrt(distSq), 10);
-            data[index] += strength * 100 * mouseState.vX * power;
-            data[index + 1] -= strength * 100 * mouseState.vY * power;
-          }
-        }
-      }
-
-      dataTexture.needsUpdate = true;
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
-
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      } else {
-        window.removeEventListener('resize', handleResize);
-      }
-
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseleave', handleMouseLeave);
-
-      if (renderer) {
-        renderer.dispose();
-        renderer.forceContextLoss();
-        if (container.contains(renderer.domElement)) {
-          container.removeChild(renderer.domElement);
-        }
-      }
-
-      if (geometry) geometry.dispose();
-      if (material) material.dispose();
-      if (dataTexture) dataTexture.dispose();
-      if (uniforms.uTexture.value) uniforms.uTexture.value.dispose();
-
-      sceneRef.current = null;
-      rendererRef.current = null;
-      cameraRef.current = null;
-      planeRef.current = null;
-    };
-  }, [grid, mouse, strength, relaxation, imageSrc]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
-      style={{
-        width: '100%',
-        height: '100%',
-        minWidth: '0',
-        minHeight: '0'
-      }}
-    />
-  );
-};
-
-export default GridDistortion;
-
-```
-
-### Integration Instructions
-1. Install any listed dependencies.
-2. Copy the component source into the appropriate directory in the project.
-3. Import and render the component using the usage example above as a starting point.
-4. Adjust props as needed for the specific use case — refer to the props table for all available options.
+Commit: `git add . && git commit -m "Landing page UI fixes — spacing, overflow, consistency, polish"`

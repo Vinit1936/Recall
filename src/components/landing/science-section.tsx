@@ -45,12 +45,14 @@ export function ScienceSection() {
 
   return (
     <section
+      id="science"
       ref={containerRef}
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '80px 32px',
         borderTop: '1px solid #1a1a1a',
+        scrollMarginTop: '80px',
       }}
     >
       <div
