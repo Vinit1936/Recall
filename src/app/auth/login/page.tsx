@@ -3,31 +3,12 @@
 import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
+// @ts-ignore
 import downloadImg from '../../../../utils/download.jpg';
-
-// Fake decorative heatmap for the left panel
-function FakeHeatmap() {
-  const cols = 20;
-  const rows = 7;
-  const levels = ['#1a1a1a', '#1a3a2a', '#1e5c3a', 'rgba(34,197,94,0.6)', '#22c55e'];
-  const seed = (i: number) => (Math.sin(i * 9.301 + 0.5) * 43758.5453) % 1;
-
-  return (
-    <div style={{ display: 'flex', gap: 3, marginTop: 24 }}>
-      {Array.from({ length: cols }).map((_, ci) => (
-        <div key={ci} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {Array.from({ length: rows }).map((_, ri) => {
-            const v = Math.abs(seed(ci * 7 + ri));
-            const level = v < 0.5 ? 0 : v < 0.65 ? 1 : v < 0.8 ? 2 : v < 0.92 ? 3 : 4;
-            return <div key={ri} style={{ width: 11, height: 11, borderRadius: 2, background: levels[level] }} />;
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
+// @ts-ignore
+import GridDistortion from '@/components/ui/grid-distortion';
 
 type Tab = 'signin' | 'signup';
 
@@ -253,16 +234,55 @@ function LoginContent() {
             overflow: 'hidden',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+            background: '#0a0a0b',
           }}
         >
-          <Image
-            src={downloadImg}
-            alt="Recall background"
-            fill
-            priority
-            sizes="40vw"
-            style={{ objectFit: 'cover' }}
+          {/* Interactive Three.js WebGL GridDistortion */}
+          <GridDistortion
+            imageSrc={downloadImg.src || '/login-bg.jpg'}
+            grid={15}
+            mouse={0.1}
+            strength={0.15}
+            relaxation={0.9}
           />
+
+          {/* Dark gradient overlay for contrast */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              background: 'linear-gradient(180deg, rgba(10, 10, 11, 0.1) 0%, rgba(10, 10, 11, 0.85) 100%)',
+            }}
+          />
+
+          {/* Bottom Tagline Overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: '36px',
+              pointerEvents: 'none',
+              zIndex: 2,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: 'var(--font-geist-sans), sans-serif',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: '#ffffff',
+                letterSpacing: '-0.02em',
+                margin: 0,
+                lineHeight: 1.3,
+              }}
+            >
+              Solve once.<br />
+              <span style={{ color: '#a1a1aa', fontWeight: 400 }}>Remember forever.</span>
+            </h2>
+          </div>
         </div>
       </div>
 

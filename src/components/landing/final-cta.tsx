@@ -79,7 +79,7 @@ export function FinalCTA() {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            Get started free
+            Sign in
           </Link>
         </div>
 
