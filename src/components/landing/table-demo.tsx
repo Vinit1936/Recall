@@ -7,11 +7,11 @@ import { getTopicColor, getDifficultyStyle } from './demo-styles';
 import { FakeCursor, CursorHandle } from './fake-cursor';
 
 const INITIAL_PROBLEMS = [
-  { id: 1, platform: 'CODEFORCES', number: '187', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', nextRevision: 'in 2d', statusColor: '#22c55e' },
-  { id: 2, platform: 'CODECHEF', number: '21', title: 'Triple Xor', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
-  { id: 3, platform: 'HACKERRANK', number: '474', title: 'Luck Balance', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
-  { id: 4, platform: 'GFG', number: '170', title: 'Program To Print First N Fibonacci', difficulty: 'MEDIUM', topic: '', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
-  { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'General', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
+  { id: 1, platform: 'CODEFORCES', number: '187', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', notes: 'two pointer', statusColor: '#22c55e' },
+  { id: 2, platform: 'CODECHEF', number: '21', title: 'Triple Xor', difficulty: 'EASY', topic: 'Bitwise', status: 'Not started', notes: 'bit manip', statusColor: '#666666' },
+  { id: 3, platform: 'HACKERRANK', number: '474', title: 'Luck Balance', difficulty: 'EASY', topic: 'Greedy', status: 'Not started', notes: 'sorting', statusColor: '#666666' },
+  { id: 4, platform: 'GFG', number: '170', title: 'Nth Fibonacci', difficulty: 'MEDIUM', topic: 'DP', status: 'Not started', notes: 'dp memo', statusColor: '#fb923c' },
+  { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'Array', status: 'Not started', notes: 'math carry', statusColor: '#fb923c' },
 ];
 
 const PLATFORMS_LIST = [
@@ -326,16 +326,19 @@ export function TableDemo() {
                 <span style={{ fontSize: '12px', color: '#888888' }}>{prob.status}</span>
               </div>
 
-              {/* Revision Urgency */}
+              {/* Notes */}
               <div
                 style={{
                   textAlign: 'right',
-                  fontSize: '12px',
+                  fontSize: '11.5px',
                   fontFamily: 'var(--font-geist-mono), monospace',
-                  color: prob.nextRevision === 'Today' ? '#fb923c' : prob.nextRevision === '1d' ? '#f87171' : '#666666',
+                  color: '#888888',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {prob.nextRevision}
+                {prob.notes || '—'}
               </div>
             </div>
           );
