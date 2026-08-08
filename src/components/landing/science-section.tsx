@@ -4,11 +4,11 @@ import { motion, useInView } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 
 const MILESTONES = [
-  { day: 'Day 0', title: 'Initial Solve', color: '#f59e0b', stroke: '#f59e0b', retention: '100%' },
-  { day: 'Day 3', title: '1st Review', color: '#06b6d4', stroke: '#06b6d4', retention: '95%' },
-  { day: 'Day 7', title: '2nd Review', color: '#3b82f6', stroke: '#3b82f6', retention: '98%' },
-  { day: 'Day 14', title: '3rd Review', color: '#10b981', stroke: '#10b981', retention: '99%' },
-  { day: 'Day 30', title: 'Mastered', color: '#c084fc', stroke: '#c084fc', retention: '100%' },
+  { day: 'Day 0', title: 'Initial Solve', color: '#f59e0b', retention: '100%' },
+  { day: 'Day 3', title: '1st Review', color: '#06b6d4', retention: '95%' },
+  { day: 'Day 7', title: '2nd Review', color: '#3b82f6', retention: '98%' },
+  { day: 'Day 14', title: '3rd Review', color: '#10b981', retention: '99%' },
+  { day: 'Day 30', title: 'Mastered', color: '#c084fc', retention: '100%' },
 ];
 
 export function ScienceSection() {
@@ -23,7 +23,7 @@ export function ScienceSection() {
 
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % MILESTONES.length);
-    }, 2000);
+    }, 2200);
 
     return () => clearInterval(interval);
   }, [isInView, isPaused]);
@@ -34,6 +34,14 @@ export function ScienceSection() {
     setIsPaused(true);
     setTimeout(() => setIsPaused(false), 4000);
   };
+
+  const NODE_POINTS = [
+    { x: 20, y: 20 },
+    { x: 110, y: 20 },
+    { x: 230, y: 20 },
+    { x: 380, y: 20 },
+    { x: 480, y: 20 },
+  ];
 
   return (
     <section
@@ -129,7 +137,7 @@ export function ScienceSection() {
             maxWidth: '58%',
           }}
         >
-          {/* Table-Chrome Outer Window Frame (100% theme matched with TableDemo & RevisionDemo) */}
+          {/* Table-Chrome Outer Window Frame */}
           <div
             style={{
               borderRadius: '12px',
@@ -218,94 +226,86 @@ export function ScienceSection() {
                 </div>
               </div>
 
-              {/* Vibrant Animated SVG Curve Graph */}
+              {/* Ultra-Smooth SVG Curve Graph */}
               <div style={{ position: 'relative', width: '100%', height: '160px', margin: '12px 0' }}>
                 <svg
                   viewBox="0 0 500 150"
                   style={{ width: '100%', height: '100%', overflow: 'visible' }}
                   preserveAspectRatio="none"
                 >
-                  {/* Grid lines */}
-                  <line x1="0" y1="15" x2="500" y2="15" stroke="#18181c" strokeWidth="1" strokeDasharray="3 3" />
+                  <defs>
+                    {/* Multicolored Gradient for Spaced Curve */}
+                    <linearGradient id="spacedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#f59e0b" />
+                      <stop offset="25%" stopColor="#06b6d4" />
+                      <stop offset="55%" stopColor="#3b82f6" />
+                      <stop offset="80%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#c084fc" />
+                    </linearGradient>
+
+                    {/* Gradient Fill under Decay Curve */}
+                    <linearGradient id="decayArea" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Horizontal Grid lines */}
+                  <line x1="0" y1="20" x2="500" y2="20" stroke="#18181c" strokeWidth="1" strokeDasharray="3 3" />
                   <line x1="0" y1="75" x2="500" y2="75" stroke="#18181c" strokeWidth="1" strokeDasharray="3 3" />
                   <line x1="0" y1="135" x2="500" y2="135" stroke="#18181c" strokeWidth="1" strokeDasharray="3 3" />
 
-                  {/* Red Dashed Decay Line */}
+                  {/* Red Decay Area Fill */}
+                  <path d="M 20 20 C 120 110, 240 135, 480 138 L 480 145 L 20 145 Z" fill="url(#decayArea)" />
+
+                  {/* Red Dashed Decay Line (Smooth Cubic Bézier) */}
                   <path
-                    d="M 20 15 Q 100 120 500 135"
+                    d="M 20 20 C 120 110, 240 135, 480 138"
                     fill="none"
                     stroke="#ef4444"
                     strokeWidth="1.5"
-                    strokeDasharray="4 3"
+                    strokeDasharray="4 4"
                     opacity="0.6"
                   />
 
-                  {/* Multicolored Curve Segments */}
-                  {/* Segment 1: Day 0 -> Day 3 (#f59e0b) */}
+                  {/* Ultra-Smooth Multicolored Spaced Repetition Curve (Continuous Smooth Cubic Bézier Spline) */}
                   <motion.path
-                    d="M 20 15 Q 65 75 110 65 L 110 15"
+                    d="M 20 20 C 55 90, 85 90, 110 20 C 150 70, 190 70, 230 20 C 290 50, 330 50, 380 20 C 420 30, 450 30, 480 20"
                     fill="none"
-                    stroke="#f59e0b"
-                    strokeWidth={activeStep >= 1 ? 2.5 : 1.5}
-                    opacity={activeStep >= 1 ? 1 : 0.3}
-                    transition={{ duration: 0.4 }}
-                    style={{ filter: activeStep >= 1 ? 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.5))' : 'none' }}
+                    stroke="url(#spacedGrad)"
+                    strokeWidth="2.5"
+                    style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.35))' }}
                   />
 
-                  {/* Segment 2: Day 3 -> Day 7 (#06b6d4) */}
-                  <motion.path
-                    d="M 110 15 Q 170 55 230 45 L 230 15"
-                    fill="none"
-                    stroke="#06b6d4"
-                    strokeWidth={activeStep >= 2 ? 2.5 : 1.5}
-                    opacity={activeStep >= 2 ? 1 : 0.2}
-                    transition={{ duration: 0.4 }}
-                    style={{ filter: activeStep >= 2 ? 'drop-shadow(0 0 6px rgba(6, 182, 212, 0.5))' : 'none' }}
-                  />
-
-                  {/* Segment 3: Day 7 -> Day 14 (#3b82f6) */}
-                  <motion.path
-                    d="M 230 15 Q 310 35 380 30 L 380 15"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth={activeStep >= 3 ? 2.5 : 1.5}
-                    opacity={activeStep >= 3 ? 1 : 0.2}
-                    transition={{ duration: 0.4 }}
-                    style={{ filter: activeStep >= 3 ? 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.5))' : 'none' }}
-                  />
-
-                  {/* Segment 4: Day 14 -> Day 30 (#c084fc) */}
-                  <motion.path
-                    d="M 380 15 Q 440 20 500 16"
-                    fill="none"
-                    stroke="#c084fc"
-                    strokeWidth={activeStep >= 4 ? 2.5 : 1.5}
-                    opacity={activeStep >= 4 ? 1 : 0.2}
-                    transition={{ duration: 0.4 }}
-                    style={{ filter: activeStep >= 4 ? 'drop-shadow(0 0 6px rgba(192, 132, 252, 0.5))' : 'none' }}
-                  />
-
-                  {/* Node Dots */}
-                  {[
-                    { x: 20, y: 15, index: 0 },
-                    { x: 110, y: 15, index: 1 },
-                    { x: 230, y: 15, index: 2 },
-                    { x: 380, y: 15, index: 3 },
-                    { x: 500, y: 16, index: 4 },
-                  ].map((pt) => {
-                    const item = MILESTONES[pt.index];
-                    const isActive = activeStep === pt.index;
+                  {/* Node Dots at exact peak points (Y = 20) */}
+                  {NODE_POINTS.map((pt, idx) => {
+                    const item = MILESTONES[idx];
+                    const isActive = activeStep === idx;
                     return (
-                      <g key={pt.index} style={{ cursor: 'pointer' }} onClick={() => handleSelectStep(pt.index)}>
-                        <motion.circle
+                      <g key={idx} style={{ cursor: 'pointer' }} onClick={() => handleSelectStep(idx)}>
+                        {/* Outer Glow Ring when Active */}
+                        {isActive && (
+                          <motion.circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r="10"
+                            fill="none"
+                            stroke={item.color}
+                            strokeWidth="1"
+                            opacity="0.5"
+                            initial={{ scale: 0.8, opacity: 0.2 }}
+                            animate={{ scale: 1.3, opacity: 0.6 }}
+                            transition={{ repeat: Infinity, duration: 1.5, repeatType: 'reverse' }}
+                          />
+                        )}
+                        {/* Core Dot */}
+                        <circle
                           cx={pt.x}
                           cy={pt.y}
-                          r={isActive ? 6 : 4}
-                          fill={isActive ? item.color : '#0a0a0a'}
+                          r={isActive ? 5.5 : 3.5}
+                          fill={isActive ? item.color : '#0a0a0b'}
                           stroke={item.color}
                           strokeWidth="2"
-                          animate={{ scale: isActive ? 1.25 : 1 }}
-                          transition={{ duration: 0.2 }}
                         />
                       </g>
                     );
