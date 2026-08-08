@@ -117,7 +117,7 @@ export default function LandingPage() {
                 }}
               >
                 <span style={{ color: '#444444', fontFamily: 'var(--font-geist-mono), monospace', fontSize: '11px' }}>
-                  app.recall.dev/daily
+                  recall/daily
                 </span>
               </div>
             </div>

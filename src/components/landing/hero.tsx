@@ -312,7 +312,7 @@ export function Hero() {
                     fontSize: '11px',
                   }}
                 >
-                  app.recall.dev
+                  recall
                 </span>
               </div>
             </div>
