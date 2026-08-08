@@ -10,7 +10,7 @@ const INITIAL_PROBLEMS = [
   { id: 1, platform: 'CODEFORCES', number: '187', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', nextRevision: 'in 2d', statusColor: '#22c55e' },
   { id: 2, platform: 'CODECHEF', number: '21', title: 'Triple Xor', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
   { id: 3, platform: 'HACKERRANK', number: '474', title: 'Luck Balance', difficulty: 'EASY', topic: '', status: 'Not started', nextRevision: '1d', statusColor: '#666666' },
-  { id: 4, platform: 'GFG', number: '170', title: 'N-th Fibonacci Number', difficulty: 'MEDIUM', topic: '', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
+  { id: 4, platform: 'GFG', number: '170', title: 'Program To Print First N Fibonacci', difficulty: 'MEDIUM', topic: '', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
   { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'General', status: 'Not started', nextRevision: 'Today', statusColor: '#fb923c' },
 ];
 
@@ -225,7 +225,7 @@ export function TableDemo() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '36px minmax(240px, 1.4fr) 75px 115px 105px 70px',
+          gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
           height: '34px',
           alignItems: 'center',
           padding: '0 16px',
@@ -257,7 +257,7 @@ export function TableDemo() {
               key={prob.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '36px minmax(240px, 1.4fr) 75px 115px 105px 70px',
+                gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
                 height: '44px',
                 alignItems: 'center',
                 padding: '0 16px',
@@ -346,7 +346,7 @@ export function TableDemo() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '36px minmax(240px, 1.4fr) 75px 115px 105px 70px',
+              gridTemplateColumns: '40px minmax(220px, 1fr) 85px 120px 110px 80px',
               height: '44px',
               alignItems: 'center',
               padding: '0 16px',
@@ -540,6 +540,10 @@ export function TableDemo() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+    </div>
+  );
+}
       </div>
     </div>
   );
