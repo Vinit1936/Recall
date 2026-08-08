@@ -55,8 +55,8 @@ export function TableDemo() {
     const cBox = containerRef.current.getBoundingClientRect();
     const eBox = el.getBoundingClientRect();
     return {
-      x: eBox.left - cBox.left + eBox.width / 2,
-      y: eBox.top - cBox.top + eBox.height / 2 + 10,
+      x: eBox.left - cBox.left + eBox.width / 2 + 25,
+      y: eBox.top - cBox.top + eBox.height / 2 + 25,
     };
   };
 
