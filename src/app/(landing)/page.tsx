@@ -5,6 +5,7 @@ import { NoiseTexture } from '@/components/landing/noise';
 import { Navbar } from '@/components/landing/navbar';
 import { Hero } from '@/components/landing/hero';
 import { RevisionSection } from '@/components/landing/revision-section';
+import { BentoGrid } from '@/components/landing/bento-grid';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { PlatformStrip } from '@/components/landing/platform-strip';
 import { StatsBar } from '@/components/landing/stats-bar';
@@ -51,6 +52,7 @@ export default function LandingPage() {
       <main style={{ position: 'relative', zIndex: 2 }}>
         <Hero />
         <RevisionSection />
+        <BentoGrid />
         <HowItWorks />
         <PlatformStrip />
         <StatsBar />
