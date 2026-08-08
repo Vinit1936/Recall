@@ -27,31 +27,21 @@ export function Navbar() {
         padding: '0 14px',
       }}
     >
-      {/* Left: Table Chrome Dots + Dashboard Wordmark */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
-        </div>
-
-        <div style={{ width: '1px', height: '14px', background: '#1e1e1e' }} />
-
-        <Link
-          href="/"
-          style={{
-            fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '15px',
-            fontWeight: 600,
-            color: '#ffffff',
-            textDecoration: 'none',
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}
-        >
-          recall<span style={{ color: '#F7981E' }}>.</span>
-        </Link>
-      </div>
+      {/* Left: Dashboard Wordmark */}
+      <Link
+        href="/"
+        style={{
+          fontFamily: 'var(--font-geist-mono), monospace',
+          fontSize: '15px',
+          fontWeight: 600,
+          color: '#ffffff',
+          textDecoration: 'none',
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+        }}
+      >
+        recall<span style={{ color: '#F7981E' }}>.</span>
+      </Link>
 
       {/* Center: Table-Themed Navigation Links */}
       <nav
