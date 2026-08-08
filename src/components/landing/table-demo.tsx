@@ -7,11 +7,11 @@ import { getTopicColor, getDifficultyStyle } from './demo-styles';
 import { FakeCursor, CursorHandle } from './fake-cursor';
 
 const INITIAL_PROBLEMS = [
-  { id: 1, platform: 'CODEFORCES', number: '187', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', notes: 'two pointer', statusColor: '#22c55e' },
-  { id: 2, platform: 'CODECHEF', number: '21', title: 'Triple Xor', difficulty: 'EASY', topic: 'Bitwise', status: 'Not started', notes: 'bit manip', statusColor: '#666666' },
-  { id: 3, platform: 'HACKERRANK', number: '474', title: 'Luck Balance', difficulty: 'EASY', topic: 'Greedy', status: 'Not started', notes: 'sorting', statusColor: '#666666' },
-  { id: 4, platform: 'GFG', number: '170', title: 'Nth Fibonacci', difficulty: 'MEDIUM', topic: 'DP', status: 'Not started', notes: 'dp memo', statusColor: '#fb923c' },
-  { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'Array', status: 'Not started', notes: 'math carry', statusColor: '#fb923c' },
+  { id: 1, platform: 'CODEFORCES', number: '187', title: 'Target Practice', difficulty: 'EASY', topic: 'implementation', status: 'Clean', notes: 'two pointer', statusColor: '#4ade80', textColor: '#4ade80' },
+  { id: 2, platform: 'CODECHEF', number: '21', title: 'Triple Xor', difficulty: 'EASY', topic: 'Bitwise', status: 'Shaky', notes: 'bit manip', statusColor: '#fb923c', textColor: '#fb923c' },
+  { id: 3, platform: 'HACKERRANK', number: '474', title: 'Luck Balance', difficulty: 'EASY', topic: 'Greedy', status: 'Struggled', notes: 'sorting', statusColor: '#f87171', textColor: '#f87171' },
+  { id: 4, platform: 'GFG', number: '170', title: 'Nth Fibonacci', difficulty: 'MEDIUM', topic: 'DP', status: 'Mastered', notes: 'dp memo', statusColor: '#a855f7', textColor: '#c084fc' },
+  { id: 5, platform: 'LEETCODE', number: '66', title: 'Plus One', difficulty: 'EASY', topic: 'Array', status: 'Clean', notes: 'math carry', statusColor: '#4ade80', textColor: '#4ade80' },
 ];
 
 const PLATFORMS_LIST = [
@@ -323,7 +323,9 @@ export function TableDemo() {
               {/* Status */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: prob.statusColor }} />
-                <span style={{ fontSize: '12px', color: '#888888' }}>{prob.status}</span>
+                <span style={{ fontSize: '12px', color: prob.textColor || '#888888', fontWeight: 500 }}>
+                  {prob.status}
+                </span>
               </div>
 
               {/* Notes */}
