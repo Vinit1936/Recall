@@ -34,6 +34,7 @@ export function Hero() {
       }}
     >
       <div
+        className="hero-grid"
         style={{
           display: 'flex',
           alignItems: 'center',

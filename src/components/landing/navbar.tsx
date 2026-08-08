@@ -71,7 +71,7 @@ export function Navbar() {
             Features
           </a>
           <a
-            href="#how-it-works"
+            href="#features"
             style={{
               fontSize: '13px',
               color: '#666666',

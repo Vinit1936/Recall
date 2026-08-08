@@ -57,16 +57,56 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-::selection {
-  background: #333;
-  color: #fff;
+html {
+  scroll-behavior: smooth;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::selection {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #080808;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1e1e;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .hero-grid, .revision-grid {
+    flex-direction: column !important;
+    gap: 40px !important;
+  }
+  .hero-grid > div, .revision-grid > div {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+  .how-it-works-grid {
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+  .how-it-works-grid > div {
+    border-right: none !important;
+    border-bottom: 1px solid #1a1a1a !important;
+    padding-right: 0 !important;
+    padding-bottom: 24px !important;
+  }
+  .stats-bar-grid {
+    flex-direction: column !important;
+    gap: 40px !important;
+  }
+}
 
 @theme inline {
   --font-heading: var(--font-sans);

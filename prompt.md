@@ -1,268 +1,210 @@
-# PROMPT 2 — Animated Table Demo + Revision Demo
+
+# PROMPT 3 — Features Section, CTA, Footer, Polish
 
 ## Context
 
-This prompt builds the two animated demo components that live inside the browser chrome mockups on the landing page. These are self-contained React components with hardcoded fake data and scripted animations. They are NOT iframes of the real app. They must be pixel-perfect replicas of the actual UI.
+This is the final phase of the landing page. The navbar, hero, and animated demos are already built and working. This prompt adds everything below the hero: the revision section (text + revision demo), a features strip, a final CTA section, and a footer. Then applies final polish to the whole page.
 
-Read `ui.md`. Import `getTopicColor` from `src/lib/topic-colors.ts` — use the exact same function the real app uses so topic pill colors are identical.
+Read `ui.md` before writing anything.
 
-## Important: reuse exact styles from the real app
+## Section 2 — Revision hero section
 
-Do NOT invent new styles for these demos. Copy the exact className or style values from:
-- `src/components/problems-table/` for difficulty pills, topic pills, status dots
-- `src/components/daily/` for confidence buttons, problem rows
+Same structure as the hero but mirrored — demo LEFT, text RIGHT.
 
-Create a shared file `src/components/landing/demo-styles.ts` that exports the exact same pill/badge style objects used in the real app. If the real app uses Tailwind classes, copy them. If it uses style objects, copy those. The demos must look identical to screenshots of the real app.
+**Layout:**
+`max-width: 1200px`, `margin: 0 auto`, `padding: 120px 32px`. Two columns, left `55%`, right `45%`, `gap: 80px`, `align-items: center`.
 
-## Fake cursor component — `src/components/landing/fake-cursor.tsx`
+**Left column — browser chrome with revision demo:**
+Same browser chrome as hero (same border, shadow, toolbar specs). Inside: `<RevisionDemo />` built in Prompt 2. Content area height `420px`.
+
+**Right column — text:**
+
+Badge: `✦ Daily revision queue` — same badge style as hero badge.
+
+Headline:
+Line 1: `"Show up."` — Instrument Serif italic, same size as hero `clamp(48px, 5.5vw, 72px)`, `color: #f0f0f0`.
+Thin `1px solid #1e1e1e` rule line between lines (same as hero).
+Line 2: `"Every day."` — same style.
+
+Subheadline: `"Recall tells you exactly what to revise today. 2 to 3 problems, automatically selected by your schedule. Mark each one and you're done."` — `#666`, `17px`, `line-height: 1.65`, `max-width: 360px`, `margin-top: 24px`.
+
+One CTA button below: `"Get started free"` — same primary button style as hero. `margin-top: 36px`. Links to `/auth/login`.
+
+**Section entrance animation:**
+Both columns animate in on scroll (`useInView`, `once: true`, `margin: "-100px"`). Left: `opacity 0→1, x: -24→0`. Right: `opacity 0→1, x: 24→0`. Duration `0.7s`, ease `[0.16, 1, 0.3, 1]`. Stagger `0.1s`.
+
+**Divider between hero and this section:**
+A full-width `1px solid #111` line with `max-width: 1200px`, `margin: 0 auto`, `padding: 0 32px`. The line itself inside the padded container.
+
+## Section 3 — How it works
+
+Three-step horizontal layout showing the core loop. `max-width: 1200px`, `margin: 0 auto`, `padding: 100px 32px 0`.
+
+**Section header:**
+`"How it works"` — Geist Sans, `11px`, uppercase, monospace, `letter-spacing: 0.12em`, `color: #444`, `margin-bottom: 48px`, `text-align: center`.
+
+**Three steps** in a row, `gap: 1px` (the gaps ARE the dividers — each step has a right border `1px solid #1a1a1a` except the last):
+
+Each step: `flex: 1`, `padding: 32px 40px 32px 0`, (last step: no right border, no right padding).
+
+Step number: `font-family: var(--font-geist-mono)`, `font-size: 11px`, `color: #333`, `margin-bottom: 20px`. Text: `"01"`, `"02"`, `"03"`.
+
+Step title: Geist Sans, `18px`, `color: #e5e5e5`, `font-weight: 500`, `margin-bottom: 12px`.
+
+Step description: Geist Sans, `14px`, `color: #555`, `line-height: 1.6`.
+
+Content:
+- `"01"` / `"Solve & add"` / `"Add any problem from LeetCode, Codeforces, GFG, HackerRank, or CodeChef. Title, difficulty, and topic fill in automatically."`
+- `"02"` / `"Get a revision queue"` / `"Recall schedules your first revision in 3 days. Clear it — next one in 7. Then 14. Then 30. The schedule adapts to how well you remember."`
+- `"03"` / `"Show up daily"` / `"Open Daily Revision every day. Mark each problem Clean, Shaky, or Struggled. The algorithm adjusts. Your streak builds."`
+
+Animate in on scroll: steps fade in and slide up `y: 16→0`, staggered `0.12s` apart.
+
+## Section 4 — Platform strip
+
+A simple centered section showing supported platforms. `padding: 80px 32px`.
+
+Header: `"Works with your favorite platforms"` — Geist Mono, `11px`, uppercase, `letter-spacing: 0.1em`, `color: #333`, `text-align: center`, `margin-bottom: 32px`.
+
+Five platform badges in a row, centered, `gap: 24px`:
+Each badge: `display: flex`, `align-items: center`, `gap: 8px`, `padding: 10px 20px`, `border: 1px solid #1a1a1a`, `border-radius: 8px`, `background: rgba(255,255,255,0.01)`.
+Platform logo (same `PlatformLogo` component from `src/lib/platforms/logos.tsx`) + platform name in Geist Sans `13px` `#888`.
+
+Platforms: LeetCode, Codeforces, GFG, HackerRank, CodeChef.
+
+No animation needed here — static is fine.
+
+## Section 5 — Stats bar
+
+A full-width dark bar: `background: #0d0d0d`, `border-top: 1px solid #141414`, `border-bottom: 1px solid #141414`, `padding: 48px 32px`.
+
+Three stats centered in a row, `gap: 80px`:
+
+Each stat:
+- Number: `font-family: var(--font-instrument-serif)`, `font-style: italic`, `font-size: 48px`, `color: #e5e5e5`, `line-height: 1`
+- Label: Geist Mono, `11px`, uppercase, `letter-spacing: 0.1em`, `color: #444`, `margin-top: 8px`
+
+Content:
+- `"2,800+"` / `"LeetCode problems indexed"`
+- `"5"` / `"Platforms supported"`
+- `"+3 → +30"` / `"Day revision ladder"`
+
+The number `"2,800+"` and `"+3 → +30"` use Instrument Serif italic. `"5"` also Instrument Serif.
+
+Animate: numbers count up from 0 when scrolled into view. Use a simple counter animation with `useEffect` + `requestAnimationFrame`. Duration `1200ms`, ease out.
+
+## Section 6 — Final CTA
+
+`padding: 140px 32px`. Centered. `max-width: 640px`, `margin: 0 auto`, `text-align: center`.
+
+Thin decorative line above: `width: 1px`, `height: 48px`, `background: linear-gradient(to bottom, transparent, #333)`, `margin: 0 auto 48px`.
+
+Headline:
+`"Start remembering"` — Instrument Serif italic, `clamp(40px, 5vw, 64px)`, `color: #f0f0f0`.
+
+Subheadline: `"Free. No credit card. No nonsense."` — Geist Mono, `13px`, `color: #444`, `letter-spacing: 0.05em`, `margin-top: 16px`.
+
+Button: `"Get started free"` — `background: #ffffff`, `color: #000`, `font-size: 15px`, `font-weight: 600`, `height: 52px`, `padding: 0 40px`, `border-radius: 10px`, `margin-top: 40px`. On hover: `transform: translateY(-1px)`, `box-shadow: 0 8px 24px rgba(255,255,255,0.08)`. Transition `all 0.2s ease`.
+
+Below button: `"Already have an account?"` + `" Sign in →"` (link to `/auth/login`). Geist Sans, `13px`, `color: #444`. "Sign in →" color `#666`, hover `#e5e5e5`.
+
+Animate: entire section fades in `opacity 0→1`, `y: 24→0` on scroll. Duration `0.8s`.
+
+## Section 7 — Footer
+
+`border-top: 1px solid #111`, `padding: 28px 32px`. `max-width: 1200px`, `margin: 0 auto`. `display: flex`, `align-items: center`, `justify-content: space-between`.
+
+Left: `recall. © 2026` — Geist Mono, `12px`, `color: #333`. Period in `#222`.
+
+Right: three links — `GitHub`, `Twitter`, `LinkedIn`. Geist Mono, `12px`, `color: #333`. Hover: `color: #888`. Gap `24px`. GitHub opens `https://github.com/Vinit1936/Recall`. Twitter opens `https://x.com/vinitpatil193`. LinkedIn opens `https://www.linkedin.com/in/vinitpatil19/`.
+
+No animation on footer — static.
+
+## Final polish — apply to the whole page
+
+After building all sections, do these final polish passes:
+
+**1. Scroll behavior:**
+Add `html { scroll-behavior: smooth }` to the landing layout.
+
+**2. Section spacing consistency:**
+Every major section (hero, revision section, how it works, platform strip, stats bar, CTA) should have a `border-top: 1px solid #0f0f0f` (extremely subtle, almost invisible) as a visual separator. Do NOT use heavy dividers — just the faintest hint.
+
+**3. Text selection color:**
+Add to global CSS: `::selection { background: rgba(255,255,255,0.1); color: #fff; }`
+
+**4. Scrollbar styling:**
+```css
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #080808; }
+::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
+```
+
+**5. Nav link anchors:**
+`Features` nav link → scrolls to How it works section (add `id="features"` to that section).
+`How it works` nav link → same section.
+Both use `href="#features"` with smooth scroll.
+
+**6. Performance:**
+All images/heavy assets: use `loading="lazy"`. The demo components: wrap in `dynamic(() => import(...), { ssr: false })` in the page to avoid SSR issues with animation libraries.
+
+**7. Mobile — bare minimum responsiveness:**
+At `max-width: 768px`:
+- Hero: stack columns vertically, browser chrome hidden (display none on mobile)
+- Revision section: same, stack vertically, chrome hidden
+- How it works: stack steps vertically
+- Platform strip: wrap to 2-3 per row
+- Stats bar: stack vertically, gap `40px`
+This is NOT a full mobile design — just prevent it from being completely broken on mobile.
+
+## Update `src/app/(landing)/page.tsx`
 
 ```typescript
-'use client'
-import { motion, useAnimation } from 'motion/react'
-import { forwardRef, useImperativeHandle } from 'react'
+import dynamic from 'next/dynamic'
+import { NoiseTexture } from '@/components/landing/noise'
+import { Navbar } from '@/components/landing/navbar'
+import { Hero } from '@/components/landing/hero'
+import { RevisionSection } from '@/components/landing/revision-section'
+import { HowItWorks } from '@/components/landing/how-it-works'
+import { PlatformStrip } from '@/components/landing/platform-strip'
+import { StatsBar } from '@/components/landing/stats-bar'
+import { FinalCTA } from '@/components/landing/final-cta'
+import { Footer } from '@/components/landing/footer'
 
-export type CursorHandle = {
-  moveTo: (x: number, y: number, duration?: number) => Promise<void>
-  click: () => Promise<void>
-  hide: () => void
-  show: () => void
-}
-
-const FakeCursor = forwardRef<CursorHandle>((_, ref) => {
-  const controls = useAnimation()
-
-  useImperativeHandle(ref, () => ({
-    async moveTo(x, y, duration = 0.5) {
-      await controls.start({ x, y, transition: { duration, ease: [0.25, 0.1, 0.25, 1] } })
-    },
-    async click() {
-      await controls.start({ scale: 0.75, transition: { duration: 0.08 } })
-      await controls.start({ scale: 1, transition: { duration: 0.12 } })
-    },
-    hide() { controls.start({ opacity: 0, transition: { duration: 0.2 } }) },
-    show() { controls.start({ opacity: 1, transition: { duration: 0.2 } }) },
-  }))
-
+export default function LandingPage() {
   return (
-    <motion.div
-      animate={controls}
-      initial={{ x: 40, y: 200, opacity: 0 }}
-      style={{
-        position: 'absolute',
-        width: 20,
-        height: 20,
-        zIndex: 999,
-        pointerEvents: 'none',
-      }}
-    >
-      {/* Custom cursor SVG — arrow shape, not a circle */}
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M4 2L16 9.5L10.5 11L8 17L4 2Z" fill="white" stroke="#000" strokeWidth="1"/>
-      </svg>
-    </motion.div>
+    <>
+      <NoiseTexture />
+      <Navbar />
+      <main style={{ position: 'relative', zIndex: 2 }}>
+        <Hero />
+        <RevisionSection />
+        <HowItWorks />
+        <PlatformStrip />
+        <StatsBar />
+        <FinalCTA />
+        <Footer />
+      </main>
+    </>
   )
-})
-FakeCursor.displayName = 'FakeCursor'
-export { FakeCursor }
+}
 ```
 
-## Table demo — `src/components/landing/table-demo.tsx`
+## Definition of done — Prompt 3
 
-### Hardcoded fake data
-
-```typescript
-const FAKE_PROBLEMS = [
-  { id: 1, number: 1, title: 'Two Sum', difficulty: 'EASY', topic: 'Array', status: 'CLEAN', nextRevision: 'in 2 days' },
-  { id: 2, number: 21, title: 'Merge Two Sorted Lists', difficulty: 'EASY', topic: 'Linked List', status: 'SHAKY', nextRevision: 'today' },
-  { id: 3, number: 124, title: 'Binary Tree Max Path Sum', difficulty: 'HARD', topic: 'Binary Tree', status: 'STRUGGLED', nextRevision: 'overdue' },
-]
-```
-
-### Table structure
-
-Render an exact replica of the problems table. Same columns, same proportions:
-- Platform column `52px`: LeetCode LC orange badge
-- Problem column `flex`: number in monospace `#666` + title in `#e5e5e5`
-- Difficulty: colored pill (same exact colors as real app)
-- Topic: colored pill using `getTopicColor(topic)`
-- Status: dot + label
-- Next Revision: relative date, colored by urgency
-
-Column headers: `11px`, uppercase, monospace, `#444`, `border-bottom: 1px solid #1a1a1a`, `height: 32px`.
-
-Row height: `44px`. Row separator: `1px solid #141414`. Row background: `#0a0a0a`.
-
-At the bottom of the table rows: a `+ New row` text in `#333`, `12px`, monospace, `padding: 10px 16px`.
-
-### New row state
-
-The animation sequence adds a 4th row. This row has three visual states:
-1. **Empty** — just a highlighted row `background: #111`, thin left border `2px solid #2a2a2a`
-2. **Typing** — platform set to LeetCode (LC badge visible), problem number typing in monospace input cell
-3. **Filled** — all cells populated, brief green flash overlay on auto-filled cells
-
-### Animation sequence
-
-Use `useEffect` with `async/await` + `setTimeout` wrapped in promises. Use `useInView` from `motion/react` to trigger when scrolled into view. Loop by resetting state at the end.
-
-```typescript
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
-```
-
-Implement this exact sequence:
-
-```
-t=0ms    → table visible with 3 rows, cursor hidden
-t=800ms  → cursor fades in at position of "+ New row" text
-t=1200ms → cursor moves to "+ New row" (smooth, 0.4s)
-t=1600ms → cursor.click() — new empty row 4 appears (fade in 200ms)
-t=2000ms → cursor moves to Platform cell of row 4
-t=2300ms → cursor.click() — platform dropdown opens (small dropdown appears)
-t=2600ms → cursor moves to LeetCode option in dropdown
-t=2900ms → cursor.click() — dropdown closes, LeetCode LC badge appears in cell
-t=3200ms → cursor moves to Problem Number cell
-t=3500ms → cursor.click() — text cursor blinks in cell
-t=3600ms → "2" types in (typewriter, 150ms/char)
-t=3750ms → "3" types in
-t=3900ms → "4" types in
-t=4050ms → loading shimmer appears in title cell (3 dots or skeleton)
-t=4350ms → shimmer disappears
-t=4360ms → title cell: "Palindrome Linked List" appears instantly
-t=4380ms → Easy pill fades in (opacity 0→1, 200ms)
-t=4500ms → "Linked List" topic pill fades in with getTopicColor result
-t=4550ms → brief green overlay flash on title/difficulty/topic cells (opacity 0.08 green, 400ms, then fade)
-t=5200ms → cursor moves to Notes cell
-t=5600ms → cursor.click()
-t=5800ms → "t" types
-t=5950ms → "w" types
-t=6100ms → "o" types
-t=6250ms → " " types
-t=6400ms → "p" types
-t=6550ms → "o" types
-t=6700ms → "i" types
-t=6850ms → "n" types
-t=7000ms → "t" types
-t=7150ms → "e" types
-t=7300ms → "r" types
-t=7800ms → cursor moves away, row finalizes (background normalizes to match other rows)
-t=8200ms → cursor fades out
-t=9000ms → new row fades out gently (200ms), table back to 3 rows
-t=9500ms → loop restarts from t=0
-```
-
-### State management
-
-Use `useState` for:
-- `demoStep: number` — which step we're on
-- `newRowVisible: boolean`
-- `newRowPlatform: 'LEETCODE' | null`
-- `newRowNumber: string` — builds up character by character
-- `newRowFilled: boolean` — true when auto-fill fires
-- `newRowNotes: string` — builds up character by character
-- `dropdownOpen: boolean`
-- `greenFlash: boolean`
-- `cursorRef: RefObject<CursorHandle>`
-
-Position all cursor coordinates relative to the component's own bounding rect using `useRef` on key elements (the `+ New row` div, the platform cell, the number cell, etc.) and `getBoundingClientRect()` relative to the container.
-
-## Revision demo — `src/components/landing/revision-demo.tsx`
-
-### Hardcoded fake data
-
-```typescript
-const FAKE_DUE = [
-  { id: 1, number: 123, title: 'Best Time to Buy and Sell Stock III', difficulty: 'HARD', topic: 'Two Pointers' },
-  { id: 2, number: 21, title: 'Merge Two Sorted Lists', difficulty: 'EASY', topic: 'Linked List' },
-  { id: 3, number: 55, title: 'Jump Game', difficulty: 'MEDIUM', topic: 'Greedy' },
-]
-```
-
-### Page replica structure
-
-Render a pixel-perfect replica of the Daily Revision page inside the browser chrome. Include:
-
-**Stats strip** (top):
-`🔥 3` · `19 problems` · `1 mastered` · `3 due today`
-Font: Geist Mono, `12px`, `#888`. Numbers white. Separator `·` in `#333`. `padding: 12px 16px`.
-
-**Page title row**:
-Left: `[ Daily Revision ]` — bracket chars `⌈⌋`, white, `16px`, Geist Sans, font-weight 500.
-Right: `"Friday, August 7"` — Geist Mono, `12px`, `#555`.
-`padding: 0 16px 12px`.
-
-**Problem rows** — each row:
-- Height: `48px`
-- Background: `#111111`
-- Border: `1px solid #1a1a1a`
-- Border radius: `6px`
-- Margin bottom: `6px`
-- Horizontal padding: `12px`
-- Layout: `display: flex`, `align-items: center`, `gap: 10px`
-
-Left: platform logo (LeetCode LC badge, `18px`), problem number (monospace `#555` `11px`), title (`#e5e5e5` `13px` truncated).
-Right: difficulty pill, topic pill, then THREE confidence buttons.
-
-**Confidence buttons** (before any are clicked):
-Each button: `border: 1px solid #222`, `background: transparent`, `border-radius: 5px`, `padding: 4px 10px`, `font-size: 11px`, `color: #666`, `font-family: var(--font-geist-mono)`. Text: "Clean", "Shaky", "Struggled". Gap between buttons: `4px`.
-
-**Confidence badges** (after clicked — replace the three buttons):
-- Clean: `background: rgba(74, 222, 128, 0.1)`, `border: 1px solid rgba(74, 222, 128, 0.3)`, `color: #4ade80`, text: "Clean ✓"
-- Shaky: `background: rgba(251, 146, 60, 0.1)`, `border: 1px solid rgba(251, 146, 60, 0.3)`, `color: #fb923c`, text: "Shaky ~"
-- Struggled: `background: rgba(248, 113, 113, 0.1)`, `border: 1px solid rgba(248, 113, 113, 0.3)`, `color: #f87171`, text: "Struggled ✗"
-Same padding/border-radius as buttons. Transition: `opacity 0→1` over `200ms`.
-
-**All done state** (after all three marked):
-Replaces the problem list with a centered block:
-- `✓` checkmark: `#4ade80`, `32px`
-- `"All done for today"`: white, `15px`, Geist Sans, font-weight 500
-- `"🔥 4 day streak"`: Geist Mono, `13px`, `#888`
-Animate in: `opacity 0→1`, `y: 8→0`, duration `400ms`.
-
-### Revision demo animation sequence
-
-```
-t=0ms    → page shows, 3 rows visible with confidence buttons, cursor hidden
-t=800ms  → cursor fades in near first row's Clean button
-t=1200ms → cursor moves to row 1 "Clean" button (smooth 0.4s)
-t=1600ms → cursor hovers — Clean button border brightens to #4ade80 (CSS hover state)
-t=1900ms → cursor.click()
-t=2000ms → row 1 buttons replaced by green "Clean ✓" badge (200ms fade)
-t=2800ms → cursor moves to row 2 "Struggled" button
-t=3200ms → cursor hovers — Struggled button border brightens to #f87171
-t=3500ms → cursor.click()
-t=3600ms → row 2 buttons replaced by red "Struggled ✗" badge
-t=4400ms → cursor moves to row 3 "Shaky" button
-t=4800ms → cursor hovers — Shaky button border brightens to #fb923c
-t=5100ms → cursor.click()
-t=5200ms → row 3 buttons replaced by amber "Shaky ~" badge
-t=6000ms → all 3 rows show badges
-t=6200ms → problem list fades out (opacity 1→0, 300ms)
-t=6500ms → all done state fades in (opacity 0→1, 400ms)
-t=6600ms → streak counter animates: "3" → "4" (number flip animation — count up over 400ms)
-t=8500ms → all done state fades out
-t=8800ms → problem list fades back in, badges reset to buttons
-t=9200ms → loop restarts from t=0
-```
-
-### Streak counter animation
-
-When transitioning from 3 to 4: use a brief vertical flip animation. The digit `3` slides up and fades out while `4` slides in from below. Duration `400ms`. Implement with two overlapping spans and Motion `animate`.
-
-## Definition of done — Prompt 2
-
-- Table demo plays the full sequence correctly, loops
-- Fake cursor is a proper arrow shape, not a circle
-- Cursor moves smoothly between targets (no jumps)
-- "Palindrome Linked List" auto-fill fires at the right moment with green flash
-- Typewriter effect for both number and notes fields
-- Revision demo plays the full sequence correctly, loops
-- All three confidence badges replace buttons on click in the animation
-- All done state appears correctly with streak counter flip
-- Both demos triggered by `useInView` (only plays when visible)
-- Both components use `getTopicColor` from `src/lib/topic-colors.ts`
-- Styles are identical to the real app
-- Zero console errors
-- Commit: `git add . && git commit -m "Landing page — Phase 2: animated demos"`
-- STOP. Do not build the features section or footer yet.
-
----
+- All sections render correctly in order
+- Revision section: browser chrome left, text right, animations triggered on scroll
+- How it works: three steps with correct content and dividers
+- Platform strip: all 5 platforms with logos
+- Stats bar: numbers count up on scroll
+- Final CTA: thin decorative line above, button with hover glow
+- Footer: correct links, correct styling
+- Smooth scroll working for nav links
+- Mobile: doesn't break completely at 768px
+- Scrollbar styled correctly
+- Text selection color applied
+- Demo components loaded with `dynamic` (no SSR issues)
+- `npm run dev` — zero console errors on `/`
+- Lighthouse performance score above 85 on desktop
+- Commit: `git add . && git commit -m "Landing page — Phase 3: all sections + polish"`
