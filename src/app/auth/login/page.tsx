@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import downloadImg from '../../../../utils/download.jpg';
@@ -144,8 +144,9 @@ function Divider() {
   );
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>('signin');
 
   // Sign in state
@@ -160,6 +161,15 @@ export default function LoginPage() {
   const [suPassword, setSuPassword] = useState('');
   const [suError, setSuError] = useState('');
   const [suLoading, setSuLoading] = useState(false);
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'OAuthAccountNotLinked') {
+      setSiError('An account with this email address already exists. Please sign in with your password or existing account.');
+    } else if (errorParam) {
+      setSiError('Authentication failed. Please try signing in again.');
+    }
+  }, [searchParams]);
 
   const handleSignIn = async () => {
     setSiError('');
@@ -402,5 +412,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

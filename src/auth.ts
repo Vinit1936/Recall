@@ -53,6 +53,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if ((account?.provider === 'google' || account?.provider === 'github') && user?.email) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            include: { accounts: true },
+          });
+
+          if (existingUser) {
+            const hasAccount = existingUser.accounts.some(
+              (acc) => acc.provider === account.provider
+            );
+
+            if (!hasAccount) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state as string | undefined,
+                },
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error auto-linking OAuth account:', error);
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
