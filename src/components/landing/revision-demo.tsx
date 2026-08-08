@@ -41,7 +41,7 @@ export function RevisionDemo() {
   const [dueCount, setDueCount] = useState(12);
   const [overdueCount, setOverdueCount] = useState(7);
   const [allDoneVisible, setAllDoneVisible] = useState(false);
-  const [streakVal, setStreakVal] = useState(1);
+  const [streakVal, setStreakVal] = useState(14);
   const [streakFlipping, setStreakFlipping] = useState(false);
 
   const getRelativePos = (el: HTMLElement | null) => {
@@ -67,7 +67,7 @@ export function RevisionDemo() {
     setDueCount(12);
     setOverdueCount(7);
     setAllDoneVisible(false);
-    setStreakVal(1);
+    setStreakVal(14);
     setStreakFlipping(false);
     cursorRef.current?.hide();
   };
@@ -147,7 +147,7 @@ export function RevisionDemo() {
       setAllDoneVisible(true);
       setStreakFlipping(true);
       await sleep(400);
-      setStreakVal(2);
+      setStreakVal(15);
       setStreakFlipping(false);
 
       // Hide cursor & reset
@@ -204,7 +204,7 @@ export function RevisionDemo() {
           <span style={{ fontSize: 26, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}>
             🔥
           </span>
-          <div style={{ position: 'relative', height: 38, width: 28, display: 'inline-flex', alignItems: 'center', overflow: 'hidden' }}>
+          <div style={{ position: 'relative', height: 38, width: 48, display: 'inline-flex', alignItems: 'center', overflow: 'hidden' }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={streakVal}
