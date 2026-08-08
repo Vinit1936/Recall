@@ -94,29 +94,7 @@ export function Hero() {
                 margin: 0,
               }}
             >
-              Never forget
-            </h1>
-            <div
-              style={{
-                width: '100%',
-                height: '1px',
-                background: '#1e1e1e',
-                margin: '2px 0',
-              }}
-            />
-            <h1
-              style={{
-                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 'clamp(48px, 5.5vw, 72px)',
-                lineHeight: 1.08,
-                letterSpacing: '-0.02em',
-                color: '#f0f0f0',
-                margin: 0,
-              }}
-            >
-              what you solved.
+              Never forget what you solved.
             </h1>
           </motion.div>
 

@@ -4,7 +4,6 @@ export function Footer() {
   return (
     <footer
       style={{
-        borderTop: '1px solid #141416',
         padding: '28px 32px',
         maxWidth: '1200px',
         margin: '0 auto',

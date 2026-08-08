@@ -15,7 +15,6 @@ export function PlatformStrip() {
     <section
       style={{
         padding: '80px 32px',
-        borderTop: '1px solid #141416',
       }}
     >
       {/* Header */}

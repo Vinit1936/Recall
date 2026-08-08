@@ -33,7 +33,7 @@ export function HowItWorks() {
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '100px 32px 20px',
-        borderTop: '1px solid #0f0f0f',
+        borderTop: '1px solid #1a1a1a',
       }}
     >
       {/* Section Header */}

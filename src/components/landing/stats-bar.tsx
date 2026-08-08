@@ -46,8 +46,6 @@ export function StatsBar() {
       ref={containerRef}
       style={{
         background: '#0d0d0d',
-        borderTop: '1px solid #141414',
-        borderBottom: '1px solid #141414',
         padding: '48px 32px',
       }}
     >

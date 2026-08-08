@@ -16,7 +16,6 @@ export function FinalCTA() {
         maxWidth: '640px',
         margin: '0 auto',
         textAlign: 'center',
-        borderTop: '1px solid #0f0f0f',
       }}
     >
       <motion.div
@@ -24,16 +23,6 @@ export function FinalCTA() {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }}
       >
-        {/* Thin decorative gradient line above */}
-        <div
-          style={{
-            width: '1px',
-            height: '48px',
-            background: 'linear-gradient(to bottom, transparent, #333333)',
-            margin: '0 auto 48px',
-          }}
-        />
-
         {/* Headline */}
         <h2
           style={{
