@@ -1,3 +1,6 @@
+'use client';
+
+import dynamic from 'next/dynamic';
 import { NoiseTexture } from '@/components/landing/noise';
 import { Navbar } from '@/components/landing/navbar';
 import { Hero } from '@/components/landing/hero';
@@ -8,9 +11,41 @@ import { StatsBar } from '@/components/landing/stats-bar';
 import { FinalCTA } from '@/components/landing/final-cta';
 import { Footer } from '@/components/landing/footer';
 
+const PixelBlast = dynamic(() => import('@/components/landing/pixel-blast'), {
+  ssr: false,
+});
+
 export default function LandingPage() {
   return (
     <>
+      {/* Dynamic PixelBlast Background */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          opacity: 0.15,
+        }}
+      >
+        <PixelBlast
+          variant="square"
+          pixelSize={4}
+          color="#e5e5e5"
+          patternScale={3}
+          patternDensity={1.3}
+          pixelSizeJitter={0.5}
+          enableRipples={true}
+          rippleSpeed={0.4}
+          rippleThickness={0.12}
+          rippleIntensityScale={1.5}
+          speed={0.4}
+          edgeFade={0.25}
+          transparent={true}
+        />
+      </div>
+
       <NoiseTexture />
       <Navbar />
       <main style={{ position: 'relative', zIndex: 2 }}>
