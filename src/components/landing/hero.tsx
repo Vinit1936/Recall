@@ -3,25 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'motion/react';
 
-function TableDemo() {
-  return (
-    <div
-      style={{
-        height: '480px',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#0a0a0a',
-        color: '#333333',
-        fontFamily: 'var(--font-geist-mono), monospace',
-        fontSize: '13px',
-      }}
-    >
-      {/* Demo placeholder container - prompt 2 populates live demo */}
-    </div>
-  );
-}
+import { TableDemo } from './table-demo';
 
 const leftVariants = {
   hidden: { opacity: 0, y: 24 },
