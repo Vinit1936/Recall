@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer
       style={{
-        borderTop: '1px solid #111111',
+        borderTop: '1px solid #141416',
         padding: '28px 32px',
         maxWidth: '1200px',
         margin: '0 auto',
@@ -20,10 +20,10 @@ export function Footer() {
         style={{
           fontFamily: 'var(--font-geist-mono), monospace',
           fontSize: '12px',
-          color: '#333333',
+          color: '#71717a',
         }}
       >
-        recall<span style={{ color: '#222222' }}>.</span> © 2026
+        recall<span style={{ color: '#F7981E' }}>.</span> © 2026
       </div>
 
       {/* Right Social / Project Links */}
@@ -40,9 +40,9 @@ export function Footer() {
           href="https://github.com/Vinit1936/Recall"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#333333', textDecoration: 'none', transition: 'color 0.15s ease' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#888888')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#333333')}
+          style={{ color: '#a1a1aa', textDecoration: 'none', transition: 'color 0.15s ease' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#a1a1aa')}
         >
           GitHub
         </a>
@@ -50,9 +50,9 @@ export function Footer() {
           href="https://x.com/vinitpatil193"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#333333', textDecoration: 'none', transition: 'color 0.15s ease' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#888888')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#333333')}
+          style={{ color: '#a1a1aa', textDecoration: 'none', transition: 'color 0.15s ease' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#a1a1aa')}
         >
           Twitter
         </a>
@@ -60,9 +60,9 @@ export function Footer() {
           href="https://www.linkedin.com/in/vinitpatil19/"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#333333', textDecoration: 'none', transition: 'color 0.15s ease' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#888888')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#333333')}
+          style={{ color: '#a1a1aa', textDecoration: 'none', transition: 'color 0.15s ease' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#a1a1aa')}
         >
           LinkedIn
         </a>

@@ -43,7 +43,7 @@ export function HowItWorks() {
           fontSize: '11px',
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
-          color: '#444444',
+          color: '#a1a1aa',
           marginBottom: '56px',
           textAlign: 'center',
         }}
@@ -89,9 +89,9 @@ export function HowItWorks() {
                   alignItems: 'center',
                   fontFamily: 'var(--font-geist-mono), monospace',
                   fontSize: '11px',
-                  color: '#666666',
-                  background: '#111113',
-                  border: '1px solid #1e1e22',
+                  color: '#a1a1aa',
+                  background: '#18181c',
+                  border: '1px solid #2e2e34',
                   borderRadius: '4px',
                   padding: '2px 8px',
                   marginBottom: '20px',
@@ -121,7 +121,7 @@ export function HowItWorks() {
                 style={{
                   fontFamily: 'var(--font-geist-sans), sans-serif',
                   fontSize: '14px',
-                  color: '#666666',
+                  color: '#a1a1aa',
                   lineHeight: 1.65,
                   margin: 0,
                 }}

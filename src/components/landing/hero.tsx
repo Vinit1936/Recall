@@ -56,16 +56,16 @@ export function Hero() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              border: '1px solid #1e1e1e',
-              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid #2a2a2e',
+              background: '#141416',
               borderRadius: '100px',
               padding: '4px 12px 4px 8px',
             }}
           >
-            <span style={{ color: '#555555', fontSize: '11px' }}>✦</span>
+            <span style={{ color: '#F7981E', fontSize: '11px' }}>✦</span>
             <span
               style={{
-                color: '#666666',
+                color: '#a1a1aa',
                 fontSize: '12px',
                 fontFamily: 'var(--font-geist-mono), monospace',
               }}
@@ -129,7 +129,7 @@ export function Hero() {
             style={{
               fontFamily: 'var(--font-geist-sans), sans-serif',
               fontSize: '17px',
-              color: '#666666',
+              color: '#a1a1aa',
               lineHeight: 1.65,
               maxWidth: '380px',
               marginTop: '28px',
@@ -225,7 +225,7 @@ export function Hero() {
               marginTop: '24px',
               fontFamily: 'var(--font-geist-mono), monospace',
               fontSize: '11px',
-              color: '#444444',
+              color: '#71717a',
               letterSpacing: '0.03em',
             }}
           >

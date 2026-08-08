@@ -41,7 +41,7 @@ export function FinalCTA() {
             fontStyle: 'italic',
             fontWeight: 400,
             fontSize: 'clamp(40px, 5vw, 64px)',
-            color: '#f0f0f0',
+            color: '#ffffff',
             lineHeight: 1.1,
             margin: 0,
           }}
@@ -54,7 +54,7 @@ export function FinalCTA() {
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '13px',
-            color: '#444444',
+            color: '#a1a1aa',
             letterSpacing: '0.05em',
             marginTop: '16px',
           }}
@@ -100,19 +100,19 @@ export function FinalCTA() {
             marginTop: '20px',
             fontFamily: 'var(--font-geist-sans), sans-serif',
             fontSize: '13px',
-            color: '#444444',
+            color: '#71717a',
           }}
         >
           Already have an account?{' '}
           <Link
             href="/auth/login"
             style={{
-              color: '#666666',
+              color: '#e5e5e5',
               textDecoration: 'none',
               transition: 'color 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#666666')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#e5e5e5')}
           >
             Sign in →
           </Link>

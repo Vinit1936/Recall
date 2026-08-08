@@ -81,7 +81,7 @@ export function StatsBar() {
               fontSize: '11px',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: '#444444',
+              color: '#a1a1aa',
               marginTop: '8px',
             }}
           >
@@ -108,7 +108,7 @@ export function StatsBar() {
               fontSize: '11px',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: '#444444',
+              color: '#a1a1aa',
               marginTop: '8px',
             }}
           >
@@ -135,7 +135,7 @@ export function StatsBar() {
               fontSize: '11px',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: '#444444',
+              color: '#a1a1aa',
               marginTop: '8px',
             }}
           >

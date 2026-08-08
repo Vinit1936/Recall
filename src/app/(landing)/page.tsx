@@ -18,7 +18,7 @@ const PixelBlast = dynamic(() => import('@/components/landing/pixel-blast'), {
 export default function LandingPage() {
   return (
     <>
-      {/* Dynamic PixelBlast Background */}
+      {/* Dynamic PixelBlast Background with subtle opacity for maximum text contrast */}
       <div
         aria-hidden="true"
         style={{
@@ -26,13 +26,13 @@ export default function LandingPage() {
           inset: 0,
           zIndex: 1,
           pointerEvents: 'none',
-          opacity: 0.15,
+          opacity: 0.07,
         }}
       >
         <PixelBlast
           variant="square"
           pixelSize={4}
-          color="#e5e5e5"
+          color="#ffffff"
           patternScale={3}
           patternDensity={1.3}
           pixelSizeJitter={0.5}
