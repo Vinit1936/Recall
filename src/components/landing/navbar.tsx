@@ -32,76 +32,77 @@ export function Navbar() {
       }}
     >
       {/* Left: Dashboard-Style Wordmark (Geist Mono + Orange Period) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <Link
-          href="/"
-          style={{
-            fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '17px',
-            fontWeight: 600,
-            color: '#ffffff',
-            textDecoration: 'none',
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}
-        >
-          recall<span style={{ color: '#F7981E' }}>.</span>
-        </Link>
+      <Link
+        href="/"
+        style={{
+          fontFamily: 'var(--font-geist-mono), monospace',
+          fontSize: '17px',
+          fontWeight: 600,
+          color: '#ffffff',
+          textDecoration: 'none',
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+        }}
+      >
+        recall<span style={{ color: '#F7981E' }}>.</span>
+      </Link>
 
-        {/* Nav Links */}
-        <nav
+      {/* Dead-Center: Navigation Links */}
+      <nav
+        style={{
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '20px',
+        }}
+      >
+        <a
+          href="#features"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
+            fontSize: '13px',
+            color: '#888888',
+            fontFamily: 'var(--font-geist-sans), sans-serif',
+            textDecoration: 'none',
+            transition: 'color 0.15s ease',
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
         >
-          <a
-            href="#features"
-            style={{
-              fontSize: '13px',
-              color: '#888888',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
-          >
-            Features
-          </a>
-          <a
-            href="#features"
-            style={{
-              fontSize: '13px',
-              color: '#888888',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
-          >
-            How it works
-          </a>
-          <a
-            href="https://github.com/Vinit1936/Recall"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: '13px',
-              color: '#888888',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
-          >
-            GitHub
-          </a>
-        </nav>
-      </div>
+          Features
+        </a>
+        <a
+          href="#features"
+          style={{
+            fontSize: '13px',
+            color: '#888888',
+            fontFamily: 'var(--font-geist-sans), sans-serif',
+            textDecoration: 'none',
+            transition: 'color 0.15s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+        >
+          How it works
+        </a>
+        <a
+          href="https://github.com/Vinit1936/Recall"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontSize: '13px',
+            color: '#888888',
+            fontFamily: 'var(--font-geist-sans), sans-serif',
+            textDecoration: 'none',
+            transition: 'color 0.15s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+        >
+          GitHub
+        </a>
+      </nav>
 
       {/* Right: Sign in link + CTA Pill Button with Green Status Dot */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
