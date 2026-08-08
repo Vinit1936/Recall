@@ -6,9 +6,9 @@ import { Navbar } from '@/components/landing/navbar';
 import { Hero } from '@/components/landing/hero';
 import { RevisionSection } from '@/components/landing/revision-section';
 import { BentoGrid } from '@/components/landing/bento-grid';
+import { ScienceSection } from '@/components/landing/science-section';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { PlatformStrip } from '@/components/landing/platform-strip';
-import { StatsBar } from '@/components/landing/stats-bar';
 import { FinalCTA } from '@/components/landing/final-cta';
 import { Footer } from '@/components/landing/footer';
 
@@ -53,9 +53,9 @@ export default function LandingPage() {
         <Hero />
         <RevisionSection />
         <BentoGrid />
+        <ScienceSection />
         <HowItWorks />
         <PlatformStrip />
-        <StatsBar />
         <FinalCTA />
         <Footer />
       </main>
