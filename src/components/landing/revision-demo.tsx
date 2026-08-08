@@ -200,9 +200,11 @@ export function RevisionDemo() {
       {/* Minimal Inline Stats Strip */}
       <div style={{ marginBottom: 24 }}>
         {/* Streak Display */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: 28 }}>🔥</span>
-          <div style={{ position: 'relative', height: 38, width: 30, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, height: 40 }}>
+          <span style={{ fontSize: 26, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}>
+            🔥
+          </span>
+          <div style={{ position: 'relative', height: 38, width: 28, display: 'inline-flex', alignItems: 'center', overflow: 'hidden' }}>
             <AnimatePresence mode="wait">
               <motion.span
                 key={streakVal}
@@ -215,18 +217,18 @@ export function RevisionDemo() {
                   top: 0,
                   left: 0,
                   fontFamily: 'var(--font-geist-mono), monospace',
-                  fontSize: 38,
+                  fontSize: 34,
                   fontWeight: 700,
                   color: '#ffffff',
                   letterSpacing: '-0.03em',
-                  lineHeight: 1,
+                  lineHeight: '38px',
                 }}
               >
                 {streakVal}
               </motion.span>
             </AnimatePresence>
           </div>
-          <span style={{ fontSize: 18, fontWeight: 600, color: '#888888', letterSpacing: '-0.01em' }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: '#888888', letterSpacing: '-0.01em', lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}>
             day streak
           </span>
         </div>
