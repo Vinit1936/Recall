@@ -6,67 +6,67 @@ import { motion } from 'motion/react';
 export function Navbar() {
   return (
     <motion.header
-      initial={{ opacity: 0, y: -12 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 100,
-        background: 'rgba(8, 8, 8, 0.75)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-        height: '56px',
+        width: 'calc(100% - 40px)',
+        maxWidth: '960px',
+        height: '52px',
+        borderRadius: '9999px',
+        background: 'rgba(12, 12, 14, 0.85)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 8px 0 24px',
       }}
     >
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 32px',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Left - Wordmark */}
+      {/* Left: Italic Brand Wordmark + Nav Links */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
         <Link
           href="/"
           style={{
-            fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '16px',
-            fontWeight: 500,
+            fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+            fontStyle: 'italic',
+            fontSize: '24px',
+            fontWeight: 400,
             color: '#ffffff',
             textDecoration: 'none',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
           }}
         >
           recall<span style={{ color: '#555555' }}>.</span>
         </Link>
 
-        {/* Center - Nav Links */}
+        {/* Nav Links */}
         <nav
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '32px',
+            gap: '20px',
           }}
         >
           <a
             href="#features"
             style={{
               fontSize: '13px',
-              color: '#666666',
+              color: '#888888',
               fontFamily: 'var(--font-geist-sans), sans-serif',
-              letterSpacing: '0.01em',
               textDecoration: 'none',
               transition: 'color 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#666666')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
           >
             Features
           </a>
@@ -74,14 +74,13 @@ export function Navbar() {
             href="#features"
             style={{
               fontSize: '13px',
-              color: '#666666',
+              color: '#888888',
               fontFamily: 'var(--font-geist-sans), sans-serif',
-              letterSpacing: '0.01em',
               textDecoration: 'none',
               transition: 'color 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#666666')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
           >
             How it works
           </a>
@@ -91,72 +90,73 @@ export function Navbar() {
             rel="noopener noreferrer"
             style={{
               fontSize: '13px',
-              color: '#666666',
+              color: '#888888',
               fontFamily: 'var(--font-geist-sans), sans-serif',
-              letterSpacing: '0.01em',
               textDecoration: 'none',
               transition: 'color 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#666666')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
           >
             GitHub
           </a>
         </nav>
+      </div>
 
-        {/* Right - Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link
-            href="/auth/login"
+      {/* Right: Sign in link + CTA Pill Button with Green Status Dot */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <Link
+          href="/auth/login"
+          style={{
+            color: '#888888',
+            fontSize: '13px',
+            textDecoration: 'none',
+            transition: 'color 0.15s ease',
+            fontFamily: 'var(--font-geist-sans), sans-serif',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/auth/login"
+          style={{
+            background: '#ffffff',
+            color: '#0a0a0b',
+            fontSize: '13px',
+            fontWeight: 600,
+            height: '38px',
+            padding: '0 20px',
+            borderRadius: '9999px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            textDecoration: 'none',
+            transition: 'all 0.2s ease',
+            fontFamily: 'var(--font-geist-sans), sans-serif',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)';
+            e.currentTarget.style.background = '#f4f4f4';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.background = '#ffffff';
+          }}
+        >
+          <span
             style={{
-              border: '1px solid #222222',
-              background: 'transparent',
-              color: '#888888',
-              fontSize: '13px',
-              height: '34px',
-              padding: '0 16px',
-              borderRadius: '6px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-              transition: 'border-color 0.15s ease, color 0.15s ease',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              background: '#059669',
+              display: 'inline-block',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#333333';
-              e.currentTarget.style.color = '#e5e5e5';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#222222';
-              e.currentTarget.style.color = '#888888';
-            }}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/auth/login"
-            style={{
-              background: '#ffffff',
-              color: '#000000',
-              fontSize: '13px',
-              fontWeight: 600,
-              height: '34px',
-              padding: '0 16px',
-              borderRadius: '6px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-              transition: 'background 0.15s ease',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#e5e5e5')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
-          >
-            Get started
-          </Link>
-        </div>
+          />
+          Get started free
+        </Link>
       </div>
     </motion.header>
   );
