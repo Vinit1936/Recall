@@ -16,101 +16,125 @@ export function Navbar() {
         zIndex: 100,
         width: 'calc(100% - 32px)',
         maxWidth: '920px',
-        height: '52px',
-        borderRadius: '9999px',
-        background: 'rgba(12, 12, 14, 0.85)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        height: '50px',
+        borderRadius: '12px',
+        background: '#0a0a0b',
+        border: '1px solid #1a1a1a',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 8px 0 24px',
+        padding: '0 14px',
       }}
     >
-      {/* Left: Dashboard-Style Wordmark (Geist Mono + Orange Period) */}
-      <Link
-        href="/"
-        style={{
-          fontFamily: 'var(--font-geist-mono), monospace',
-          fontSize: '17px',
-          fontWeight: 600,
-          color: '#ffffff',
-          textDecoration: 'none',
-          letterSpacing: '-0.02em',
-          lineHeight: 1,
-        }}
-      >
-        recall<span style={{ color: '#F7981E' }}>.</span>
-      </Link>
+      {/* Left: Table Chrome Dots + Dashboard Wordmark */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1c1c1e', border: '1px solid #2a2a2d' }} />
+        </div>
 
-      {/* Center: Navigation Links */}
+        <div style={{ width: '1px', height: '14px', background: '#1e1e1e' }} />
+
+        <Link
+          href="/"
+          style={{
+            fontFamily: 'var(--font-geist-mono), monospace',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: '#ffffff',
+            textDecoration: 'none',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+          }}
+        >
+          recall<span style={{ color: '#F7981E' }}>.</span>
+        </Link>
+      </div>
+
+      {/* Center: Table-Themed Navigation Links */}
       <nav
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '24px',
+          gap: '4px',
         }}
       >
         <a
           href="#features"
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             color: '#888888',
             fontFamily: 'var(--font-geist-sans), sans-serif',
             textDecoration: 'none',
-            transition: 'color 0.15s ease',
+            padding: '5px 12px',
+            borderRadius: '6px',
+            transition: 'all 0.15s ease',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.background = '#141414';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#888888';
+            e.currentTarget.style.background = 'transparent';
+          }}
         >
           Features
         </a>
         <a
           href="#features"
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             color: '#888888',
             fontFamily: 'var(--font-geist-sans), sans-serif',
             textDecoration: 'none',
-            transition: 'color 0.15s ease',
+            padding: '5px 12px',
+            borderRadius: '6px',
+            transition: 'all 0.15s ease',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.background = '#141414';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#888888';
+            e.currentTarget.style.background = 'transparent';
+          }}
         >
           How it works
         </a>
       </nav>
 
-      {/* Right: Theme-Matched Dark Frosted CTA Button */}
+      {/* Right: Table-Themed Action Button */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Link
           href="/auth/login"
           style={{
-            background: 'rgba(255, 255, 255, 0.08)',
+            background: '#161618',
             color: '#e5e5e5',
-            fontSize: '13px',
+            fontSize: '12px',
             fontWeight: 500,
-            height: '36px',
-            padding: '0 16px',
-            borderRadius: '9999px',
+            height: '32px',
+            padding: '0 14px',
+            borderRadius: '6px',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '6px',
             textDecoration: 'none',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            transition: 'all 0.2s ease',
+            border: '1px solid #262626',
+            transition: 'all 0.15s ease',
             fontFamily: 'var(--font-geist-sans), sans-serif',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.14)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+            e.currentTarget.style.background = '#1f1f22';
+            e.currentTarget.style.borderColor = '#333333';
             e.currentTarget.style.color = '#ffffff';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            e.currentTarget.style.background = '#161618';
+            e.currentTarget.style.borderColor = '#262626';
             e.currentTarget.style.color = '#e5e5e5';
           }}
         >
@@ -119,8 +143,8 @@ export function Navbar() {
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              background: '#F7981E',
-              boxShadow: '0 0 8px rgba(247, 152, 30, 0.6)',
+              background: '#4ade80',
+              boxShadow: '0 0 6px rgba(74, 222, 128, 0.4)',
               display: 'inline-block',
             }}
           />
