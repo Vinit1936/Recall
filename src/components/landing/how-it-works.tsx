@@ -32,7 +32,7 @@ export function HowItWorks() {
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '100px 32px 0',
+        padding: '100px 32px 20px',
         borderTop: '1px solid #0f0f0f',
       }}
     >
@@ -44,23 +44,28 @@ export function HowItWorks() {
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
           color: '#444444',
-          marginBottom: '48px',
+          marginBottom: '56px',
           textAlign: 'center',
         }}
       >
         How it works
       </div>
 
-      {/* 3 Steps Row */}
+      {/* 3 Steps Row with equal gutters */}
       <div
         className="how-it-works-grid"
         style={{
           display: 'flex',
-          gap: '1px',
+          gap: 0,
         }}
       >
         {STEPS.map((step, index) => {
+          const isFirst = index === 0;
           const isLast = index === STEPS.length - 1;
+
+          let paddingStyle = '32px 40px';
+          if (isFirst) paddingStyle = '32px 40px 32px 0';
+          else if (isLast) paddingStyle = '32px 0 32px 40px';
 
           return (
             <motion.div
@@ -70,17 +75,27 @@ export function HowItWorks() {
               transition={{ duration: 0.6, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] as const }}
               style={{
                 flex: 1,
-                padding: isLast ? '32px 0 32px 0' : '32px 40px 32px 0',
+                padding: paddingStyle,
                 borderRight: isLast ? 'none' : '1px solid #1a1a1a',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
               }}
             >
-              {/* Step Number */}
+              {/* Step Number Pill */}
               <div
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   fontFamily: 'var(--font-geist-mono), monospace',
                   fontSize: '11px',
-                  color: '#333333',
+                  color: '#666666',
+                  background: '#111113',
+                  border: '1px solid #1e1e22',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
                   marginBottom: '20px',
+                  width: 'fit-content',
                 }}
               >
                 {step.num}
@@ -90,9 +105,10 @@ export function HowItWorks() {
               <h3
                 style={{
                   fontFamily: 'var(--font-geist-sans), sans-serif',
-                  fontSize: '18px',
-                  color: '#e5e5e5',
+                  fontSize: '19px',
+                  color: '#f0f0f0',
                   fontWeight: 500,
+                  letterSpacing: '-0.01em',
                   marginBottom: '12px',
                   marginTop: 0,
                 }}
@@ -105,8 +121,8 @@ export function HowItWorks() {
                 style={{
                   fontFamily: 'var(--font-geist-sans), sans-serif',
                   fontSize: '14px',
-                  color: '#555555',
-                  lineHeight: 1.6,
+                  color: '#666666',
+                  lineHeight: 1.65,
                   margin: 0,
                 }}
               >
