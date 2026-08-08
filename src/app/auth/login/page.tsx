@@ -173,7 +173,7 @@ export default function LoginPage() {
       if (res?.error) {
         setSiError('Invalid email or password.');
       } else {
-        router.push('/');
+        router.push('/dashboard');
         router.refresh();
       }
     } catch {
@@ -211,7 +211,7 @@ export default function LoginPage() {
         setSuError('Account created but sign in failed. Please sign in manually.');
         setTab('signin');
       } else {
-        router.push('/');
+        router.push('/dashboard');
         router.refresh();
       }
     } catch {
@@ -368,8 +368,8 @@ export default function LoginPage() {
                   {siError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{siError}</div>}
                   <PrimaryButton onClick={handleSignIn} loading={siLoading}>Sign in →</PrimaryButton>
                   <Divider />
-                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
-                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
+                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })} />
+                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/dashboard' })} />
                   <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
                     Don&apos;t have an account?{' '}
                     <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
@@ -389,8 +389,8 @@ export default function LoginPage() {
                   {suError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{suError}</div>}
                   <PrimaryButton onClick={handleSignUp} loading={suLoading}>Create account →</PrimaryButton>
                   <Divider />
-                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/' })} />
-                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/' })} />
+                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })} />
+                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/dashboard' })} />
                   <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
                     Already have an account?{' '}
                     <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>

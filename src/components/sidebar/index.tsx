@@ -7,7 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 const navItems = [
   {
     label: 'Lists',
-    href: '/',
+    href: '/dashboard',
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/>

@@ -6,11 +6,12 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isAuthPage = pathname.startsWith('/auth');
+  const isLandingPage = pathname === '/';
   const isApiAuth = pathname.startsWith('/api/auth');
   const isApiRoute = pathname.startsWith('/api/');
 
-  // Always allow auth pages and NextAuth's own API routes
-  if (isAuthPage || isApiAuth) return NextResponse.next();
+  // Always allow landing page, auth pages, and NextAuth's own API routes
+  if (isLandingPage || isAuthPage || isApiAuth) return NextResponse.next();
 
   if (!isLoggedIn) {
     // Return JSON 401 for API routes, redirect to login for pages

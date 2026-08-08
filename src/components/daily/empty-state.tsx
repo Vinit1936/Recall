@@ -24,7 +24,7 @@ export function EmptyState() {
         or add new problems from the table.
       </div>
       <Link
-        href="/"
+        href="/dashboard"
         style={{
           marginTop: 12,
           display: 'inline-flex',

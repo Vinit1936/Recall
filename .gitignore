@@ -10,6 +10,10 @@
 !.yarn/releases
 !.yarn/versions
 
+# docs
+prompt.md
+ui.md
+
 # testing
 /coverage
 
