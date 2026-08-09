@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 
 export function FinalCTA() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <section
@@ -18,10 +17,9 @@ export function FinalCTA() {
         padding: '60px 40px 0',
       }}
     >
-      {/* Background wordmark — high z-index & pointer-events for smooth hover */}
+      {/* Background wordmark */}
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        aria-hidden="true"
         style={{
           position: 'absolute',
           bottom: '-15px',
@@ -31,30 +29,21 @@ export function FinalCTA() {
           fontFamily: 'var(--font-geist-mono), monospace',
           fontWeight: 700,
           fontSize: 'clamp(90px, 12vw, 180px)',
+          color: 'rgba(255,255,255,0.075)',
+          pointerEvents: 'none',
           userSelect: 'none',
           letterSpacing: '-0.04em',
           lineHeight: 0.9,
-          cursor: 'pointer',
-          zIndex: 2,
-          pointerEvents: 'auto',
         }}
       >
         <span style={{ position: 'relative', display: 'inline-block' }}>
-          <span
-            style={{
-              color: isHovered ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.075)',
-              transition: 'color 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-          >
-            recall
-          </span>
+          recall
           <span
             style={{
               position: 'absolute',
               left: '100%',
               bottom: 0,
-              color: isHovered ? '#ff6b00' : 'rgba(255, 107, 0, 0.4)',
-              transition: 'color 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+              color: 'rgba(255, 107, 0, 0.5)',
             }}
           >
             .
@@ -62,7 +51,7 @@ export function FinalCTA() {
         </span>
       </div>
 
-      {/* Foreground content — pointerEvents: none so mouse reaches wordmark underneath */}
+      {/* Foreground content */}
       <motion.div
         ref={ref}
         initial={{ opacity: 0, y: 24 }}
@@ -73,7 +62,6 @@ export function FinalCTA() {
           zIndex: 1,
           textAlign: 'center',
           paddingBottom: '140px',
-          pointerEvents: 'none',
         }}
       >
         {/* Flying White Shooting Star Line — Taller & Prominent */}
@@ -86,7 +74,6 @@ export function FinalCTA() {
             margin: '0 auto 32px',
             overflow: 'hidden',
             borderRadius: '2px',
-            pointerEvents: 'auto',
           }}
         >
           <motion.div
@@ -119,7 +106,6 @@ export function FinalCTA() {
             letterSpacing: '-0.02em',
             margin: 0,
             lineHeight: 1.1,
-            pointerEvents: 'auto',
           }}
         >
           Start remembering
@@ -133,43 +119,39 @@ export function FinalCTA() {
             letterSpacing: '0.08em',
             marginTop: '16px',
             textTransform: 'uppercase',
-            pointerEvents: 'auto',
           }}
         >
           Free. No credit card. No nonsense.
         </p>
 
-        <div style={{ marginTop: '36px', pointerEvents: 'auto' }}>
+        <div style={{ marginTop: '36px' }}>
           <Link
             href="/auth/login"
             style={{
               background: '#f0f0f0',
               color: '#080808',
-              fontFamily: 'var(--font-geist-sans), sans-serif',
               fontSize: '14px',
-              fontWeight: 500,
-              padding: '14px 32px',
+              fontWeight: 600,
+              height: '44px',
+              padding: '0 28px',
               borderRadius: '8px',
-              textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
+              textDecoration: 'none',
+              fontFamily: 'var(--font-geist-sans), sans-serif',
               transition: 'all 0.15s ease',
-              boxShadow: '0 0 24px rgba(255,255,255,0.06)',
+              cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = '#ffffff';
               e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 0 32px rgba(255,255,255,0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = '#f0f0f0';
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 0 24px rgba(255,255,255,0.06)';
             }}
           >
-            Start for free
-            <span style={{ fontSize: '16px', lineHeight: 1 }}>→</span>
+            Get started free →
           </Link>
         </div>
 
@@ -178,7 +160,6 @@ export function FinalCTA() {
             fontFamily: 'var(--font-geist-sans), sans-serif',
             fontSize: '13px',
             marginTop: '20px',
-            pointerEvents: 'auto',
           }}
         >
           <span style={{ color: '#333' }}>Already have an account? </span>
@@ -199,8 +180,8 @@ export function FinalCTA() {
 
       <style>{`
         @media (max-width: 768px) {
-          section[style*="padding"] {
-            padding: 40px 20px 0 !important;
+          section[style*="padding: 120px 40px 0"] {
+            padding: 80px 24px 0 !important;
           }
         }
       `}</style>
