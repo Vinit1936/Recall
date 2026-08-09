@@ -130,7 +130,7 @@ export function Science() {
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
-          <Chrome url="recall/science" height={380}>
+          <Chrome url="recallx.tech/science" height={380}>
             <RetentionChart />
           </Chrome>
         </motion.div>

@@ -101,7 +101,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           style={{ maxWidth: '820px', margin: '0 auto' }}
         >
-          <Chrome url="recall/daily" height={420}>
+          <Chrome url="recallx.tech/daily" height={420}>
             <RevisionDemo />
           </Chrome>
         </motion.div>

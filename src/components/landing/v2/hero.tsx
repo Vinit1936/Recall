@@ -204,7 +204,7 @@ export function Hero({ TableDemo }: HeroProps) {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as const, delay: 0.5 }}
             style={{ width: '100%', marginRight: '-40px' }}
           >
-            <Chrome url="app.recall.dev" height={480}>
+            <Chrome url="recallx.tech" height={480}>
               <TableDemo />
             </Chrome>
           </motion.div>
