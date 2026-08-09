@@ -13,12 +13,12 @@ export default auth((req) => {
     nextUrl.pathname.startsWith('/daily') ||
     nextUrl.pathname.startsWith('/settings');
 
-  // If user is already logged in and visits login page, redirect to dashboard
-  if (isAuthRoute && isLoggedIn) {
+  // If user is already logged in and visits landing page (/) or auth pages, redirect to dashboard
+  if ((nextUrl.pathname === '/' || isAuthRoute) && isLoggedIn) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
-  // Always allow public landing page, auth pages, and /api/auth
+  // Allow auth pages and /api/auth for unauthenticated users
   if (nextUrl.pathname === '/' || isAuthRoute || isApiAuth) {
     return NextResponse.next();
   }
