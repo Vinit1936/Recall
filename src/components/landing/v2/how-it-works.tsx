@@ -29,6 +29,7 @@ export function HowItWorks() {
     <section
       id="how-it-works-steps"
       style={{
+        background: '#080808',
         borderTop: '1px solid #111',
         borderBottom: '1px solid #111',
       }}
@@ -45,7 +46,7 @@ export function HowItWorks() {
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '10px',
-            color: '#333',
+            color: '#888',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             marginBottom: '64px',

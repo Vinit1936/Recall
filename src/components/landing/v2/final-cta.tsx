@@ -17,26 +17,38 @@ export function FinalCTA() {
         padding: '120px 40px 0',
       }}
     >
-      {/* Background wordmark — Lexion-inspired */}
+      {/* Background wordmark */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
-          bottom: '-20px',
+          bottom: '-15px',
           left: '50%',
           transform: 'translateX(-50%)',
           whiteSpace: 'nowrap',
-          fontFamily: 'var(--font-display), Georgia, serif',
-          fontStyle: 'italic',
-          fontSize: 'clamp(120px, 16vw, 220px)',
-          color: 'rgba(255,255,255,0.025)',
+          fontFamily: 'var(--font-geist-mono), monospace',
+          fontWeight: 700,
+          fontSize: 'clamp(90px, 12vw, 180px)',
+          color: 'rgba(255,255,255,0.075)',
           pointerEvents: 'none',
           userSelect: 'none',
-          letterSpacing: '-0.03em',
-          lineHeight: 1,
+          letterSpacing: '-0.04em',
+          lineHeight: 0.9,
         }}
       >
-        recall.
+        <span style={{ position: 'relative', display: 'inline-block' }}>
+          recall
+          <span
+            style={{
+              position: 'absolute',
+              left: '100%',
+              bottom: 0,
+              color: 'rgba(255, 107, 0, 0.5)',
+            }}
+          >
+            .
+          </span>
+        </span>
       </div>
 
       {/* Foreground content */}
@@ -81,7 +93,7 @@ export function FinalCTA() {
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '12px',
-            color: '#444',
+            color: '#888',
             letterSpacing: '0.08em',
             marginTop: '16px',
             textTransform: 'uppercase',

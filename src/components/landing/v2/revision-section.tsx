@@ -29,7 +29,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
             style={{
               fontFamily: 'var(--font-geist-mono), monospace',
               fontSize: '10px',
-              color: '#333',
+              color: '#888',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
               marginBottom: '24px',

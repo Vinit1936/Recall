@@ -22,9 +22,9 @@ export function Footer() {
             fontSize: '11px',
           }}
         >
-          <span style={{ color: '#333' }}>recall</span>
+          <span style={{ color: '#666' }}>recall</span>
           <span style={{ color: '#ff6b00' }}>.</span>
-          <span style={{ color: '#222' }}> © 2026</span>
+          <span style={{ color: '#444' }}> © 2026</span>
         </span>
 
         {/* Right — links */}

@@ -54,11 +54,11 @@ export function Hero({ TableDemo }: HeroProps) {
               style={{
                 fontFamily: 'var(--font-geist-mono), monospace',
                 fontSize: '11px',
-                color: '#444',
+                color: '#888',
                 letterSpacing: '0.1em',
               }}
             >
-              <span style={{ color: '#333' }}>✦</span> Spaced repetition for DSA
+              <span style={{ color: '#ff6b00' }}>✦</span> Spaced repetition for DSA
             </span>
           </motion.div>
 
@@ -127,7 +127,13 @@ export function Hero({ TableDemo }: HeroProps) {
             initial="hidden"
             animate="visible"
             variants={itemVariants}
-            style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
+            style={{
+              marginTop: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}
           >
             <Link
               href="/auth/login"
@@ -156,39 +162,8 @@ export function Hero({ TableDemo }: HeroProps) {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Get started free
+              Start tracking free →
             </Link>
-            <a
-              href="https://github.com/Vinit1936/Recall"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: 'transparent',
-                border: '1px solid #1e1e1e',
-                color: '#555',
-                fontSize: '13px',
-                height: '40px',
-                padding: '0 18px',
-                borderRadius: '8px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                textDecoration: 'none',
-                fontFamily: 'var(--font-geist-sans), sans-serif',
-                transition: 'all 0.15s ease',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#2a2a2a';
-                e.currentTarget.style.color = '#888';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#1e1e1e';
-                e.currentTarget.style.color = '#555';
-              }}
-            >
-              View on GitHub ↗
-            </a>
           </motion.div>
 
           {/* Social proof */}
@@ -236,48 +211,58 @@ export function Hero({ TableDemo }: HeroProps) {
         </div>
       </div>
 
-      {/* Stats bar */}
+      {/* Stats bar — Horizontally moving ticker with latest capabilities */}
       <div
         style={{
           borderTop: '1px solid #111',
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 40px 32px',
-          paddingTop: '28px',
+          borderBottom: '1px solid #111',
+          padding: '24px 0',
+          overflow: 'hidden',
+          position: 'relative',
+          maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         }}
       >
-        <div
-          className="hero-v2-stats"
-          style={{ display: 'flex', alignItems: 'flex-end', gap: '48px' }}
+        <motion.div
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ repeat: Infinity, ease: 'linear', duration: 35 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '56px',
+            width: 'max-content',
+            whiteSpace: 'nowrap',
+          }}
         >
           {[
-            { number: '2,800+', label: 'LeetCode problems indexed' },
-            null,
-            { number: '5 platforms', label: 'supported' },
-            null,
-            { number: '+3 → +30 days', label: 'revision ladder' },
-          ].map((item, i) =>
-            item === null ? (
-              <span
-                key={i}
-                style={{
-                  fontFamily: 'var(--font-geist-mono), monospace',
-                  color: '#222',
-                  fontSize: '20px',
-                  alignSelf: 'center',
-                }}
-              >
-                ·
-              </span>
-            ) : (
-              <div key={i}>
+            { number: '3,400+', label: 'LeetCode problems indexed' },
+            { number: '5 platforms', label: 'LeetCode, Codeforces, GFG & more' },
+            { number: '+3 → +30 days', label: 'Automatic revision schedule' },
+            { number: '3 confidence levels', label: 'Clean, Shaky, Struggled' },
+            { number: 'Smart auto-fill', label: 'Instant title & topic import' },
+            { number: 'Daily revision queue', label: 'Never miss a problem review' },
+            { number: 'Streak tracking', label: 'Heatmaps & activity logs' },
+            { number: '100% free', label: 'No credit card required' },
+            // Repeated for infinite seamless loop
+            { number: '3,400+', label: 'LeetCode problems indexed' },
+            { number: '5 platforms', label: 'LeetCode, Codeforces, GFG & more' },
+            { number: '+3 → +30 days', label: 'Automatic revision schedule' },
+            { number: '3 confidence levels', label: 'Clean, Shaky, Struggled' },
+            { number: 'Smart auto-fill', label: 'Instant title & topic import' },
+            { number: 'Daily revision queue', label: 'Never miss a problem review' },
+            { number: 'Streak tracking', label: 'Heatmaps & activity logs' },
+            { number: '100% free', label: 'No credit card required' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '56px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div
                   style={{
                     fontFamily: 'var(--font-display), Georgia, serif',
                     fontStyle: 'italic',
-                    fontSize: '36px',
+                    fontSize: '34px',
                     color: '#e5e5e5',
                     lineHeight: 1,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {item.number}
@@ -286,18 +271,28 @@ export function Hero({ TableDemo }: HeroProps) {
                   style={{
                     fontFamily: 'var(--font-geist-mono), monospace',
                     fontSize: '10px',
-                    color: '#444',
+                    color: '#555',
                     letterSpacing: '0.08em',
-                    marginTop: '4px',
                     textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {item.label}
                 </div>
               </div>
-            )
-          )}
-        </div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-geist-mono), monospace',
+                  color: '#262626',
+                  fontSize: '24px',
+                  userSelect: 'none',
+                }}
+              >
+                ·
+              </span>
+            </div>
+          ))}
+        </motion.div>
       </div>
 
       <style>{`
@@ -309,10 +304,6 @@ export function Hero({ TableDemo }: HeroProps) {
           .hero-v2-right { display: none !important; }
           .hero-v2-grid > div:first-child {
             padding: 80px 24px 40px !important;
-          }
-          .hero-v2-stats {
-            flex-wrap: wrap !important;
-            gap: 24px !important;
           }
         }
       `}</style>

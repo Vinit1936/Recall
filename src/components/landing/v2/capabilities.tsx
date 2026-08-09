@@ -37,7 +37,7 @@ export function Capabilities() {
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '10px',
-            color: '#333',
+            color: '#888',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             marginBottom: '64px',
@@ -75,7 +75,7 @@ export function Capabilities() {
                 style={{
                   fontFamily: 'var(--font-geist-mono), monospace',
                   fontSize: '10px',
-                  color: '#333',
+                  color: '#777',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   marginBottom: '20px',
