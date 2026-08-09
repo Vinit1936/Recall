@@ -18,9 +18,8 @@ export function FinalCTA() {
         padding: '60px 40px 0',
       }}
     >
-      {/* Background wordmark — high z-index & pointer-events for hover */}
+      {/* Background wordmark — high z-index & pointer-events for smooth hover */}
       <div
-        className="shiny-wordmark-container"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -41,17 +40,21 @@ export function FinalCTA() {
         }}
       >
         <span style={{ position: 'relative', display: 'inline-block' }}>
-          <span className={`shiny-wordmark-text ${isHovered ? 'active-shine' : ''}`}>
+          <span
+            style={{
+              color: isHovered ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.075)',
+              transition: 'color 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
             recall
           </span>
           <span
-            className="shiny-wordmark-dot"
             style={{
+              position: 'absolute',
+              left: '100%',
+              bottom: 0,
               color: isHovered ? '#ff6b00' : 'rgba(255, 107, 0, 0.4)',
-              textShadow: isHovered
-                ? '0 0 24px rgba(255, 107, 0, 0.95), 0 0 48px rgba(255, 107, 0, 0.6)'
-                : 'none',
-              transition: 'all 0.4s ease',
+              transition: 'color 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             .
@@ -195,34 +198,6 @@ export function FinalCTA() {
       </motion.div>
 
       <style>{`
-        .shiny-wordmark-text {
-          color: rgba(255, 255, 255, 0.08);
-          transition: color 0.4s ease;
-          display: inline-block;
-        }
-        .shiny-wordmark-text.active-shine {
-          background: linear-gradient(
-            110deg,
-            rgba(255, 255, 255, 0.12) 0%,
-            rgba(255, 255, 255, 0.5) 30%,
-            rgba(255, 255, 255, 0.95) 50%,
-            rgba(255, 255, 255, 0.5) 70%,
-            rgba(255, 255, 255, 0.12) 100%
-          );
-          background-size: 200% 100%;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shineSweep 1.6s ease-in-out infinite;
-        }
-        .shiny-wordmark-dot {
-          position: absolute;
-          left: 100%;
-          bottom: 0;
-        }
-        @keyframes shineSweep {
-          0% { background-position: 100% 0; }
-          100% { background-position: -100% 0; }
-        }
         @media (max-width: 768px) {
           section[style*="padding"] {
             padding: 40px 20px 0 !important;
