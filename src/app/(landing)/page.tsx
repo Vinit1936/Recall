@@ -1,15 +1,15 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { SmoothScroll } from '@/components/landing/v2/smooth-scroll';
-import { Navbar } from '@/components/landing/v2/navbar';
-import { Hero } from '@/components/landing/v2/hero';
-import { RevisionSection } from '@/components/landing/v2/revision-section';
-import { HowItWorks } from '@/components/landing/v2/how-it-works';
-import { Capabilities } from '@/components/landing/v2/capabilities';
-import { FAQ } from '@/components/landing/v2/faq';
-import { FinalCTA } from '@/components/landing/v2/final-cta';
-import { Footer } from '@/components/landing/v2/footer';
+import { SmoothScroll } from '@/components/landing/smooth-scroll';
+import { Navbar } from '@/components/landing/navbar';
+import { Hero } from '@/components/landing/hero';
+import { RevisionSection } from '@/components/landing/revision-section';
+import { HowItWorks } from '@/components/landing/how-it-works';
+import { Capabilities } from '@/components/landing/capabilities';
+import { FAQ } from '@/components/landing/faq';
+import { FinalCTA } from '@/components/landing/final-cta';
+import { Footer } from '@/components/landing/footer';
 import DotBackgroundDemo from '@/components/dot-background-demo';
 
 const TableDemo = dynamic(
@@ -21,7 +21,7 @@ const RevisionDemo = dynamic(
   { ssr: false }
 );
 const Science = dynamic(
-  () => import('@/components/landing/v2/science').then((m) => ({ default: m.Science })),
+  () => import('@/components/landing/science').then((m) => ({ default: m.Science })),
   { ssr: false }
 );
 
