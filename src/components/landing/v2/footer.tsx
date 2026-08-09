@@ -15,24 +15,34 @@ export function Footer() {
           justifyContent: 'space-between',
         }}
       >
-        {/* Left — wordmark + copyright */}
+        {/* Left — wordmark + author copyright */}
         <span
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '11px',
+            color: '#666',
           }}
         >
-          <span style={{ color: '#666' }}>recall</span>
-          <span style={{ color: '#ff6b00' }}>.</span>
-          <span style={{ color: '#444' }}> © 2026</span>
+          recall<span style={{ color: '#ff6b00' }}>.</span> © 2026 · Created by{' '}
+          <a
+            href="https://github.com/Vinit1936"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#888', textDecoration: 'none', transition: 'color 0.15s ease' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#888')}
+          >
+            Vinit Patil
+          </a>
         </span>
 
-        {/* Right — links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        {/* Right — social links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           {[
             { label: 'GitHub', href: 'https://github.com/Vinit1936/Recall' },
             { label: 'Twitter', href: 'https://twitter.com/vinitpatil193' },
-            { label: 'LinkedIn', href: 'https://linkedin.com' },
+            { label: 'Instagram', href: 'https://instagram.com/vinit.patil19' },
+            { label: 'LinkedIn', href: 'https://www.linkedin.com/in/vinitpatil19/' },
           ].map((link) => (
             <a
               key={link.label}
@@ -42,13 +52,13 @@ export function Footer() {
               style={{
                 fontFamily: 'var(--font-geist-mono), monospace',
                 fontSize: '11px',
-                color: '#2a2a2a',
+                color: '#555',
                 textDecoration: 'none',
                 transition: 'color 0.12s ease',
                 cursor: 'pointer',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#555')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#2a2a2a')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#aaaaaa')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#555555')}
             >
               {link.label}
             </a>
