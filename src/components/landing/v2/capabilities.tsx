@@ -1,0 +1,121 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion, useInView } from 'motion/react';
+
+const CARDS = [
+  {
+    category: 'Spaced Repetition',
+    title: 'Adaptive Intervals',
+    desc: 'Automated 3 → 7 → 14 → 30 day revision queue that adapts based on your recall confidence. Clean advances the interval. Struggled resets it. Shaky repeats.',
+  },
+  {
+    category: 'Automation',
+    title: 'Multi-Platform Sync',
+    desc: 'Instant title, difficulty, and topic extraction for LeetCode (2,800+ problems indexed), Codeforces, HackerRank, GFG, and CodeChef. Type the ID — everything fills in.',
+  },
+  {
+    category: 'Flexibility',
+    title: 'Custom Columns',
+    desc: 'Add custom columns to your tracker — Approach Summary, Time Complexity, Companies Asked, Pattern — anything you need. Stored per-problem, visible everywhere.',
+  },
+  {
+    category: 'Ownership',
+    title: 'Your Data',
+    desc: 'Every problem you track is yours. No algorithmic feed, no gamification dark patterns, no daily streak pressure. Just your problems, your schedule, your pace.',
+  },
+];
+
+export function Capabilities() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
+
+  return (
+    <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 40px 120px' }}>
+      <div ref={ref}>
+        <div
+          style={{
+            fontFamily: 'var(--font-geist-mono), monospace',
+            fontSize: '10px',
+            color: '#333',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            marginBottom: '64px',
+          }}
+        >
+          Capabilities
+        </div>
+
+        {/* 2×2 grid */}
+        <div
+          className="capabilities-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '1px',
+            background: '#111',
+          }}
+        >
+          {CARDS.map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+                delay: i * 0.08,
+              }}
+              style={{
+                background: '#080808',
+                padding: '48px',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-geist-mono), monospace',
+                  fontSize: '10px',
+                  color: '#333',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  marginBottom: '20px',
+                }}
+              >
+                {card.category}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-geist-sans), sans-serif',
+                  fontSize: '24px',
+                  color: '#e5e5e5',
+                  fontWeight: 500,
+                  marginBottom: '14px',
+                  lineHeight: 1.3,
+                }}
+              >
+                {card.title}
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-geist-sans), sans-serif',
+                  fontSize: '14px',
+                  color: '#555',
+                  lineHeight: 1.75,
+                  margin: 0,
+                }}
+              >
+                {card.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .capabilities-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </section>
+  );
+}

@@ -1,0 +1,142 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion, useInView } from 'motion/react';
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'Solve & add',
+    desc: 'Add any problem from LeetCode, Codeforces, GFG, HackerRank, or CodeChef. Title, difficulty, and topic fill in automatically.',
+  },
+  {
+    num: '02',
+    title: 'Get scheduled',
+    desc: 'Recall assigns your first revision in 3 days. After that: 7, 14, 30. The interval adapts to your recall confidence.',
+  },
+  {
+    num: '03',
+    title: 'Show up daily',
+    desc: 'Open Daily Revision. Mark each problem Clean, Shaky, or Struggled. The algorithm adjusts. Your streak builds.',
+  },
+];
+
+export function HowItWorks() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
+
+  return (
+    <section
+      id="how-it-works-steps"
+      style={{
+        borderTop: '1px solid #111',
+        borderBottom: '1px solid #111',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '100px 40px',
+        }}
+        ref={ref}
+      >
+        <div
+          style={{
+            fontFamily: 'var(--font-geist-mono), monospace',
+            fontSize: '10px',
+            color: '#333',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            marginBottom: '64px',
+          }}
+        >
+          How It Works
+        </div>
+
+        {/* 3-column grid — gap IS the border */}
+        <div
+          className="how-it-works-v2"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '1px',
+            background: '#111',
+          }}
+        >
+          {STEPS.map((step, i) => (
+            <motion.div
+              key={step.num}
+              initial={{ opacity: 0, y: 16 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+              transition={{
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+                delay: i * 0.1,
+              }}
+              style={{
+                background: '#080808',
+                padding: i < 2 ? '0 40px 0 0' : '0',
+              }}
+            >
+              <div style={{ paddingTop: '4px' }}>
+                {/* Large typographic number */}
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display), Georgia, serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '80px',
+                    color: '#1a1a1a',
+                    lineHeight: 1,
+                  }}
+                >
+                  {step.num}
+                </div>
+
+                {/* Title */}
+                <div
+                  style={{
+                    fontFamily: 'var(--font-geist-sans), sans-serif',
+                    fontSize: '22px',
+                    color: '#e5e5e5',
+                    fontWeight: 500,
+                    marginTop: '16px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  {step.title}
+                </div>
+
+                {/* Description */}
+                <p
+                  style={{
+                    fontFamily: 'var(--font-geist-sans), sans-serif',
+                    fontSize: '14px',
+                    color: '#555',
+                    lineHeight: 1.75,
+                    margin: 0,
+                  }}
+                >
+                  {step.desc}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .how-it-works-v2 {
+            grid-template-columns: 1fr !important;
+          }
+          .how-it-works-v2 > div {
+            padding: 32px 0 !important;
+            border-bottom: 1px solid #111 !important;
+          }
+        }
+      `}</style>
+    </section>
+  );
+}
