@@ -64,15 +64,32 @@ export function FinalCTA() {
           paddingBottom: '140px',
         }}
       >
-        {/* Thin vertical line */}
-        <div
-          style={{
-            width: '1px',
-            height: '40px',
-            background: '#1e1e1e',
-            margin: '0 auto 40px',
+        {/* Minimal Animated Star */}
+        <motion.div
+          animate={{
+            rotate: [0, 90, 180, 270, 360],
+            scale: [0.9, 1.1, 0.9],
+            opacity: [0.5, 1, 0.5],
           }}
-        />
+          transition={{
+            rotate: { duration: 12, repeat: Infinity, ease: 'linear' },
+            scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+            opacity: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+          }}
+          style={{
+            margin: '0 auto 36px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ff6b00',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L14.4 9.6L24 12L14.4 14.4L12 24L9.6 14.4L0 12L9.6 9.6L12 0Z" />
+          </svg>
+        </motion.div>
 
         <h2
           style={{
