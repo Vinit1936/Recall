@@ -58,7 +58,7 @@ export function Hero({ TableDemo }: HeroProps) {
                 letterSpacing: '0.1em',
               }}
             >
-              <span style={{ color: '#ff6b00' }}>✦</span> Spaced repetition for DSA
+              Spaced repetition for DSA
             </span>
           </motion.div>
 
