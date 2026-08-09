@@ -23,7 +23,7 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // If user is not logged in
+  // Handle unauthenticated requests
   if (!isLoggedIn) {
     if (isApiRoute) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,7 +34,6 @@ export default auth((req) => {
         new URL(`/auth/login?callbackUrl=${callbackUrl}&error=SessionRequired`, nextUrl)
       );
     }
-    return NextResponse.redirect(new URL('/auth/login', nextUrl));
   }
 
   return NextResponse.next();

@@ -215,8 +215,7 @@ function LoginContent() {
       if (res?.error) {
         setSiError(errorMessages.CredentialsSignin);
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        window.location.href = callbackUrl;
       }
     } catch {
       setSiError(errorMessages.Default);
@@ -254,8 +253,7 @@ function LoginContent() {
         setSuError('Account created but sign in failed. Please sign in manually.');
         setTab('signin');
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        window.location.href = callbackUrl;
       }
     } catch {
       setSuError('Something went wrong. Please try again.');
