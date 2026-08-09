@@ -44,3 +44,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .claude
+
+.agents
+AGENTS.md
+CLAUDE.md
+DEPLOYMENT_READINESS.md
+prompt.md
+ui.md
