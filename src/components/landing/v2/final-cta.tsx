@@ -64,32 +64,37 @@ export function FinalCTA() {
           paddingBottom: '140px',
         }}
       >
-        {/* Minimal Animated Star */}
-        <motion.div
-          animate={{
-            rotate: [0, 90, 180, 270, 360],
-            scale: [0.9, 1.1, 0.9],
-            opacity: [0.5, 1, 0.5],
-          }}
-          transition={{
-            rotate: { duration: 12, repeat: Infinity, ease: 'linear' },
-            scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-            opacity: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-          }}
+        {/* Flying White Shooting Star Line */}
+        <div
           style={{
+            position: 'relative',
+            width: '1px',
+            height: '48px',
+            background: 'rgba(255, 255, 255, 0.08)',
             margin: '0 auto 36px',
-            width: '24px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ff6b00',
+            overflow: 'hidden',
+            borderRadius: '1px',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0L14.4 9.6L24 12L14.4 14.4L12 24L9.6 14.4L0 12L9.6 9.6L12 0Z" />
-          </svg>
-        </motion.div>
+          <motion.div
+            animate={{
+              y: ['-100%', '250%'],
+              opacity: [0, 1, 1, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: [0.16, 1, 0.3, 1],
+              repeatDelay: 0.6,
+            }}
+            style={{
+              width: '100%',
+              height: '24px',
+              background: 'linear-gradient(to bottom, transparent, #ffffff 85%, #ffffff)',
+              boxShadow: '0 0 8px rgba(255, 255, 255, 0.9)',
+            }}
+          />
+        </div>
 
         <h2
           style={{
