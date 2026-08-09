@@ -14,7 +14,7 @@ export function FinalCTA() {
         position: 'relative',
         overflow: 'hidden',
         borderTop: '1px solid #111',
-        padding: '120px 40px 0',
+        padding: '60px 40px 0',
       }}
     >
       {/* Background wordmark */}
@@ -64,34 +64,34 @@ export function FinalCTA() {
           paddingBottom: '140px',
         }}
       >
-        {/* Flying White Shooting Star Line */}
+        {/* Flying White Shooting Star Line — Taller & Prominent */}
         <div
           style={{
             position: 'relative',
-            width: '1px',
-            height: '48px',
+            width: '1.5px',
+            height: '80px',
             background: 'rgba(255, 255, 255, 0.08)',
-            margin: '0 auto 36px',
+            margin: '0 auto 32px',
             overflow: 'hidden',
-            borderRadius: '1px',
+            borderRadius: '2px',
           }}
         >
           <motion.div
             animate={{
-              y: ['-100%', '250%'],
+              y: ['-100%', '260%'],
               opacity: [0, 1, 1, 0],
             }}
             transition={{
-              duration: 2,
+              duration: 1.8,
               repeat: Infinity,
               ease: [0.16, 1, 0.3, 1],
-              repeatDelay: 0.6,
+              repeatDelay: 0.4,
             }}
             style={{
               width: '100%',
-              height: '24px',
-              background: 'linear-gradient(to bottom, transparent, #ffffff 85%, #ffffff)',
-              boxShadow: '0 0 8px rgba(255, 255, 255, 0.9)',
+              height: '36px',
+              background: 'linear-gradient(to bottom, transparent, #ffffff 75%, #ffffff)',
+              boxShadow: '0 0 10px rgba(255, 255, 255, 1), 0 0 18px rgba(255, 255, 255, 0.5)',
             }}
           />
         </div>
