@@ -9,6 +9,7 @@ import { BentoGrid } from '@/components/landing/bento-grid';
 import { ScienceSection } from '@/components/landing/science-section';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { PlatformStrip } from '@/components/landing/platform-strip';
+import { FAQSection } from '@/components/landing/faq-section';
 import { FinalCTA } from '@/components/landing/final-cta';
 import { Footer } from '@/components/landing/footer';
 
@@ -56,6 +57,7 @@ export default function LandingPage() {
         <ScienceSection />
         <HowItWorks />
         <PlatformStrip />
+        <FAQSection />
         <FinalCTA />
         <Footer />
       </main>

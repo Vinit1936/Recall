@@ -32,12 +32,14 @@ export function BentoGrid() {
 
   return (
     <section
+      id="capabilities"
       ref={containerRef}
       style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '100px 32px 20px',
         borderTop: '1px solid #1a1a1a',
+        scrollMarginTop: '80px',
       }}
     >
       {/* Section Header */}

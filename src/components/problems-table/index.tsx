@@ -11,7 +11,7 @@ import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Star, MoreVertical, Trash2, Download, Bookmark } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher } from '@/lib/fetcher';
 
 function ColumnHeaderMenu({ col, onDelete }: { col: any; onDelete: (id: string) => void }) {
   const [open, setOpen] = useState(false);

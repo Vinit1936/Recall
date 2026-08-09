@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { Settings } from 'lucide-react';
 
 const navItems = [
   {
@@ -32,12 +33,7 @@ const navItems = [
   {
     label: 'Settings',
     href: '/settings',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.93 2.93l1.41 1.41M11.66 11.66l1.41 1.41M2.93 13.07l1.41-1.41M11.66 4.34l1.41-1.41" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-    ),
+    icon: <Settings size={16} />,
   },
 ];
 
@@ -87,7 +83,7 @@ export function Sidebar() {
               {session.user.name || session.user.email}
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: '/auth/login' })}
+              onClick={() => signOut({ callbackUrl: '/' })}
               style={{ background: 'none', border: '1px solid #222', borderRadius: 5, color: '#555', cursor: 'pointer', fontSize: 12, padding: '4px 10px', width: '100%', textAlign: 'left', transition: 'color 0.15s, border-color 0.15s' }}
             >
               Sign out

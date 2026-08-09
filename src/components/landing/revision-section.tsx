@@ -180,7 +180,7 @@ export function RevisionSection() {
                 e.currentTarget.style.background = '#ffffff';
               }}
             >
-              Get started free
+              Sign in
             </Link>
           </div>
         </motion.div>

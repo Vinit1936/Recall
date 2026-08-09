@@ -159,38 +159,8 @@ export function Hero() {
                 e.currentTarget.style.background = '#ffffff';
               }}
             >
-              Start tracking — it&apos;s free
+              Get started for free
             </Link>
-            <a
-              href="https://github.com/Vinit1936/Recall"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: 'transparent',
-                border: '1px solid #222222',
-                color: '#666666',
-                fontSize: '14px',
-                height: '44px',
-                padding: '0 20px',
-                borderRadius: '8px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none',
-                fontFamily: 'var(--font-geist-sans), sans-serif',
-                transition: 'border-color 0.15s ease, color 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#333333';
-                e.currentTarget.style.color = '#e5e5e5';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#222222';
-                e.currentTarget.style.color = '#666666';
-              }}
-            >
-              View on GitHub ↗
-            </a>
           </motion.div>
 
           {/* 5. Social Proof */}

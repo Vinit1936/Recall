@@ -3,33 +3,40 @@
 import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
+// @ts-ignore
 import downloadImg from '../../../../utils/download.jpg';
-
-// Fake decorative heatmap for the left panel
-function FakeHeatmap() {
-  const cols = 20;
-  const rows = 7;
-  const levels = ['#1a1a1a', '#1a3a2a', '#1e5c3a', 'rgba(34,197,94,0.6)', '#22c55e'];
-  const seed = (i: number) => (Math.sin(i * 9.301 + 0.5) * 43758.5453) % 1;
-
-  return (
-    <div style={{ display: 'flex', gap: 3, marginTop: 24 }}>
-      {Array.from({ length: cols }).map((_, ci) => (
-        <div key={ci} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {Array.from({ length: rows }).map((_, ri) => {
-            const v = Math.abs(seed(ci * 7 + ri));
-            const level = v < 0.5 ? 0 : v < 0.65 ? 1 : v < 0.8 ? 2 : v < 0.92 ? 3 : 4;
-            return <div key={ri} style={{ width: 11, height: 11, borderRadius: 2, background: levels[level] }} />;
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
+// @ts-ignore
+import GridDistortion from '@/components/ui/grid-distortion';
 
 type Tab = 'signin' | 'signup';
+
+const errorMessages: Record<string, string> = {
+  OAuthAccountNotLinked: 'This email is already registered with a different sign-in method. Try signing in with the method you used originally.',
+  OAuthCallback: 'Something went wrong with the OAuth login. Please try again.',
+  OAuthSignin: 'Could not start the OAuth sign-in flow. Please try again.',
+  CredentialsSignin: 'Invalid email or password.',
+  SessionRequired: 'Please sign in to access this page.',
+  Default: 'An unexpected error occurred. Please try again.',
+};
+
+function Spinner({ color = '#ffffff' }: { color?: string }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        width: 14,
+        height: 14,
+        border: `2px solid ${color}`,
+        borderTopColor: 'transparent',
+        borderRadius: '50%',
+        animation: 'spin 0.6s linear infinite',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
 
 function Input({ label, type, value, onChange, placeholder, error }: { label: string; type: string; value: string; onChange: (v: string) => void; placeholder?: string; error?: string }) {
   const [focused, setFocused] = useState(false);
@@ -68,8 +75,8 @@ function PrimaryButton({ children, onClick, loading, disabled }: { children: Rea
       disabled={loading || disabled}
       style={{
         width: '100%',
-        background: loading || disabled ? '#ccc' : '#fff',
-        color: '#000',
+        background: loading || disabled ? '#2a2a2a' : '#fff',
+        color: loading || disabled ? '#888' : '#000',
         borderWidth: 0,
         outline: 'none',
         borderRadius: 6,
@@ -81,20 +88,21 @@ function PrimaryButton({ children, onClick, loading, disabled }: { children: Rea
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        transition: 'background 0.15s',
+        transition: 'all 0.15s',
         marginBottom: 8,
       }}
     >
-      {loading ? <span style={{ fontSize: 16 }}>⋯</span> : children}
+      {loading ? <Spinner color="#888" /> : children}
     </button>
   );
 }
 
-function OAuthButton({ provider, label, onClick }: { provider: 'google' | 'github'; label: string; onClick: () => void }) {
+function OAuthButton({ provider, label, onClick, loading, disabled }: { provider: 'google' | 'github'; label: string; onClick: () => void; loading?: boolean; disabled?: boolean }) {
   const isGoogle = provider === 'google';
   return (
     <button
       onClick={onClick}
+      disabled={loading || disabled}
       style={{
         width: '100%',
         background: 'transparent',
@@ -103,21 +111,28 @@ function OAuthButton({ provider, label, onClick }: { provider: 'google' | 'githu
         borderColor: '#2a2a2a',
         outline: 'none',
         borderRadius: 6,
-        color: '#fff',
+        color: loading || disabled ? '#666' : '#fff',
         fontSize: 14,
         padding: '10px 0',
-        cursor: 'pointer',
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
         marginBottom: 8,
         transition: 'border-color 0.15s',
+        opacity: disabled && !loading ? 0.5 : 1,
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#444')}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+      onMouseEnter={(e) => {
+        if (!loading && !disabled) e.currentTarget.style.borderColor = '#444';
+      }}
+      onMouseLeave={(e) => {
+        if (!loading && !disabled) e.currentTarget.style.borderColor = '#2a2a2a';
+      }}
     >
-      {isGoogle ? (
+      {loading ? (
+        <Spinner color="#888" />
+      ) : isGoogle ? (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -129,7 +144,7 @@ function OAuthButton({ provider, label, onClick }: { provider: 'google' | 'githu
           <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
         </svg>
       )}
-      {label}
+      {loading ? 'Connecting...' : label}
     </button>
   );
 }
@@ -162,14 +177,30 @@ function LoginContent() {
   const [suError, setSuError] = useState('');
   const [suLoading, setSuLoading] = useState(false);
 
+  // OAuth loading state
+  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
+
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
   useEffect(() => {
     const errorParam = searchParams.get('error');
-    if (errorParam === 'OAuthAccountNotLinked') {
-      setSiError('An account with this email address already exists. Please sign in with your password or existing account.');
-    } else if (errorParam) {
-      setSiError('Authentication failed. Please try signing in again.');
+    if (errorParam) {
+      const msg = errorMessages[errorParam] || errorMessages.Default;
+      setSiError(msg);
     }
   }, [searchParams]);
+
+  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+    setSiError('');
+    setSuError('');
+    setOauthLoading(provider);
+    try {
+      await signIn(provider, { callbackUrl });
+    } catch {
+      setSiError('Could not start the OAuth sign-in flow. Please try again.');
+      setOauthLoading(null);
+    }
+  };
 
   const handleSignIn = async () => {
     setSiError('');
@@ -178,16 +209,17 @@ function LoginContent() {
       const res = await signIn('credentials', {
         email: siEmail,
         password: siPassword,
+        callbackUrl,
         redirect: false,
       });
       if (res?.error) {
-        setSiError('Invalid email or password.');
+        setSiError(errorMessages.CredentialsSignin);
       } else {
-        router.push('/dashboard');
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
-      setSiError('Something went wrong. Please try again.');
+      setSiError(errorMessages.Default);
     } finally {
       setSiLoading(false);
     }
@@ -215,13 +247,14 @@ function LoginContent() {
       const loginRes = await signIn('credentials', {
         email: suEmail,
         password: suPassword,
+        callbackUrl,
         redirect: false,
       });
       if (loginRes?.error) {
         setSuError('Account created but sign in failed. Please sign in manually.');
         setTab('signin');
       } else {
-        router.push('/dashboard');
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -230,6 +263,8 @@ function LoginContent() {
       setSuLoading(false);
     }
   };
+
+  const isAnyLoading = siLoading || suLoading || oauthLoading !== null;
 
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#09090b' }}>
@@ -253,16 +288,55 @@ function LoginContent() {
             overflow: 'hidden',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+            background: '#0a0a0b',
           }}
         >
-          <Image
-            src={downloadImg}
-            alt="Recall background"
-            fill
-            priority
-            sizes="40vw"
-            style={{ objectFit: 'cover' }}
+          {/* Interactive Three.js WebGL GridDistortion */}
+          <GridDistortion
+            imageSrc={downloadImg.src || '/login-bg.jpg'}
+            grid={15}
+            mouse={0.1}
+            strength={0.15}
+            relaxation={0.9}
           />
+
+          {/* Dark gradient overlay for contrast */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              background: 'linear-gradient(180deg, rgba(10, 10, 11, 0.1) 0%, rgba(10, 10, 11, 0.85) 100%)',
+            }}
+          />
+
+          {/* Bottom Tagline Overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: '36px',
+              pointerEvents: 'none',
+              zIndex: 2,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: 'var(--font-geist-sans), sans-serif',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: '#ffffff',
+                letterSpacing: '-0.02em',
+                margin: 0,
+                lineHeight: 1.3,
+              }}
+            >
+              Solve once.<br />
+              <span style={{ color: '#a1a1aa', fontWeight: 400 }}>Remember forever.</span>
+            </h2>
+          </div>
         </div>
       </div>
 
@@ -294,14 +368,15 @@ function LoginContent() {
         >
           <div style={{ width: '100%', maxWidth: 400 }}>
             {/* Tab switcher */}
-            <div style={{ display: 'flex', marginBottom: 32, borderBottom: '1px solid #1e1e1e', paddingBottom: 0, position: 'relative' }}>
+            <div style={{ display: 'flex', marginBottom: 28, borderBottom: '1px solid #1e1e1e', paddingBottom: 0, position: 'relative' }}>
               <button
                 onClick={() => setTab('signin')}
+                disabled={isAnyLoading}
                 style={{
                   background: 'none',
                   borderWidth: 0,
                   outline: 'none',
-                  cursor: 'pointer',
+                  cursor: isAnyLoading ? 'not-allowed' : 'pointer',
                   fontSize: 15,
                   fontWeight: 500,
                   color: tab === 'signin' ? '#ffffff' : '#666666',
@@ -331,11 +406,12 @@ function LoginContent() {
 
               <button
                 onClick={() => setTab('signup')}
+                disabled={isAnyLoading}
                 style={{
                   background: 'none',
                   borderWidth: 0,
                   outline: 'none',
-                  cursor: 'pointer',
+                  cursor: isAnyLoading ? 'not-allowed' : 'pointer',
                   fontSize: 15,
                   fontWeight: 500,
                   color: tab === 'signup' ? '#ffffff' : '#666666',
@@ -373,13 +449,41 @@ function LoginContent() {
                   exit={{ opacity: 0, x: 10 }}
                   transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 >
+                  {siError && (
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: '#f87171',
+                        background: 'rgba(248, 113, 113, 0.1)',
+                        border: '1px solid rgba(248, 113, 113, 0.2)',
+                        borderRadius: 6,
+                        padding: '10px 14px',
+                        fontFamily: 'var(--font-geist-mono), monospace',
+                        marginBottom: 16,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {siError}
+                    </div>
+                  )}
                   <Input label="Email" type="email" value={siEmail} onChange={setSiEmail} placeholder="you@example.com" />
                   <Input label="Password" type="password" value={siPassword} onChange={setSiPassword} placeholder="••••••••" />
-                  {siError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{siError}</div>}
-                  <PrimaryButton onClick={handleSignIn} loading={siLoading}>Sign in →</PrimaryButton>
+                  <PrimaryButton onClick={handleSignIn} loading={siLoading} disabled={isAnyLoading}>Sign in →</PrimaryButton>
                   <Divider />
-                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })} />
-                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/dashboard' })} />
+                  <OAuthButton
+                    provider="google"
+                    label="Continue with Google"
+                    onClick={() => handleOAuthSignIn('google')}
+                    loading={oauthLoading === 'google'}
+                    disabled={isAnyLoading}
+                  />
+                  <OAuthButton
+                    provider="github"
+                    label="Continue with GitHub"
+                    onClick={() => handleOAuthSignIn('github')}
+                    loading={oauthLoading === 'github'}
+                    disabled={isAnyLoading}
+                  />
                   <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
                     Don&apos;t have an account?{' '}
                     <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
@@ -393,14 +497,42 @@ function LoginContent() {
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 >
+                  {suError && (
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: '#f87171',
+                        background: 'rgba(248, 113, 113, 0.1)',
+                        border: '1px solid rgba(248, 113, 113, 0.2)',
+                        borderRadius: 6,
+                        padding: '10px 14px',
+                        fontFamily: 'var(--font-geist-mono), monospace',
+                        marginBottom: 16,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {suError}
+                    </div>
+                  )}
                   <Input label="Name (optional)" type="text" value={suName} onChange={setSuName} placeholder="Your name" />
                   <Input label="Email" type="email" value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
                   <Input label="Password (min 8 characters)" type="password" value={suPassword} onChange={setSuPassword} placeholder="••••••••" />
-                  {suError && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, marginTop: -8 }}>{suError}</div>}
-                  <PrimaryButton onClick={handleSignUp} loading={suLoading}>Create account →</PrimaryButton>
+                  <PrimaryButton onClick={handleSignUp} loading={suLoading} disabled={isAnyLoading}>Create account →</PrimaryButton>
                   <Divider />
-                  <OAuthButton provider="google" label="Continue with Google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })} />
-                  <OAuthButton provider="github" label="Continue with GitHub" onClick={() => signIn('github', { callbackUrl: '/dashboard' })} />
+                  <OAuthButton
+                    provider="google"
+                    label="Continue with Google"
+                    onClick={() => handleOAuthSignIn('google')}
+                    loading={oauthLoading === 'google'}
+                    disabled={isAnyLoading}
+                  />
+                  <OAuthButton
+                    provider="github"
+                    label="Continue with GitHub"
+                    onClick={() => handleOAuthSignIn('github')}
+                    loading={oauthLoading === 'github'}
+                    disabled={isAnyLoading}
+                  />
                   <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
                     Already have an account?{' '}
                     <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>
@@ -417,7 +549,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div style={{ background: '#09090b', minHeight: '100vh' }} />}>
       <LoginContent />
     </Suspense>
   );

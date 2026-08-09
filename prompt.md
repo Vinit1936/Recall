@@ -1,679 +1,152 @@
-## Integrate the <PixelBlast /> component from React Bits
+Looking at all 7 screenshots carefully and analytically. Let me call out every specific issue I see:
 
-You are helping integrate an open-source React component into an existing application.
+**Hero (Image 1):**
+- The browser chrome demo is getting cut off on the right — the STATUS column and beyond are clipped. The demo needs to be contained within visible bounds.
+- The hero has too much empty space below the CTA buttons and above the demo. The two columns aren't vertically centered together — the left text sits high while the demo floats in the middle.
+- "Get started for free" button has no secondary button next to it anymore — the "View on GitHub" ghost button from the spec is missing. This makes the CTA feel lonely and the left column bottom-heavy with just one button then a lot of white space.
+- The badge `✦ Spaced repetition for DSA` is fine but the `✦` glyph is rendering slightly misaligned vertically with the text.
+- The dot grid is noticeably denser in the hero right side behind the demo — creates an unintentional two-tone feel.
 
-### Component: PixelBlast
-### Variant: JavaScript + Tailwind
-### Dependencies: three postprocessing
+**Daily Revision section (Image 2):**
+- The browser chrome on the left has a visible thick rounded border that looks like a card component, not a floating chrome mockup. The border radius is too large — looks like a panel, not a browser window.
+- "Show up. Every day." is running off the right edge of the viewport — the text is overflowing. This is a critical layout bug.
+- The right column text is not vertically centered with the left chrome. Text starts at the top while the chrome is much taller.
+- The "Sign in" CTA button in this section is too wide and too tall — takes up disproportionate space compared to the text above it.
+- The streak number "14" in the demo looks great but "day streak" text next to it is too large — almost as big as the number itself.
+
+**Capabilities (Image 3):**
+- The ghost numbers `01`, `02`, `03`, `04` behind the card titles are rendering too large and too visible — `rgba(255,255,255,0.02)` should be nearly invisible but they're clearly legible. Reduce opacity further or remove them — they're becoming visual noise rather than a subtle depth element.
+- Too much vertical whitespace above "CAPABILITIES" label — the section feels like it starts too late.
+- The vertical dividers between the four columns are inconsistent — some appear darker than others.
+- Body text color is too close to white — should be `#777` to create hierarchy between titles and descriptions.
+
+**Science/Ebbinghaus section (Image 4):**
+- This is the strongest section. The chart is beautiful. Only issues:
+- The browser chrome here correctly has a smaller border-radius — inconsistent with the Daily Revision section chrome which is too rounded.
+- The "Day 3" marker is highlighted in teal/blue which looks great, but the highlighted day box at bottom should animate through the days rather than sitting static on Day 3.
+- Left column text body `#777` color is too light against the dark background — slightly hard to read at normal distance.
+
+**How It Works + Platform strip (Image 5):**
+- The `→` arrows between steps are too small and too low — they're positioned at the vertical divider line midpoint but look accidental, not intentional. They need to be more deliberately placed, either horizontally centered between step titles or removed entirely.
+- The platform badge buttons are inconsistent width — "GeeksForGeeks" is much wider than "LeetCode" because the name is longer. Either truncate names or use fixed widths.
+- Too much vertical gap between How It Works and Works With platforms sections — feels disconnected.
+
+**FAQ (Image 6):**
+- The open answer has `border-left` applied correctly but the left border color is barely visible — needs to be `#2a2a2a` minimum.
+- Answer text `color` is too dark — reading `#555` or darker against the black background at `15px` is straining. Bring it to `#888`.
+- The `−` close icon on the open question is properly sized but sits too high — not vertically centered with the question text.
+- Spacing between FAQ items is uneven — the open item has more bottom padding than the closed items.
+
+**Final CTA (Image 7):**
+- "Get started free →" button is too wide — it's nearly the full content width on a centered section. Max-width should be `220px`, not stretching.
+- The button border-radius is too large — `border-radius: 100px` makes it look pill-shaped, which conflicts with the `border-radius: 6px` on navbar buttons. Consistency matters — pick one radius system.
+- `recall. © 2026` in the footer bottom-left — the `recall.` wordmark here is too small and the period is same color as text. Should match the navbar wordmark treatment exactly.
+- Too much empty space between "Start remembering" headline and the button — the section feels vertically padded to fill space rather than breathe.
+
+Here's the fix prompt:
 
 ---
 
-### Usage Example
-```jsx
-// Component inspired by github.com/zavalit/bayer-dithering-webgl-demo
-  
-import PixelBlast from './PixelBlast';
+Fix all UI/spacing issues on the landing page. Read `ui.md` first. Do not add new sections or features — fix what exists only.
 
-<div style={{ width: '100%', height: '600px', position: 'relative' }}>
-  <PixelBlast
-    variant="triangle"
-    pixelSize={3}
-    color="#323232"
-    patternScale={3}
-    patternDensity={1.4}
-    pixelSizeJitter={0.95}
-    enableRipples
-    rippleSpeed={0.4}
-    rippleThickness={0.12}
-    rippleIntensityScale={1.5}
-    liquid
-    liquidStrength={0.12}
-    liquidRadius={1.2}
-    liquidWobbleSpeed={5}
-    speed={0.6}
-    edgeFade={0.21}
-    transparent
-  />
-</div>
-```
+**Fix 1 — Hero demo getting clipped**
 
-### Props
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| variant | 'square'|'circle'|'triangle'|'diamond' | 'square' | Pixel shape variant. |
-| pixelSize | number | 4 | Base pixel size (auto scaled for DPI). |
-| color | string | '#B497CF' | Pixel color. |
-| patternScale | number | 2 | Noise/pattern scale. |
-| patternDensity | number | 1 | Pattern density adjustment. |
-| pixelSizeJitter | number | 0 | Random jitter applied to coverage. |
-| enableRipples | boolean | true | Enable click ripple waves. |
-| rippleSpeed | number | 0.3 | Ripple propagation speed. |
-| rippleThickness | number | 0.1 | Ripple ring thickness. |
-| rippleIntensityScale | number | 1 | Ripple intensity multiplier. |
-| liquid | boolean | false | Enable liquid distortion effect. |
-| liquidStrength | number | 0.1 | Liquid distortion strength. |
-| liquidRadius | number | 1 | Liquid touch brush radius scale. |
-| liquidWobbleSpeed | number | 4.5 | Liquid wobble frequency. |
-| speed | number | 0.5 | Animation time scale. |
-| edgeFade | number | 0.25 | Edge fade distance (0-1). |
-| noiseAmount | number | 0 | Post noise amount. |
-| transparent | boolean | true | Transparent background. |
+The browser chrome mockup on the right is overflowing its container. The demo content (table) is wider than the chrome bounds. Fix:
+- Set `overflow: hidden` on the browser chrome content area
+- Reduce the demo table's column widths proportionally so all columns fit within the chrome width
+- The REVISION/NOTES columns should be hidden inside the chrome — the table should only show PLAT, PROBLEM, DIFF, TOPIC, STATUS columns within the visible chrome width
+- Chrome width: `min(580px, 50vw)`
 
-### Full Component Source
-```jsx
-import { Effect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+**Fix 2 — Hero layout vertical alignment**
 
-const createTouchTexture = () => {
-  const size = 64;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('2D context not available');
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const texture = new THREE.Texture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false;
-  const trail = [];
-  let last = null;
-  const maxAge = 64;
-  let radius = 0.1 * size;
-  const speed = 1 / maxAge;
-  const clear = () => {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  };
-  const drawPoint = p => {
-    const pos = { x: p.x * size, y: (1 - p.y) * size };
-    let intensity = 1;
-    const easeOutSine = t => Math.sin((t * Math.PI) / 2);
-    const easeOutQuad = t => -t * (t - 2);
-    if (p.age < maxAge * 0.3) intensity = easeOutSine(p.age / (maxAge * 0.3));
-    else intensity = easeOutQuad(1 - (p.age - maxAge * 0.3) / (maxAge * 0.7)) || 0;
-    intensity *= p.force;
-    const color = `${((p.vx + 1) / 2) * 255}, ${((p.vy + 1) / 2) * 255}, ${intensity * 255}`;
-    const offset = size * 5;
-    ctx.shadowOffsetX = offset;
-    ctx.shadowOffsetY = offset;
-    ctx.shadowBlur = radius;
-    ctx.shadowColor = `rgba(${color},${0.22 * intensity})`;
-    ctx.beginPath();
-    ctx.fillStyle = 'rgba(255,0,0,1)';
-    ctx.arc(pos.x - offset, pos.y - offset, radius, 0, Math.PI * 2);
-    ctx.fill();
-  };
-  const addTouch = norm => {
-    let force = 0;
-    let vx = 0;
-    let vy = 0;
-    if (last) {
-      const dx = norm.x - last.x;
-      const dy = norm.y - last.y;
-      if (dx === 0 && dy === 0) return;
-      const dd = dx * dx + dy * dy;
-      const d = Math.sqrt(dd);
-      vx = dx / (d || 1);
-      vy = dy / (d || 1);
-      force = Math.min(dd * 10000, 1);
-    }
-    last = { x: norm.x, y: norm.y };
-    trail.push({ x: norm.x, y: norm.y, age: 0, force, vx, vy });
-  };
-  const update = () => {
-    clear();
-    for (let i = trail.length - 1; i >= 0; i--) {
-      const point = trail[i];
-      const f = point.force * speed * (1 - point.age / maxAge);
-      point.x += point.vx * f;
-      point.y += point.vy * f;
-      point.age++;
-      if (point.age > maxAge) trail.splice(i, 1);
-    }
-    for (let i = 0; i < trail.length; i++) drawPoint(trail[i]);
-    texture.needsUpdate = true;
-  };
-  return {
-    canvas,
-    texture,
-    addTouch,
-    update,
-    set radiusScale(v) {
-      radius = 0.1 * size * v;
-    },
-    get radiusScale() {
-      return radius / (0.1 * size);
-    },
-    size
-  };
-};
+Both columns must be vertically centered relative to each other. The left column text currently sits near the top while the right demo is taller. Fix:
+- Add `align-items: center` to the hero two-column flex container
+- Add back the secondary "View on GitHub ↗" ghost button next to "Get started for free" — it was in the original spec but is missing. `border: 1px solid #222`, `color: #666`, `height: 40px`, `padding: 0 18px`, `border-radius: 6px`, `font-size: 13px`
 
-const createLiquidEffect = (texture, opts) => {
-  const fragment = `
-    uniform sampler2D uTexture;
-    uniform float uStrength;
-    uniform float uTime;
-    uniform float uFreq;
+**Fix 3 — Daily Revision section: text overflow**
 
-    void mainUv(inout vec2 uv) {
-      vec4 tex = texture2D(uTexture, uv);
-      float vx = tex.r * 2.0 - 1.0;
-      float vy = tex.g * 2.0 - 1.0;
-      float intensity = tex.b;
+"Show up. Every day." is overflowing the right column. Fix:
+- Add `overflow: hidden` and `word-break: break-word` to the right column container
+- Reduce headline font-size: `clamp(36px, 4vw, 56px)` — it's currently too large for the column width
+- Add `max-width: 100%` to the headline element
 
-      float wave = 0.5 + 0.5 * sin(uTime * uFreq + intensity * 6.2831853);
+**Fix 4 — Daily Revision section: chrome border**
 
-      float amt = uStrength * intensity * wave;
+The browser chrome border-radius is inconsistent with the hero section. Standardize ALL browser chrome mockups across the page:
+- `border-radius: 10px` on every chrome container (hero, daily revision, science section)
+- `border: 1px solid #1e1e1e`
+- `box-shadow: 0 0 0 1px #111, 0 24px 48px rgba(0,0,0,0.4)`
+- No exceptions — all three chrome mockups must look identical structurally
 
-      uv += vec2(vx, vy) * amt;
-    }
-    `;
-  return new Effect('LiquidEffect', fragment, {
-    uniforms: new Map([
-      ['uTexture', new THREE.Uniform(texture)],
-      ['uStrength', new THREE.Uniform(opts?.strength ?? 0.025)],
-      ['uTime', new THREE.Uniform(0)],
-      ['uFreq', new THREE.Uniform(opts?.freq ?? 4.5)]
-    ])
-  });
-};
+**Fix 5 — Daily Revision section: CTA button**
 
-const SHAPE_MAP = {
-  square: 0,
-  circle: 1,
-  triangle: 2,
-  diamond: 3
-};
+The "Sign in" button in the daily revision right column:
+- Change text to "Get started free"
+- Width: `auto`, not full width — `display: inline-block`
+- Height: `44px`, `padding: 0 24px`
+- `border-radius: 6px`
+- `font-size: 14px`, `font-weight: 600`
 
-const VERTEX_SRC = `
-void main() {
-  gl_Position = vec4(position, 1.0);
-}
-`;
+**Fix 6 — Capabilities section: ghost numbers**
 
-const FRAGMENT_SRC = `
-precision highp float;
+The `01`/`02`/`03`/`04` background numbers are too visible. Either:
+- Reduce opacity to `rgba(255,255,255,0.015)` — nearly invisible
+- OR remove them entirely if they still look prominent at that opacity
 
-uniform vec3  uColor;
-uniform vec2  uResolution;
-uniform float uTime;
-uniform float uPixelSize;
-uniform float uScale;
-uniform float uDensity;
-uniform float uPixelJitter;
-uniform int   uEnableRipples;
-uniform float uRippleSpeed;
-uniform float uRippleThickness;
-uniform float uRippleIntensity;
-uniform float uEdgeFade;
+Also fix body text color in capability cards: `color: #666`, `font-size: 14px`, `line-height: 1.7`. Currently too bright.
 
-uniform int   uShapeType;
-const int SHAPE_SQUARE   = 0;
-const int SHAPE_CIRCLE   = 1;
-const int SHAPE_TRIANGLE = 2;
-const int SHAPE_DIAMOND  = 3;
+Also remove the extra vertical whitespace above "CAPABILITIES" label — reduce top padding of the section from current value to `80px`.
 
-const int   MAX_CLICKS = 10;
+**Fix 7 — How It Works: arrows**
 
-uniform vec2  uClickPos  [MAX_CLICKS];
-uniform float uClickTimes[MAX_CLICKS];
+The `→` arrows between steps are too small and positioned awkwardly. Replace them with a more intentional treatment:
+- Position each arrow horizontally centered between the vertical divider and the next step's content
+- Size: `18px`, color: `#2a2a2a`
+- Vertically align at the same level as the step number badge (`01`, `02`)
+- If they still look accidental, remove entirely — empty space between steps is cleaner than a weak arrow
 
-out vec4 fragColor;
+**Fix 8 — Platform strip: consistent badge widths**
 
-float Bayer2(vec2 a) {
-  a = floor(a);
-  return fract(a.x / 2. + a.y * a.y * .75);
-}
-#define Bayer4(a) (Bayer2(.5*(a))*0.25 + Bayer2(a))
-#define Bayer8(a) (Bayer4(.5*(a))*0.25 + Bayer2(a))
+Platform badges have inconsistent widths because names differ in length. Fix:
+- Set `min-width: 140px` on each badge with `justify-content: center`
+- This makes all five badges the same width regardless of name length
+- Reduce badge height to `36px`, font-size `12px`, logo `16px`
 
-#define FBM_OCTAVES     5
-#define FBM_LACUNARITY  1.25
-#define FBM_GAIN        1.0
+**Fix 9 — FAQ: spacing and text**
 
-float hash11(float n){ return fract(sin(n)*43758.5453); }
+- Open answer text color: `#777`, `line-height: 1.8`, `font-size: 14px`
+- Left border on open answer: `border-left: 2px solid #222`, `padding-left: 20px`
+- The `−` close icon: ensure `vertical-align: middle` with the question text — currently sits too high
+- Standardize spacing between all FAQ items: `padding: 24px 0` on each item regardless of open/closed state
+- Remove the extra bottom padding that appears on the open item
 
-float vnoise(vec3 p){
-  vec3 ip = floor(p);
-  vec3 fp = fract(p);
-  float n000 = hash11(dot(ip + vec3(0.0,0.0,0.0), vec3(1.0,57.0,113.0)));
-  float n100 = hash11(dot(ip + vec3(1.0,0.0,0.0), vec3(1.0,57.0,113.0)));
-  float n010 = hash11(dot(ip + vec3(0.0,1.0,0.0), vec3(1.0,57.0,113.0)));
-  float n110 = hash11(dot(ip + vec3(1.0,1.0,0.0), vec3(1.0,57.0,113.0)));
-  float n001 = hash11(dot(ip + vec3(0.0,0.0,1.0), vec3(1.0,57.0,113.0)));
-  float n101 = hash11(dot(ip + vec3(1.0,0.0,1.0), vec3(1.0,57.0,113.0)));
-  float n011 = hash11(dot(ip + vec3(0.0,1.0,1.0), vec3(1.0,57.0,113.0)));
-  float n111 = hash11(dot(ip + vec3(1.0,1.0,1.0), vec3(1.0,57.0,113.0)));
-  vec3 w = fp*fp*fp*(fp*(fp*6.0-15.0)+10.0);
-  float x00 = mix(n000, n100, w.x);
-  float x10 = mix(n010, n110, w.x);
-  float x01 = mix(n001, n101, w.x);
-  float x11 = mix(n011, n111, w.x);
-  float y0  = mix(x00, x10, w.y);
-  float y1  = mix(x01, x11, w.y);
-  return mix(y0, y1, w.z) * 2.0 - 1.0;
-}
+**Fix 10 — Final CTA button width and shape**
 
-float fbm2(vec2 uv, float t){
-  vec3 p = vec3(uv * uScale, t);
-  float amp = 1.0;
-  float freq = 1.0;
-  float sum = 1.0;
-  for (int i = 0; i < FBM_OCTAVES; ++i){
-    sum  += amp * vnoise(p * freq);
-    freq *= FBM_LACUNARITY;
-    amp  *= FBM_GAIN;
-  }
-  return sum * 0.5 + 0.5;
-}
+- Button max-width: `200px` — it should NOT stretch to content width or be full-width
+- `border-radius: 8px` — not pill-shaped, consistent with rest of page buttons
+- Reduce vertical padding around the entire CTA section: `padding: 100px 32px` (currently too much empty space above and below)
+- Thin decorative line above section: `width: 40px` (shorter, more elegant), `height: 1px`, `background: #222`, `margin: 0 auto 48px`
 
-float maskCircle(vec2 p, float cov){
-  float r = sqrt(cov) * .25;
-  float d = length(p - 0.5) - r;
-  float aa = 0.5 * fwidth(d);
-  return cov * (1.0 - smoothstep(-aa, aa, d * 2.0));
-}
+**Fix 11 — Footer wordmark**
 
-float maskTriangle(vec2 p, vec2 id, float cov){
-  bool flip = mod(id.x + id.y, 2.0) > 0.5;
-  if (flip) p.x = 1.0 - p.x;
-  float r = sqrt(cov);
-  float d  = p.y - r*(1.0 - p.x);
-  float aa = fwidth(d);
-  return cov * clamp(0.5 - d/aa, 0.0, 1.0);
-}
+`recall. © 2026` — the wordmark should match the navbar exactly:
+- `recall` in Geist Mono, `13px`, `color: #e5e5e5`, font-weight 500
+- `.` in `#555`
+- ` © 2026` in `#333`, same size
+- GitHub, Twitter, LinkedIn links: `#444`, hover `#888`, `13px`, Geist Mono
 
-float maskDiamond(vec2 p, float cov){
-  float r = sqrt(cov) * 0.564;
-  return step(abs(p.x - 0.49) + abs(p.y - 0.49), r);
-}
+**Fix 12 — Global spacing consistency**
 
-void main(){
-  float pixelSize = uPixelSize;
-  vec2 fragCoord = gl_FragCoord.xy - uResolution * .5;
-  float aspectRatio = uResolution.x / uResolution.y;
+Every major section currently has inconsistent top/bottom padding. Standardize:
+- All section top padding: `100px`
+- All section bottom padding: `100px`
+- Exception: hero is `min-height: 100vh` so no fixed padding needed
+- This creates a predictable rhythm as you scroll — each section takes the same "breath"
 
-  vec2 pixelId = floor(fragCoord / pixelSize);
-  vec2 pixelUV = fract(fragCoord / pixelSize);
+**Fix 13 — Dot grid density**
 
-  float cellPixelSize = 8.0 * pixelSize;
-  vec2 cellId = floor(fragCoord / cellPixelSize);
-  vec2 cellCoord = cellId * cellPixelSize;
-  vec2 uv = cellCoord / uResolution * vec2(aspectRatio, 1.0);
+The dot grid appears denser behind the demo in the hero and behind certain sections. This should be uniform:
+- Single dot grid component, single opacity, same density everywhere
+- If there are multiple instances or the opacity varies by section, consolidate to one fixed background applied to the `<body>` or the main `<main>` container — not repeated per section
 
-  float base = fbm2(uv, uTime * 0.05);
-  base = base * 0.5 - 0.65;
-
-  float feed = base + (uDensity - 0.5) * 0.3;
-
-  float speed     = uRippleSpeed;
-  float thickness = uRippleThickness;
-  const float dampT     = 1.0;
-  const float dampR     = 10.0;
-
-  if (uEnableRipples == 1) {
-    for (int i = 0; i < MAX_CLICKS; ++i){
-      vec2 pos = uClickPos[i];
-      if (pos.x < 0.0) continue;
-      float cellPixelSize = 8.0 * pixelSize;
-      vec2 cuv = (((pos - uResolution * .5 - cellPixelSize * .5) / (uResolution))) * vec2(aspectRatio, 1.0);
-      float t = max(uTime - uClickTimes[i], 0.0);
-      float r = distance(uv, cuv);
-      float waveR = speed * t;
-      float ring  = exp(-pow((r - waveR) / thickness, 2.0));
-      float atten = exp(-dampT * t) * exp(-dampR * r);
-      feed = max(feed, ring * atten * uRippleIntensity);
-    }
-  }
-
-  float bayer = Bayer8(fragCoord / uPixelSize) - 0.5;
-  float bw = step(0.5, feed + bayer);
-
-  float h = fract(sin(dot(floor(fragCoord / uPixelSize), vec2(127.1, 311.7))) * 43758.5453);
-  float jitterScale = 1.0 + (h - 0.5) * uPixelJitter;
-  float coverage = bw * jitterScale;
-  float M;
-  if      (uShapeType == SHAPE_CIRCLE)   M = maskCircle (pixelUV, coverage);
-  else if (uShapeType == SHAPE_TRIANGLE) M = maskTriangle(pixelUV, pixelId, coverage);
-  else if (uShapeType == SHAPE_DIAMOND)  M = maskDiamond(pixelUV, coverage);
-  else                                   M = coverage;
-
-  if (uEdgeFade > 0.0) {
-    vec2 norm = gl_FragCoord.xy / uResolution;
-    float edge = min(min(norm.x, norm.y), min(1.0 - norm.x, 1.0 - norm.y));
-    float fade = smoothstep(0.0, uEdgeFade, edge);
-    M *= fade;
-  }
-
-  vec3 color = uColor;
-
-  // sRGB gamma correction - convert linear to sRGB for accurate color output
-  vec3 srgbColor = mix(
-    color * 12.92,
-    1.055 * pow(color, vec3(1.0 / 2.4)) - 0.055,
-    step(0.0031308, color)
-  );
-
-  fragColor = vec4(srgbColor, M);
-}
-`;
-
-const MAX_CLICKS = 10;
-
-const PixelBlast = ({
-  variant = 'square',
-  pixelSize = 3,
-  color = '#B497CF',
-  className,
-  style,
-  antialias = true,
-  patternScale = 2,
-  patternDensity = 1,
-  liquid = false,
-  liquidStrength = 0.1,
-  liquidRadius = 1,
-  pixelSizeJitter = 0,
-  enableRipples = true,
-  rippleIntensityScale = 1,
-  rippleThickness = 0.1,
-  rippleSpeed = 0.3,
-  liquidWobbleSpeed = 4.5,
-  autoPauseOffscreen = true,
-  speed = 0.5,
-  transparent = true,
-  edgeFade = 0.5,
-  noiseAmount = 0
-}) => {
-  const containerRef = useRef(null);
-  const visibilityRef = useRef({ visible: true });
-  const speedRef = useRef(speed);
-
-  const threeRef = useRef(null);
-  const prevConfigRef = useRef(null);
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    speedRef.current = speed;
-    const needsReinitKeys = ['antialias', 'liquid', 'noiseAmount'];
-    const cfg = { antialias, liquid, noiseAmount };
-    let mustReinit = false;
-    if (!threeRef.current) mustReinit = true;
-    else if (prevConfigRef.current) {
-      for (const k of needsReinitKeys)
-        if (prevConfigRef.current[k] !== cfg[k]) {
-          mustReinit = true;
-          break;
-        }
-    }
-    if (mustReinit) {
-      if (threeRef.current) {
-        const t = threeRef.current;
-        t.resizeObserver?.disconnect();
-        cancelAnimationFrame(t.raf);
-        t.quad?.geometry.dispose();
-        t.material.dispose();
-        t.composer?.dispose();
-        t.renderer.dispose();
-        t.renderer.forceContextLoss();
-        if (t.renderer.domElement.parentElement === container) container.removeChild(t.renderer.domElement);
-        threeRef.current = null;
-      }
-      const canvas = document.createElement('canvas');
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias,
-        alpha: true,
-        powerPreference: 'high-performance'
-      });
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      container.appendChild(renderer.domElement);
-      if (transparent) renderer.setClearAlpha(0);
-      else renderer.setClearColor(0x000000, 1);
-      const uniforms = {
-        uResolution: { value: new THREE.Vector2(0, 0) },
-        uTime: { value: 0 },
-        uColor: { value: new THREE.Color(color) },
-        uClickPos: {
-          value: Array.from({ length: MAX_CLICKS }, () => new THREE.Vector2(-1, -1))
-        },
-        uClickTimes: { value: new Float32Array(MAX_CLICKS) },
-        uShapeType: { value: SHAPE_MAP[variant] ?? 0 },
-        uPixelSize: { value: pixelSize * renderer.getPixelRatio() },
-        uScale: { value: patternScale },
-        uDensity: { value: patternDensity },
-        uPixelJitter: { value: pixelSizeJitter },
-        uEnableRipples: { value: enableRipples ? 1 : 0 },
-        uRippleSpeed: { value: rippleSpeed },
-        uRippleThickness: { value: rippleThickness },
-        uRippleIntensity: { value: rippleIntensityScale },
-        uEdgeFade: { value: edgeFade }
-      };
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      const material = new THREE.ShaderMaterial({
-        vertexShader: VERTEX_SRC,
-        fragmentShader: FRAGMENT_SRC,
-        uniforms,
-        transparent: true,
-        depthTest: false,
-        depthWrite: false,
-        glslVersion: THREE.GLSL3
-      });
-      const quadGeom = new THREE.PlaneGeometry(2, 2);
-      const quad = new THREE.Mesh(quadGeom, material);
-      scene.add(quad);
-      const clock = new THREE.Clock();
-      const setSize = () => {
-        const w = container.clientWidth || 1;
-        const h = container.clientHeight || 1;
-        renderer.setSize(w, h, false);
-        uniforms.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
-        if (threeRef.current?.composer)
-          threeRef.current.composer.setSize(renderer.domElement.width, renderer.domElement.height);
-        uniforms.uPixelSize.value = pixelSize * renderer.getPixelRatio();
-      };
-      setSize();
-      const ro = new ResizeObserver(setSize);
-      ro.observe(container);
-      const randomFloat = () => {
-        if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
-          const u32 = new Uint32Array(1);
-          window.crypto.getRandomValues(u32);
-          return u32[0] / 0xffffffff;
-        }
-        return Math.random();
-      };
-      const timeOffset = randomFloat() * 1000;
-      let composer;
-      let touch;
-      let liquidEffect;
-      if (liquid) {
-        touch = createTouchTexture();
-        touch.radiusScale = liquidRadius;
-        composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
-        liquidEffect = createLiquidEffect(touch.texture, {
-          strength: liquidStrength,
-          freq: liquidWobbleSpeed
-        });
-        const effectPass = new EffectPass(camera, liquidEffect);
-        effectPass.renderToScreen = true;
-        composer.addPass(renderPass);
-        composer.addPass(effectPass);
-      }
-      if (noiseAmount > 0) {
-        if (!composer) {
-          composer = new EffectComposer(renderer);
-          composer.addPass(new RenderPass(scene, camera));
-        }
-        const noiseEffect = new Effect(
-          'NoiseEffect',
-          `uniform float uTime; uniform float uAmount; float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);} void mainUv(inout vec2 uv){} void mainImage(const in vec4 inputColor,const in vec2 uv,out vec4 outputColor){ float n=hash(floor(uv*vec2(1920.0,1080.0))+floor(uTime*60.0)); float g=(n-0.5)*uAmount; outputColor=inputColor+vec4(vec3(g),0.0);} `,
-          {
-            uniforms: new Map([
-              ['uTime', new THREE.Uniform(0)],
-              ['uAmount', new THREE.Uniform(noiseAmount)]
-            ])
-          }
-        );
-        const noisePass = new EffectPass(camera, noiseEffect);
-        noisePass.renderToScreen = true;
-        if (composer && composer.passes.length > 0) composer.passes.forEach(p => (p.renderToScreen = false));
-        composer.addPass(noisePass);
-      }
-      if (composer) composer.setSize(renderer.domElement.width, renderer.domElement.height);
-      const mapToPixels = e => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        const scaleX = renderer.domElement.width / rect.width;
-        const scaleY = renderer.domElement.height / rect.height;
-        const fx = (e.clientX - rect.left) * scaleX;
-        const fy = (rect.height - (e.clientY - rect.top)) * scaleY;
-        return {
-          fx,
-          fy,
-          w: renderer.domElement.width,
-          h: renderer.domElement.height
-        };
-      };
-      const onPointerDown = e => {
-        const { fx, fy } = mapToPixels(e);
-        const ix = threeRef.current?.clickIx ?? 0;
-        uniforms.uClickPos.value[ix].set(fx, fy);
-        uniforms.uClickTimes.value[ix] = uniforms.uTime.value;
-        if (threeRef.current) threeRef.current.clickIx = (ix + 1) % MAX_CLICKS;
-      };
-      const onPointerMove = e => {
-        if (!touch) return;
-        const { fx, fy, w, h } = mapToPixels(e);
-        touch.addTouch({ x: fx / w, y: fy / h });
-      };
-      renderer.domElement.addEventListener('pointerdown', onPointerDown, {
-        passive: true
-      });
-      renderer.domElement.addEventListener('pointermove', onPointerMove, {
-        passive: true
-      });
-      let raf = 0;
-      const animate = () => {
-        if (autoPauseOffscreen && !visibilityRef.current.visible) {
-          raf = requestAnimationFrame(animate);
-          return;
-        }
-        uniforms.uTime.value = timeOffset + clock.getElapsedTime() * speedRef.current;
-        if (liquidEffect) liquidEffect.uniforms.get('uTime').value = uniforms.uTime.value;
-        if (composer) {
-          if (touch) touch.update();
-          composer.passes.forEach(p => {
-            const effs = p.effects;
-            if (effs)
-              effs.forEach(eff => {
-                const u = eff.uniforms?.get('uTime');
-                if (u) u.value = uniforms.uTime.value;
-              });
-          });
-          composer.render();
-        } else renderer.render(scene, camera);
-        raf = requestAnimationFrame(animate);
-      };
-      raf = requestAnimationFrame(animate);
-      threeRef.current = {
-        renderer,
-        scene,
-        camera,
-        material,
-        clock,
-        clickIx: 0,
-        uniforms,
-        resizeObserver: ro,
-        raf,
-        quad,
-        timeOffset,
-        composer,
-        touch,
-        liquidEffect
-      };
-    } else {
-      const t = threeRef.current;
-      t.uniforms.uShapeType.value = SHAPE_MAP[variant] ?? 0;
-      t.uniforms.uPixelSize.value = pixelSize * t.renderer.getPixelRatio();
-      t.uniforms.uColor.value.set(color);
-      t.uniforms.uScale.value = patternScale;
-      t.uniforms.uDensity.value = patternDensity;
-      t.uniforms.uPixelJitter.value = pixelSizeJitter;
-      t.uniforms.uEnableRipples.value = enableRipples ? 1 : 0;
-      t.uniforms.uRippleIntensity.value = rippleIntensityScale;
-      t.uniforms.uRippleThickness.value = rippleThickness;
-      t.uniforms.uRippleSpeed.value = rippleSpeed;
-      t.uniforms.uEdgeFade.value = edgeFade;
-      if (transparent) t.renderer.setClearAlpha(0);
-      else t.renderer.setClearColor(0x000000, 1);
-      if (t.liquidEffect) {
-        const uStrength = t.liquidEffect;
-        if (uStrength) uStrength.value = liquidStrength;
-        const uFreq = t.liquidEffect.uniforms.get('uFreq');
-        if (uFreq) uFreq.value = liquidWobbleSpeed;
-      }
-      if (t.touch) t.touch.radiusScale = liquidRadius;
-    }
-    prevConfigRef.current = cfg;
-    return () => {
-      if (threeRef.current && mustReinit) return;
-      if (!threeRef.current) return;
-      const t = threeRef.current;
-      t.resizeObserver?.disconnect();
-      cancelAnimationFrame(t.raf);
-      t.quad?.geometry.dispose();
-      t.material.dispose();
-      t.composer?.dispose();
-      t.renderer.dispose();
-      t.renderer.forceContextLoss();
-      if (t.renderer.domElement.parentElement === container) container.removeChild(t.renderer.domElement);
-      threeRef.current = null;
-    };
-  }, [
-    antialias,
-    liquid,
-    noiseAmount,
-    pixelSize,
-    patternScale,
-    patternDensity,
-    enableRipples,
-    rippleIntensityScale,
-    rippleThickness,
-    rippleSpeed,
-    pixelSizeJitter,
-    edgeFade,
-    transparent,
-    liquidStrength,
-    liquidRadius,
-    liquidWobbleSpeed,
-    autoPauseOffscreen,
-    variant,
-    color,
-    speed
-  ]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={`w-full h-full relative overflow-hidden ${className ?? ''}`}
-      style={style}
-      aria-label="PixelBlast interactive background"
-    />
-  );
-};
-
-export default PixelBlast;
-
-```
-
-### Integration Instructions
-1. Install any listed dependencies.
-2. Copy the component source into the appropriate directory in the project.
-3. Import and render the component using the usage example above as a starting point.
-4. Adjust props as needed for the specific use case — refer to the props table for all available options.
+Commit: `git add . && git commit -m "Landing page UI fixes — spacing, overflow, consistency, polish"`
