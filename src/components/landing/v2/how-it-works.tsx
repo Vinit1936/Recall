@@ -55,14 +55,14 @@ export function HowItWorks() {
           How It Works
         </div>
 
-        {/* 3-column grid — gap IS the border */}
+        {/* 3-column grid — gap IS the vertical border */}
         <div
           className="how-it-works-v2"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '1px',
-            background: '#111',
+            background: '#141414',
           }}
         >
           {STEPS.map((step, i) => (
@@ -77,7 +77,7 @@ export function HowItWorks() {
               }}
               style={{
                 background: '#080808',
-                padding: i < 2 ? '0 40px 0 0' : '0',
+                padding: i === 0 ? '0 36px 0 0' : i === 1 ? '0 36px' : '0 0 0 36px',
               }}
             >
               <div style={{ paddingTop: '4px' }}>

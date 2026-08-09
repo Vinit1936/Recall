@@ -3,23 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'motion/react';
 
-const NAV_ITEMS = [
-  { label: 'How it works', href: '#how-it-works-steps' },
-  { label: 'Science', href: '#science' },
-  { label: 'Capabilities', href: '#capabilities' },
-  { label: 'FAQ', href: '#faq' },
-];
-
 export function Navbar() {
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    const targetId = href.replace('#', '');
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   return (
     <motion.nav
       initial={{ opacity: 0, y: -8 }}
@@ -65,12 +49,11 @@ export function Navbar() {
         </Link>
 
         {/* Center — nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
-          {NAV_ITEMS.map((item) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+          {['How it works', 'Science', 'FAQ'].map((label) => (
             <a
-              key={item.label}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
+              key={label}
+              href={`#${label.toLowerCase().replace(/ /g, '-')}`}
               style={{
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 fontSize: '13px',
@@ -83,12 +66,12 @@ export function Navbar() {
               onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
               onMouseLeave={(e) => (e.currentTarget.style.color = '#555')}
             >
-              {item.label}
+              {label}
             </a>
           ))}
         </div>
 
-        {/* Right — GitHub logo + Sign in */}
+        {/* Right — GitHub + Sign in */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <a
             href="https://github.com/Vinit1936/Recall"
