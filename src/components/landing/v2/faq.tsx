@@ -50,53 +50,72 @@ function FAQItem({
   isLast: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const numStr = (index + 1).toString().padStart(2, '0');
 
   return (
     <div
       itemScope
       itemType="https://schema.org/Question"
       style={{
-        borderTop: '1px solid #111',
-        ...(isLast ? { borderBottom: '1px solid #111' } : {}),
+        borderTop: '1px solid #141414',
+        ...(isLast ? { borderBottom: '1px solid #141414' } : {}),
       }}
     >
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        className="faq-button"
         style={{
           width: '100%',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '24px 0',
+          padding: '18px 0',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
           textAlign: 'left',
-          gap: '16px',
+          gap: '20px',
         }}
       >
-        <span
-          itemProp="name"
-          style={{
-            fontFamily: 'var(--font-geist-sans), sans-serif',
-            fontSize: '16px',
-            color: '#e5e5e5',
-            fontWeight: 400,
-            lineHeight: 1.5,
-          }}
-        >
-          {q}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-geist-mono), monospace',
+              fontSize: '11px',
+              color: open ? '#ff6b00' : '#444',
+              flexShrink: 0,
+              transition: 'color 0.2s ease',
+            }}
+          >
+            {numStr}
+          </span>
+          <span
+            itemProp="name"
+            className="faq-q-text"
+            style={{
+              fontFamily: 'var(--font-geist-sans), sans-serif',
+              fontSize: '15px',
+              color: open ? '#ffffff' : '#e0e0e0',
+              fontWeight: 400,
+              lineHeight: 1.45,
+              transition: 'color 0.2s ease',
+            }}
+          >
+            {q}
+          </span>
+        </div>
+
         <span
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '18px',
-            color: '#444',
+            fontSize: '15px',
+            color: open ? '#ffffff' : '#444',
             flexShrink: 0,
             transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
+            transition: 'transform 0.2s ease, color 0.2s ease',
             display: 'inline-block',
+            lineHeight: 1,
           }}
           aria-hidden="true"
         >
@@ -111,7 +130,7 @@ function FAQItem({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             style={{ overflow: 'hidden' }}
             itemScope
             itemType="https://schema.org/Answer"
@@ -121,10 +140,11 @@ function FAQItem({
               style={{
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 fontSize: '14px',
-                color: '#666',
-                lineHeight: 1.8,
+                color: '#777',
+                lineHeight: 1.7,
                 paddingTop: '0',
-                paddingBottom: '24px',
+                paddingBottom: '18px',
+                paddingLeft: '32px',
                 margin: 0,
                 maxWidth: '640px',
               }}
@@ -147,7 +167,7 @@ export function FAQ() {
       id="faq"
       itemScope
       itemType="https://schema.org/FAQPage"
-      style={{ maxWidth: '780px', margin: '0 auto', padding: '120px 40px' }}
+      style={{ maxWidth: '720px', margin: '0 auto', padding: '80px 32px' }}
     >
       <motion.div
         ref={ref}
@@ -163,7 +183,7 @@ export function FAQ() {
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             textAlign: 'center',
-            marginBottom: '20px',
+            marginBottom: '12px',
           }}
         >
           FAQ
@@ -174,11 +194,10 @@ export function FAQ() {
             fontFamily: 'var(--font-display), Georgia, serif',
             fontStyle: 'italic',
             fontWeight: 400,
-            fontSize: '48px',
+            fontSize: 'clamp(32px, 3.5vw, 42px)',
             color: '#f0f0f0',
             textAlign: 'center',
-            marginBottom: '64px',
-            margin: '0 0 64px',
+            margin: '0 0 36px',
             lineHeight: 1.15,
           }}
         >
@@ -199,8 +218,11 @@ export function FAQ() {
       </motion.div>
 
       <style>{`
+        .faq-button:hover .faq-q-text {
+          color: #ffffff !important;
+        }
         @media (max-width: 768px) {
-          #faq { padding: 80px 24px !important; }
+          #faq { padding: 60px 20px !important; }
         }
       `}</style>
     </article>
