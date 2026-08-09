@@ -21,30 +21,29 @@ export function Navbar() {
   };
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -16 }}
+    <motion.nav
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: 'fixed',
-        top: '16px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        top: 0,
+        left: 0,
+        right: 0,
         zIndex: 100,
-        width: 'calc(100% - 32px)',
-        maxWidth: '920px',
+        background: 'rgba(8,8,8,0.85)',
+        backdropFilter: 'blur(16px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(160%)',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        height: '52px',
       }}
     >
       <div
         style={{
-          background: 'rgba(12, 12, 12, 0.82)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow: '0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-          borderRadius: '100px',
-          height: '48px',
-          padding: '0 16px 0 20px',
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 40px',
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -56,38 +55,33 @@ export function Navbar() {
           style={{
             textDecoration: 'none',
             fontFamily: 'var(--font-geist-mono), monospace',
-            fontSize: '14px',
+            fontSize: '15px',
             fontWeight: 500,
             color: '#f0f0f0',
             letterSpacing: '-0.01em',
-            display: 'flex',
-            alignItems: 'center',
           }}
         >
           recall<span style={{ color: '#ff6b00' }}>.</span>
         </Link>
 
         {/* Center — nav links */}
-        <div
-          className="nav-center-links"
-          style={{ display: 'flex', alignItems: 'center', gap: '2px' }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
-              className="nav-pill-link"
               style={{
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 fontSize: '13px',
-                color: '#888888',
+                color: '#555',
+                letterSpacing: '0.02em',
                 textDecoration: 'none',
-                padding: '6px 14px',
-                borderRadius: '100px',
-                transition: 'all 0.15s ease',
+                transition: 'color 0.12s ease',
                 cursor: 'pointer',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#e5e5e5')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#555')}
             >
               {item.label}
             </a>
@@ -95,7 +89,7 @@ export function Navbar() {
         </div>
 
         {/* Right — GitHub logo + Sign in */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <a
             href="https://github.com/Vinit1936/Recall"
             target="_blank"
@@ -103,32 +97,20 @@ export function Navbar() {
             aria-label="GitHub Repository"
             title="GitHub"
             style={{
-              color: '#888888',
+              color: '#888',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              transition: 'all 0.15s ease',
+              textDecoration: 'none',
+              transition: 'color 0.15s ease',
               cursor: 'pointer',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#ffffff';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#888888';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
           >
             <svg
-              height="15"
-              width="15"
+              height="18"
+              width="18"
               viewBox="0 0 16 16"
               fill="currentColor"
               style={{ display: 'block' }}
@@ -140,44 +122,33 @@ export function Navbar() {
           <Link
             href="/auth/login"
             style={{
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              background: 'rgba(255, 255, 255, 0.06)',
-              color: '#ffffff',
+              border: '1px solid #222',
+              background: 'transparent',
+              color: '#888',
               fontSize: '12px',
-              fontWeight: 500,
               height: '32px',
               padding: '0 16px',
-              borderRadius: '100px',
+              borderRadius: '8px',
               display: 'inline-flex',
               alignItems: 'center',
               textDecoration: 'none',
               fontFamily: 'var(--font-geist-sans), sans-serif',
-              transition: 'all 0.15s ease',
+              transition: 'border-color 0.12s ease, color 0.12s ease',
               cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.14)';
+              e.currentTarget.style.borderColor = '#333';
+              e.currentTarget.style.color = '#e5e5e5';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+              e.currentTarget.style.borderColor = '#222';
+              e.currentTarget.style.color = '#888';
             }}
           >
             Sign in
           </Link>
         </div>
       </div>
-
-      <style>{`
-        .nav-pill-link:hover {
-          color: #ffffff !important;
-          background: rgba(255, 255, 255, 0.06) !important;
-        }
-        @media (max-width: 768px) {
-          .nav-center-links { display: none !important; }
-        }
-      `}</style>
-    </motion.header>
+    </motion.nav>
   );
 }
