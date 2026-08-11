@@ -245,20 +245,38 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
     };
   }, [onCancel]);
 
-  const triggerFlash = () => {
-    setFlash(true);
-    setTimeout(() => setFlash(false), 400);
-    setTimeout(() => setOpenNotesFloating(true), 50);
+  const executeAutoSave = async (autoData: AutoFillData, queryCode: string) => {
+    if (!autoData || !platform) return;
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({
+        platform,
+        problemNumber: autoData.problemNumber ?? (isLeetCode ? (parseInt(queryCode, 10) || 0) : 0),
+        code: autoData.code ?? (isCodeforces || isCodeChef || isGFG || isHackerRank ? queryCode.trim().toUpperCase() : undefined),
+        title: autoData.title,
+        difficulty: (autoData.difficulty || 'EASY').toUpperCase(),
+        topic: autoData.topic === 'General' ? '' : autoData.topic,
+        url: autoData.url,
+        notes: undefined,
+        customFields: {},
+        dateSolved: new Date().toISOString(),
+      });
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to save problem');
+      setSaving(false);
+    }
   };
 
   // ── Auto-supported platforms: number/code/URL → resolve ────────────────────
   const handleNumberKey = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { onCancel(); return; }
     if (e.key !== 'Enter') return;
+    if (loading || saving) return;
     const query = problemNumber.trim();
     if (!query) return;
 
-    setLoading(true); setNotFound(false); setAutoFill(null);
+    setLoading(true); setNotFound(false); setAutoFill(null); setError('');
     try {
       const endpoint = isLeetCode
         ? `/api/leetcode/resolve?id=${encodeURIComponent(query)}`
@@ -275,7 +293,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         setAutoFill(json.data);
         setDifficulty(json.data.difficulty);
         setTopic(json.data.topic === 'General' ? '' : json.data.topic);
-        triggerFlash();
+        await executeAutoSave(json.data, query);
       } else {
         setNotFound(true);
         setTimeout(() => lcUrlRef.current?.focus(), 20);
@@ -287,6 +305,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
   // ── LeetCode / Codeforces URL fallback ────────────────────────────────
   const handleLcUrl = async (url: string) => {
     setLcUrl(url);
+    if (saving) return;
     if (isLeetCode) {
       const match = url.match(/leetcode\.com\/problems\/([^/]+)/);
       if (!match) return;
@@ -301,11 +320,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           setDifficulty(json.difficulty);
           setTopic(json.topic === 'General' ? '' : json.topic);
           setNotFound(false);
-          triggerFlash();
+          await executeAutoSave(json, match[1]);
         }
       } catch {}
     } else if (isCodeforces) {
-      // Match Codeforces problem URL: /problemset/problem/{contestId}/{index} or /contest/{contestId}/problem/{index}
       const match = url.match(/(?:problemset\/problem|contest)\/(\d+)\/(?:problem\/)?([A-Za-z0-9]+)/);
       if (!match) return;
       const cfCode = `${match[1]}${match[2]}`;
@@ -317,11 +335,10 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           setDifficulty(json.data.difficulty);
           setTopic(json.data.topic === 'General' ? '' : json.data.topic);
           setNotFound(false);
-          triggerFlash();
+          await executeAutoSave(json.data, cfCode);
         }
       } catch {}
     } else if (isCodeChef) {
-      // Match CodeChef problem URL: /problems/{CODE} or /[CONTEST]/problems/{CODE}
       const match = url.match(/codechef\.com\/(?:[^/]+\/)?problems\/([A-Za-z0-9]+)/);
       if (!match) return;
       const ccCode = match[1];
@@ -333,7 +350,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           setDifficulty(json.data.difficulty);
           setTopic(json.data.topic === 'General' ? '' : json.data.topic);
           setNotFound(false);
-          triggerFlash();
+          await executeAutoSave(json.data, ccCode);
         }
       } catch {}
     } else if (isGFG) {
@@ -345,7 +362,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           setDifficulty(json.data.difficulty);
           setTopic(json.data.topic === 'General' ? '' : json.data.topic);
           setNotFound(false);
-          triggerFlash();
+          await executeAutoSave(json.data, url);
         }
       } catch {}
     } else if (isHackerRank) {
@@ -357,7 +374,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           setDifficulty(json.data.difficulty);
           setTopic(json.data.topic === 'General' ? '' : json.data.topic);
           setNotFound(false);
-          triggerFlash();
+          await executeAutoSave(json.data, url);
         }
       } catch {}
     }
@@ -570,7 +587,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Topic */}
-        <td style={{ width: 150, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+        <td style={{ width: 185, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
           {(autoFill || otherReady) && (
             <TopicPickerCell
               topic={topic || (autoFill?.topic === 'General' ? '' : (autoFill?.topic ?? ''))}
@@ -580,7 +597,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Status */}
-        <td style={{ width: 130, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+        <td style={{ width: 140, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
         {/* Star */}
         <td style={{ width: 44, textAlign: 'center' }} />
         {/* Next Revision */}

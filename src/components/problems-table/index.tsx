@@ -311,6 +311,8 @@ export function ProblemsTable() {
   const [toast, setToast] = useState('');
   const [tableHovered, setTableHovered] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Set mounted on client to prevent SSR hydration mismatch with SWR client cache
   useEffect(() => {
@@ -415,6 +417,8 @@ export function ProblemsTable() {
     const count = selectedIds.length;
     const idsToDelete = [...selectedIds];
 
+    setShowDeleteModal(false);
+
     // Optimistic update — remove rows immediately
     mutate(
       (prev: any[] | undefined) => prev?.filter((p) => !idsToDelete.includes(p.id)) ?? [],
@@ -436,6 +440,49 @@ export function ProblemsTable() {
       showToast(e.message ?? 'Failed to delete problems');
     }
   }, [selectedIds, mutate]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (selectedIds.length === 0) return;
+    if (selectedIds.length > 5) {
+      setShowDeleteModal(true);
+    } else {
+      handleBulkDelete();
+    }
+  }, [selectedIds.length, handleBulkDelete]);
+
+  // Keyboard shortcut listener: Delete or Backspace key triggers delete flow
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isEditable =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable;
+
+      if (isEditable) return;
+
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.length > 0) {
+        e.preventDefault();
+        if (selectedIds.length > 5) {
+          setShowDeleteModal(true);
+        } else {
+          handleBulkDelete();
+        }
+      } else if (showDeleteModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setShowDeleteModal(false);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          handleBulkDelete();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [selectedIds.length, showDeleteModal, handleBulkDelete]);
 
   // Star toggle with optimistic update
   const handleStarToggle = useCallback(async (id: string, current: boolean) => {
@@ -504,7 +551,7 @@ export function ProblemsTable() {
     }
   }, [mutate]);
 
-  // New problem save
+  // New problem save with optimistic cache insert, auto-scroll, and highlight flash
   const handleNewProblemSave = useCallback(async (data: any) => {
     const payload = {
       ...data,
@@ -517,8 +564,28 @@ export function ProblemsTable() {
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error ?? 'Failed to create problem');
+
+    // Optimistically add newly created problem to SWR cache immediately (0ms)
+    mutate(
+      (prev: any[] | undefined) => [json, ...(prev?.filter((p) => p.id !== json.id) ?? [])],
+      { revalidate: false }
+    );
     setShowNewRow(false);
-    mutate();
+
+    // Auto-scroll to newly created row and flash green highlight
+    if (json?.id) {
+      setHighlightId(json.id);
+      setTimeout(() => {
+        const el = document.getElementById(`problem-row-${json.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+
+      setTimeout(() => {
+        setHighlightId(null);
+      }, 2200);
+    }
   }, [mutate]);
 
   // Add column with optimistic update
@@ -579,8 +646,8 @@ export function ProblemsTable() {
         {[
           { label: 'PROBLEM', width: 340, padding: '0 16px' },
           { label: 'DIFFICULTY', width: 115, padding: '0 12px' },
-          { label: 'TOPIC', width: 150, padding: '0 12px' },
-          { label: 'STATUS', width: 130, padding: '0 12px' },
+          { label: 'TOPIC', width: 185, padding: '0 12px' },
+          { label: 'STATUS', width: 140, padding: '0 12px' },
           { label: 'STAR', icon: <Bookmark size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
           { label: 'NEXT REVISION', width: 140, padding: '0 12px' },
           { label: 'NOTES', width: 190, padding: '0 12px' },
@@ -687,6 +754,7 @@ export function ProblemsTable() {
         problem={p}
         columns={columns}
         isSelected={selectedIds.includes(p.id)}
+        isHighlighted={highlightId === p.id}
         onToggleSelect={handleToggleSelect}
         onStarToggle={handleStarToggle}
         onStatusSave={handleStatusSave}
@@ -854,7 +922,7 @@ export function ProblemsTable() {
           <div style={{ width: 1, height: 16, background: '#333' }} />
 
           <button
-            onClick={handleBulkDelete}
+            onClick={handleDeleteClick}
             style={{
               background: '#2e1212',
               border: '1px solid #4a1818',
@@ -963,7 +1031,7 @@ export function ProblemsTable() {
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', minWidth: 1185 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', minWidth: 1230 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
             {showSkeleton ? (
@@ -1019,6 +1087,76 @@ export function ProblemsTable() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: 400,
+              background: '#161618',
+              border: '1px solid #28282c',
+              borderRadius: 10,
+              padding: 20,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#fff', marginBottom: 8 }}>
+              Delete {selectedIds.length} {selectedIds.length === 1 ? 'problem' : 'problems'}?
+            </div>
+            <div style={{ fontSize: 13, color: '#999', lineHeight: 1.5, marginBottom: 20 }}>
+              Are you sure you want to delete {selectedIds.length === 1 ? 'this problem' : `these ${selectedIds.length} selected problems`}? This action cannot be undone.
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{
+                  background: '#222226',
+                  border: '1px solid #333338',
+                  borderRadius: 6,
+                  padding: '6px 14px',
+                  color: '#ccc',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                style={{
+                  background: '#ef4444',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '6px 14px',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete {selectedIds.length}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

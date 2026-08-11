@@ -26,7 +26,11 @@ export function Pill({ bg, text, border, children }: { bg: string; text: string;
         fontSize: 12,
         fontWeight: 600,
         whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: 165,
         display: 'inline-block',
+        verticalAlign: 'middle',
       }}
     >
       {children}

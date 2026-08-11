@@ -376,6 +376,7 @@ type ProblemRowProps = {
   problem: any;
   columns: any[];
   isSelected: boolean;
+  isHighlighted?: boolean;
   onToggleSelect: (id: string) => void;
   onStarToggle: (id: string, current: boolean) => void;
   onStatusSave?: (id: string, status: string) => Promise<void> | void;
@@ -385,13 +386,15 @@ type ProblemRowProps = {
   onCustomFieldSave: (id: string, columnName: string, value: string) => Promise<void> | void;
 };
 
-export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onStarToggle, onStatusSave, onDifficultySave, onTopicSave, onNotesSave, onCustomFieldSave }: ProblemRowProps) {
+export function ProblemRow({ problem, columns, isSelected, isHighlighted, onToggleSelect, onStarToggle, onStatusSave, onDifficultySave, onTopicSave, onNotesSave, onCustomFieldSave }: ProblemRowProps) {
   const [hovered, setHovered] = useState(false);
   const diffStyle = getDifficultyStyle(problem.difficulty);
   const topicColor = getTopicColor(problem.topic);
 
   return (
     <tr
+      id={`problem-row-${problem.id}`}
+      className={isHighlighted ? 'animate-row-highlight' : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -465,7 +468,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Topic */}
-      <td style={{ width: 150, padding: '0 12px', position: 'relative' }}>
+      <td style={{ width: 185, padding: '0 12px', position: 'relative' }}>
         <TopicPickerCell
           topic={problem.topic}
           onSave={(newTopic) => onTopicSave(problem.id, newTopic)}
@@ -473,7 +476,7 @@ export function ProblemRow({ problem, columns, isSelected, onToggleSelect, onSta
       </td>
 
       {/* Status */}
-      <td style={{ width: 130, padding: '0 12px' }}>
+      <td style={{ width: 140, padding: '0 12px' }}>
         <StatusCell problem={problem} onSave={onStatusSave ? (s) => onStatusSave(problem.id, s) : undefined} />
       </td>
 
