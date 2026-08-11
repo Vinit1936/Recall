@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest) {
     });
     return Response.json(columns, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=300',
+        'Cache-Control': 'no-store, max-age=0',
       },
     });
   } catch (e) {

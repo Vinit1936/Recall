@@ -297,9 +297,10 @@ function EmptyState() {
 export function ProblemsTable() {
   const { data: allProblems, isLoading, mutate } = useSWR<any[]>('/api/problems', fetcher);
   const { data: rawColumns, mutate: mutateColumns } = useSWR('/api/columns', fetcher);
-  const columns: any[] = Array.isArray(rawColumns) ? rawColumns : [];
+  const rawColumnsList: any[] = Array.isArray(rawColumns) ? rawColumns : [];
 
   const [mounted, setMounted] = useState(false);
+  const columns: any[] = mounted ? rawColumnsList : [];
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([]);
@@ -414,10 +415,10 @@ export function ProblemsTable() {
     const count = selectedIds.length;
     const idsToDelete = [...selectedIds];
 
-    // Optimistic update
+    // Optimistic update — remove rows immediately
     mutate(
       (prev: any[] | undefined) => prev?.filter((p) => !idsToDelete.includes(p.id)) ?? [],
-      false
+      { revalidate: false }
     );
     setSelectedIds([]);
 
@@ -429,63 +430,75 @@ export function ProblemsTable() {
       });
       if (!res.ok) throw new Error('Failed to delete problems');
       showToast(`Deleted ${count} ${count === 1 ? 'problem' : 'problems'}`);
-      mutate();
+      // No refetch needed — optimistic data is correct
     } catch (e: any) {
-      mutate(); // revert
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to delete problems');
     }
   }, [selectedIds, mutate]);
 
   // Star toggle with optimistic update
   const handleStarToggle = useCallback(async (id: string, current: boolean) => {
+    // Optimistic — flip immediately in the cache
     mutate(
       (prev: any[] | undefined) => prev?.map((p) => p.id === id ? { ...p, isFavorite: !current } : p) ?? [],
-      false
+      { revalidate: false }
     );
     try {
-      await fetch(`/api/problems/${id}`, {
+      const res = await fetch(`/api/problems/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isFavorite: !current }),
       });
-      mutate();
+      if (!res.ok) throw new Error('Failed to update favorite');
+      // No refetch — optimistic data is correct
     } catch {
-      mutate(); // revert
+      mutate(); // revert by refetching from server
       showToast('Failed to update favorite');
     }
   }, [mutate]);
 
-  // Custom field save
+  // Custom field save with optimistic update
   const handleCustomFieldSave = useCallback(async (id: string, columnName: string, value: string) => {
+    // Optimistic — merge the new custom field value immediately
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) => {
+        if (p.id !== id) return p;
+        const fields = (p.customFields as Record<string, string>) ?? {};
+        return { ...p, customFields: { ...fields, [columnName]: value } };
+      }) ?? [],
+      { revalidate: false }
+    );
     try {
       const res = await fetch(`/api/problems/${id}/custom-fields`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: columnName, value }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to save field');
-      }
-      await mutate();
+      if (!res.ok) throw new Error('Failed to save field');
     } catch (e: any) {
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to save field');
       throw e;
     }
   }, [mutate]);
 
-  // Notes save
+  // Notes save with optimistic update
   const handleNotesSave = useCallback(async (id: string, notes: string) => {
+    // Optimistic — update the note value immediately in the cache
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) => p.id === id ? { ...p, notes } : p) ?? [],
+      { revalidate: false }
+    );
     try {
       const res = await fetch(`/api/problems/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to save notes');
-      }
-      await mutate();
+      if (!res.ok) throw new Error('Failed to save notes');
     } catch (e: any) {
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to save notes');
       throw e;
     }
@@ -512,7 +525,7 @@ export function ProblemsTable() {
 
   // Add column
   const handleAddColumn = useCallback(async (name: string) => {
-    const order = columns.length;
+    const order = rawColumnsList.length;
     await fetch('/api/columns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -520,7 +533,7 @@ export function ProblemsTable() {
     });
     mutateColumns();
     mutate();
-  }, [columns.length, mutateColumns, mutate]);
+  }, [rawColumnsList.length, mutateColumns, mutate]);
 
   // Delete custom column
   const handleDeleteColumn = useCallback(async (id: string) => {
@@ -593,54 +606,64 @@ export function ProblemsTable() {
     </thead>
   );
 
-  // Difficulty save
+  // Difficulty save with optimistic update
   const handleDifficultySave = useCallback(async (id: string, difficulty: string) => {
+    // Optimistic — update difficulty immediately
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) => p.id === id ? { ...p, difficulty } : p) ?? [],
+      { revalidate: false }
+    );
     try {
       const res = await fetch(`/api/problems/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ difficulty }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to update difficulty');
-      }
-      await mutate();
+      if (!res.ok) throw new Error('Failed to update difficulty');
     } catch (e: any) {
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to update difficulty');
       throw e;
     }
   }, [mutate]);
 
-  // Topic save
+  // Topic save with optimistic update
   const handleTopicSave = useCallback(async (id: string, topic: string) => {
+    // Optimistic — update topic immediately
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) => p.id === id ? { ...p, topic } : p) ?? [],
+      { revalidate: false }
+    );
     try {
       const res = await fetch(`/api/problems/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to update topic');
-      }
-      await mutate();
+      if (!res.ok) throw new Error('Failed to update topic');
     } catch (e: any) {
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to update topic');
     }
   }, [mutate]);
 
+  // Status save with optimistic update
   const handleStatusSave = useCallback(async (id: string, status: string) => {
+    // Optimistic — update status immediately
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) => p.id === id ? { ...p, status } : p) ?? [],
+      { revalidate: false }
+    );
+    showToast(`Status updated to ${status.toLowerCase()}`);
     try {
       const res = await fetch(`/api/problems/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to update status');
-      }
-      showToast(`Status updated to ${status.toLowerCase()}`);
-      await mutate();
+      if (!res.ok) throw new Error('Failed to update status');
     } catch (e: any) {
+      mutate(); // revert by refetching from server
       showToast(e.message ?? 'Failed to update status');
     }
   }, [mutate]);
@@ -691,11 +714,21 @@ export function ProblemsTable() {
     });
   };
 
-  // Bulk status update
+  // Bulk status update with optimistic update
   const handleBulkStatusChange = useCallback(async (newStatus: string) => {
+    const idsToUpdate = [...selectedIds];
+    // Optimistic — update all selected rows immediately
+    mutate(
+      (prev: any[] | undefined) => prev?.map((p) =>
+        idsToUpdate.includes(p.id) ? { ...p, status: newStatus } : p
+      ) ?? [],
+      { revalidate: false }
+    );
+    showToast(`Updated ${idsToUpdate.length} problem(s) to ${newStatus.toLowerCase()}`);
+    setSelectedIds([]);
     try {
       await Promise.all(
-        selectedIds.map((id) =>
+        idsToUpdate.map((id) =>
           fetch(`/api/problems/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -703,10 +736,8 @@ export function ProblemsTable() {
           })
         )
       );
-      showToast(`Updated ${selectedIds.length} problem(s) to ${newStatus.toLowerCase()}`);
-      setSelectedIds([]);
-      mutate();
     } catch {
+      mutate(); // revert by refetching from server
       showToast('Failed to update status');
     }
   }, [selectedIds, mutate]);

@@ -6,7 +6,6 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { getResolver } from '@/lib/platforms';
 import { getInitialSchedule } from '@/lib/scheduling';
-import { getCachedUserProblems, invalidateUserProblems } from '@/lib/cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,11 +17,27 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') ?? undefined;
     const topic = searchParams.get('topic') ?? undefined;
 
-    const problems = await getCachedUserProblems(userId, status, topic);
+    // Direct Prisma query — no server-side unstable_cache.
+    // SWR handles client-side caching; double-caching caused stale-data
+    // race conditions where mutations appeared lost.
+    const problems = await prisma.problem.findMany({
+      where: {
+        userId,
+        ...(status ? { status: status as any } : {}),
+        ...(topic ? { topic } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        revisions: {
+          orderBy: { revisedAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
 
     return Response.json(problems, {
       headers: {
-        'Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
+        'Cache-Control': 'no-store, max-age=0',
       },
     });
   } catch (e) {
@@ -106,9 +121,6 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Invalidate server cache for user problems
-      invalidateUserProblems(userId);
-
       return Response.json(problem, { status: 201 });
     } catch (e: any) {
       if (e?.code === 'P2002') {
@@ -141,9 +153,6 @@ export async function DELETE(request: NextRequest) {
         userId,
       },
     });
-
-    // Invalidate server cache for user problems
-    invalidateUserProblems(userId);
 
     return Response.json({ count: deleted.count, message: `Successfully deleted ${deleted.count} problems` });
   } catch (e) {

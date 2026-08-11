@@ -16,19 +16,31 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const existing = await prisma.problem.findFirst({ where: { id, userId } });
-    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
+    // Atomic read-modify-write in a single transaction/connection
+    const updated = await prisma.$transaction(async (tx) => {
+      const existing = await tx.problem.findFirst({
+        where: { id, userId },
+        select: { customFields: true },  // only fetch what we need
+      });
+      if (!existing) return null;
 
-    const current = (existing.customFields as Record<string, string>) ?? {};
-    let merged: Record<string, string>;
-    if (body && typeof body === 'object' && 'key' in body && 'value' in body) {
-      merged = { ...current, [body.key]: body.value };
-    } else {
-      merged = { ...current, ...body };
+      const current = (existing.customFields as Record<string, string>) ?? {};
+      let merged: Record<string, string>;
+      if (body && typeof body === 'object' && 'key' in body && 'value' in body) {
+        merged = { ...current, [body.key]: body.value };
+      } else {
+        merged = { ...current, ...body };
+      }
+
+      await tx.problem.update({ where: { id }, data: { customFields: merged } });
+      return merged;
+    });
+
+    if (updated === null) {
+      return Response.json({ error: 'Problem not found' }, { status: 404 });
     }
 
-    const updated = await prisma.problem.update({ where: { id }, data: { customFields: merged } });
-    return Response.json(updated);
+    return Response.json({ success: true, id, customFields: updated });
   } catch (e) {
     console.error('[PATCH /api/problems/[id]/custom-fields]', e);
     return Response.json({ error: 'Failed to update custom fields' }, { status: 500 });

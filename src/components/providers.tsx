@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           provider: localStorageProvider,
           revalidateOnFocus: false,
           revalidateIfStale: true,
-          dedupingInterval: 30000,
+          dedupingInterval: 2000,
           focusThrottleInterval: 30000,
         }}
       >

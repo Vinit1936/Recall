@@ -3,7 +3,6 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { invalidateUserProblems } from '@/lib/cache';
 
 export async function PATCH(
   request: NextRequest,
@@ -16,9 +15,6 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-
-    const existing = await prisma.problem.findFirst({ where: { id, userId } });
-    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
 
     const allowed = ['isFavorite', 'notes', 'topic', 'difficulty', 'status'] as const;
     const data: Record<string, unknown> = {};
@@ -39,9 +35,17 @@ export async function PATCH(
       return Response.json({ error: 'No updatable fields provided' }, { status: 400 });
     }
 
-    const updated = await prisma.problem.update({ where: { id }, data });
-    invalidateUserProblems(userId);
-    return Response.json(updated);
+    // Single query — validates ownership and updates in one DB round trip
+    const result = await prisma.problem.updateMany({
+      where: { id, userId },
+      data,
+    });
+
+    if (result.count === 0) {
+      return Response.json({ error: 'Problem not found' }, { status: 404 });
+    }
+
+    return Response.json({ success: true, id });
   } catch (e) {
     console.error('[PATCH /api/problems/[id]]', e);
     return Response.json({ error: 'Failed to update problem' }, { status: 500 });
@@ -59,11 +63,12 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const existing = await prisma.problem.findFirst({ where: { id, userId } });
-    if (!existing) return Response.json({ error: 'Problem not found' }, { status: 404 });
+    // Single query — validates ownership and deletes in one DB round trip
+    const result = await prisma.problem.deleteMany({ where: { id, userId } });
+    if (result.count === 0) {
+      return Response.json({ error: 'Problem not found' }, { status: 404 });
+    }
 
-    await prisma.problem.delete({ where: { id } });
-    invalidateUserProblems(userId);
     return Response.json({ success: true, message: 'Problem deleted' });
   } catch (e) {
     console.error('[DELETE /api/problems/[id]]', e);
