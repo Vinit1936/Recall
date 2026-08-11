@@ -42,6 +42,7 @@ export default function DailyRevisionPage() {
     mutate('/api/problems/due');
     mutate('/api/streak');
     mutate('/api/activity');
+    mutate('/api/problems');
   };
 
   const dueList = Array.isArray(dueProblems) ? dueProblems : [];

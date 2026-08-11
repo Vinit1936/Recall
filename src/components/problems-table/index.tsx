@@ -510,42 +510,54 @@ export function ProblemsTable() {
       ...data,
       dateSolved: data.dateSolved ?? new Date().toISOString(),
     };
-    console.log('[handleNewProblemSave] sending payload', payload);
     const res = await fetch('/api/problems', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
-    console.log('[handleNewProblemSave] response', res.status, json);
     if (!res.ok) throw new Error(json.error ?? 'Failed to create problem');
     setShowNewRow(false);
     mutate();
   }, [mutate]);
 
-  // Add column
+  // Add column with optimistic update
   const handleAddColumn = useCallback(async (name: string) => {
     const order = rawColumnsList.length;
-    await fetch('/api/columns', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, order }),
-    });
-    mutateColumns();
-    mutate();
-  }, [rawColumnsList.length, mutateColumns, mutate]);
+    const tempId = `temp-${Date.now()}`;
+    const newCol = { id: tempId, name, order };
 
-  // Delete custom column
+    // Optimistically add column to UI
+    mutateColumns((prev: any[] | undefined) => [...(prev ?? []), newCol], { revalidate: false });
+
+    try {
+      const res = await fetch('/api/columns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, order }),
+      });
+      if (!res.ok) throw new Error('Failed to create column');
+      const savedCol = await res.json();
+      // Replace temp column with real server response
+      mutateColumns((prev: any[] | undefined) => prev?.map((c) => c.id === tempId ? savedCol : c) ?? [], { revalidate: false });
+    } catch {
+      mutateColumns(); // revert on error
+      showToast('Failed to create column');
+    }
+  }, [rawColumnsList.length, mutateColumns]);
+
+  // Delete custom column with optimistic update
   const handleDeleteColumn = useCallback(async (id: string) => {
+    // Optimistically remove column from UI
+    mutateColumns((prev: any[] | undefined) => prev?.filter((c) => c.id !== id) ?? [], { revalidate: false });
     try {
       const res = await fetch(`/api/columns?id=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete column');
-      mutateColumns();
-      mutate();
     } catch {
+      mutateColumns(); // revert on error
       showToast('Failed to delete column');
     }
-  }, [mutateColumns, mutate]);
+  }, [mutateColumns]);
 
   const COLUMN_COUNT = columns.length;
 
