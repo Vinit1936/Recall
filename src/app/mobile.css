@@ -195,6 +195,7 @@
 
   [data-final-wordmark] {
     font-size: 72px !important;
+    bottom: 0px !important;
   }
 
   [data-footer-container] {
