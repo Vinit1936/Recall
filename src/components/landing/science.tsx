@@ -16,9 +16,10 @@ export function Science() {
   ];
 
   return (
-    <section id="science" style={{ maxWidth: '1280px', margin: '0 auto', padding: '120px 40px' }}>
+    <section data-science-section id="science" style={{ maxWidth: '1280px', margin: '0 auto', padding: '120px 40px' }}>
       <div
         ref={ref}
+        data-science-grid
         className="science-grid"
         style={{
           display: 'grid',
@@ -125,6 +126,7 @@ export function Science() {
 
         {/* Right — chart */}
         <motion.div
+          data-science-chart
           className="science-chart"
           initial={{ opacity: 0, x: 20 }}
           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}

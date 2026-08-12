@@ -57,7 +57,7 @@ export function StatsStrip({
       </div>
 
       {/* Clean secondary inline metadata */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#777' }}>
+      <div data-stats-strip style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#777' }}>
         <span>
           <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontWeight: 600, color: '#ececec' }}>
             {displayDue}

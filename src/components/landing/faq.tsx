@@ -164,6 +164,7 @@ export function FAQ() {
 
   return (
     <article
+      data-faq-section
       id="faq"
       itemScope
       itemType="https://schema.org/FAQPage"
@@ -190,6 +191,7 @@ export function FAQ() {
         </div>
 
         <h2
+          data-faq-title
           style={{
             fontFamily: 'var(--font-display), Georgia, serif',
             fontStyle: 'italic',

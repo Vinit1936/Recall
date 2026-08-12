@@ -43,6 +43,7 @@ export function Sidebar() {
 
   return (
     <aside
+      data-sidebar
       style={{
         width: 240,
         minWidth: 240,

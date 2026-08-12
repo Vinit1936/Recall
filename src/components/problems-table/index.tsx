@@ -644,15 +644,15 @@ export function ProblemsTable() {
         </th>
         <th style={{ width: 40, padding: '0 4px' }} />
         {[
-          { label: 'PROBLEM', width: 340, padding: '0 16px' },
-          { label: 'DIFFICULTY', width: 115, padding: '0 12px' },
-          { label: 'TOPIC', width: 185, padding: '0 12px' },
-          { label: 'STATUS', width: 140, padding: '0 12px' },
-          { label: 'STAR', icon: <Bookmark size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0' },
-          { label: 'NEXT REVISION', width: 140, padding: '0 12px' },
-          { label: 'NOTES', width: 190, padding: '0 12px' },
-        ].map(({ label, icon, width, center, padding }) => (
-          <th key={label} style={{
+          { label: 'PROBLEM', width: 340, padding: '0 16px', dataCol: 'problem' },
+          { label: 'DIFFICULTY', width: 115, padding: '0 12px', dataCol: 'difficulty' },
+          { label: 'TOPIC', width: 185, padding: '0 12px', dataCol: 'topic' },
+          { label: 'STATUS', width: 140, padding: '0 12px', dataCol: 'status' },
+          { label: 'STAR', icon: <Bookmark size={13} strokeWidth={2} style={{ color: '#555' }} />, width: 44, center: true, padding: '0', dataCol: 'star' },
+          { label: 'NEXT REVISION', width: 140, padding: '0 12px', dataCol: 'next-revision' },
+          { label: 'NOTES', width: 190, padding: '0 12px', dataCol: 'notes' },
+        ].map(({ label, icon, width, center, padding, dataCol }) => (
+          <th key={label} data-col={dataCol} style={{
             width,
             padding: padding ?? (center ? '0' : '0 8px'),
             textAlign: center ? 'center' : 'left',
@@ -674,11 +674,11 @@ export function ProblemsTable() {
           </th>
         ))}
         {columns.map((col) => (
-          <th key={col.id} style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
+          <th key={col.id} data-col="custom" style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
             <ColumnHeaderMenu col={col} onDelete={handleDeleteColumn} />
           </th>
         ))}
-        <th style={{ width: 100, padding: '0 8px' }}>
+        <th data-col="custom" style={{ width: 100, padding: '0 8px' }}>
           <AddColumnPopover onSave={handleAddColumn} columns={columns} />
         </th>
       </tr>

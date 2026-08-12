@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Instrument_Serif } from 'next/font/google';
+import '@/app/mobile.css';
 
 const instrumentSerif = Instrument_Serif({
   weight: '400',

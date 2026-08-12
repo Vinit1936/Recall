@@ -268,6 +268,7 @@ function LoginContent() {
     <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#09090b' }}>
       {/* Left panel — smaller width (40%) in a box with 24px corner radius */}
       <div
+        data-auth-left
         style={{
           width: '40%',
           height: '100vh',
@@ -340,6 +341,7 @@ function LoginContent() {
 
       {/* Right panel — larger form area (60%) in a matching box with 24px corner radius */}
       <div
+        data-auth-right
         style={{
           width: '60%',
           height: '100vh',

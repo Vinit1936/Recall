@@ -23,6 +23,7 @@ export function Hero({ TableDemo }: HeroProps) {
     <section style={{ position: 'relative' }}>
       {/* Main grid */}
       <div
+        data-hero-grid
         className="hero-v2-grid"
         style={{
           minHeight: '100vh',
@@ -39,6 +40,7 @@ export function Hero({ TableDemo }: HeroProps) {
       >
         {/* Left column */}
         <div
+          data-hero-left
           style={{
             paddingRight: '48px',
             paddingTop: '80px',
@@ -64,7 +66,7 @@ export function Hero({ TableDemo }: HeroProps) {
 
           {/* Headline */}
           <motion.div custom={1} initial="hidden" animate="visible" variants={itemVariants} style={{ marginBottom: '24px' }}>
-            <h1 style={{ margin: 0, padding: 0 }}>
+            <h1 data-hero-title style={{ margin: 0, padding: 0 }}>
               <span
                 style={{
                   display: 'block',
@@ -123,6 +125,7 @@ export function Hero({ TableDemo }: HeroProps) {
 
           {/* CTA buttons */}
           <motion.div
+            data-hero-cta
             custom={3}
             initial="hidden"
             animate="visible"
@@ -189,6 +192,7 @@ export function Hero({ TableDemo }: HeroProps) {
 
         {/* Right column — demo bleeds right edge */}
         <div
+          data-hero-right
           className="hero-v2-right"
           style={{
             height: '100vh',
@@ -213,6 +217,7 @@ export function Hero({ TableDemo }: HeroProps) {
 
       {/* Stats bar — Horizontally moving ticker with latest capabilities */}
       <div
+        data-hero-stats
         style={{
           borderTop: '1px solid #111',
           borderBottom: '1px solid #111',

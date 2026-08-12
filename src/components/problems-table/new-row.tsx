@@ -599,12 +599,12 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         {/* Status */}
         <td style={{ width: 140, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
         {/* Star */}
-        <td style={{ width: 44, textAlign: 'center' }} />
+        <td data-col="star" style={{ width: 44, textAlign: 'center' }} />
         {/* Next Revision */}
-        <td style={{ width: 140, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
+        <td data-col="next-revision" style={{ width: 140, padding: '0 12px', color: '#555', fontSize: 13, fontFamily: 'var(--font-geist-mono), monospace' }}>—</td>
 
         {/* Notes */}
-        <td style={{ width: 190, padding: '0 12px', position: 'relative' }}>
+        <td data-col="notes" style={{ width: 190, padding: '0 12px', position: 'relative' }}>
           {(autoFill || otherReady) && (
             <NewRowFloatingCell
               value={notes}
@@ -620,7 +620,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
 
         {/* Custom columns */}
         {columns.map((col) => (
-          <td key={col.id} style={{ width: 140, padding: '0 8px', position: 'relative' }}>
+          <td key={col.id} data-col="custom" style={{ width: 140, padding: '0 8px', position: 'relative' }}>
             {(autoFill || otherReady) && (
               <NewRowFloatingCell
                 value={customFields[col.name] ?? ''}
@@ -634,7 +634,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
           </td>
         ))}
 
-        <td style={{ width: 100 }} />
+        <td data-col="custom" style={{ width: 100 }} />
       </tr>
 
       {/* ── LeetCode / Codeforces: number/code not found → URL fallback ── */}

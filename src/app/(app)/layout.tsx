@@ -1,5 +1,7 @@
 import { Sidebar } from '@/components/sidebar';
 import { Providers } from '@/components/providers';
+import { MobileNav } from '@/components/app/mobile-nav';
+import '@/app/mobile.css';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,6 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         <Sidebar />
         <main
+          data-main-content
           style={{
             marginLeft: 240,
             flex: 1,
@@ -18,6 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           {children}
         </main>
+        <MobileNav />
       </div>
     </Providers>
   );

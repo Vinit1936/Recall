@@ -6,6 +6,7 @@ export function Footer() {
       }}
     >
       <div
+        data-footer-container
         style={{
           padding: '20px 40px',
           maxWidth: '1280px',
@@ -37,7 +38,7 @@ export function Footer() {
         </span>
 
         {/* Right — social links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+        <div data-footer-links style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           {[
             { label: 'GitHub', href: 'https://github.com/Vinit1936/Recall' },
             { label: 'Twitter', href: 'https://twitter.com/vinitpatil193' },

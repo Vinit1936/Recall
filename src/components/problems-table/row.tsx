@@ -433,6 +433,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
           )}
           {problem.url ? (
             <a
+              data-problem-title
               href={problem.url}
               target="_blank"
               rel="noopener noreferrer"
@@ -481,17 +482,17 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       </td>
 
       {/* Star */}
-      <td style={{ width: 44, textAlign: 'center', padding: 0 }}>
+      <td data-col="star" style={{ width: 44, textAlign: 'center', padding: 0 }}>
         <StarCell problem={problem} onToggle={() => onStarToggle(problem.id, problem.isFavorite)} />
       </td>
 
       {/* Next Revision */}
-      <td style={{ width: 140, padding: '0 12px' }}>
+      <td data-col="next-revision" style={{ width: 140, padding: '0 12px' }}>
         <NextRevisionCell problem={problem} />
       </td>
 
       {/* Notes — Notion-style in-place editable */}
-      <td style={{ width: 190, padding: '0 12px' }}>
+      <td data-col="notes" style={{ width: 190, padding: '0 12px' }}>
         <InlineEditCell
           initialValue={problem.notes ?? ''}
           maxWidth={190}
@@ -503,7 +504,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       {columns.map((col) => {
         const fields = (problem.customFields as Record<string, string>) ?? {};
         return (
-          <td key={col.id} style={{ width: 140, padding: '0 8px' }}>
+          <td key={col.id} data-col="custom" style={{ width: 140, padding: '0 8px' }}>
             <InlineEditCell
               initialValue={fields[col.name] ?? ''}
               maxWidth={140}
@@ -514,7 +515,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       })}
 
       {/* Trailing cell for Add Column column alignment */}
-      <td style={{ width: 100 }} />
+      <td data-col="custom" style={{ width: 100 }} />
     </tr>
   );
 }

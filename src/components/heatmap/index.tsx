@@ -146,7 +146,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
         </div>
 
         {/* Grid Container */}
-        <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+        <div data-heatmap-container style={{ overflowX: 'auto', paddingBottom: 4 }}>
           <div style={{ display: 'flex', flexDirection: 'column', width: 'fit-content', margin: '0 auto' }}>
             {/* Month labels */}
             <div style={{ display: 'flex', marginLeft: DAY_LABEL_W, marginBottom: 6 }}>

@@ -86,7 +86,7 @@ export default function DailyRevisionPage() {
       )}
 
       {/* Notion-style Page Header */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+      <div data-daily-header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
           Daily Revision
         </h1>

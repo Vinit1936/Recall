@@ -10,6 +10,7 @@ export function FinalCTA() {
 
   return (
     <section
+      data-final-cta
       style={{
         position: 'relative',
         overflow: 'hidden',
@@ -19,6 +20,7 @@ export function FinalCTA() {
     >
       {/* Background wordmark */}
       <div
+        data-final-wordmark
         aria-hidden="true"
         style={{
           position: 'absolute',

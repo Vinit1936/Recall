@@ -23,6 +23,7 @@ export function Navbar() {
       }}
     >
       <div
+        data-nav-container
         style={{
           maxWidth: '1280px',
           margin: '0 auto',
@@ -49,7 +50,7 @@ export function Navbar() {
         </Link>
 
         {/* Center — nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+        <div data-nav-center style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
           {['How it works', 'Science', 'FAQ'].map((label) => (
             <a
               key={label}
@@ -74,6 +75,7 @@ export function Navbar() {
         {/* Right — GitHub + Sign in */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <a
+            data-nav-github
             href="https://github.com/Vinit1936/Recall"
             target="_blank"
             rel="noopener noreferrer"

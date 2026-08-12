@@ -166,7 +166,7 @@ export function Toolbar({
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div data-table-toolbar style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Search */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#555', pointerEvents: 'none' }}>

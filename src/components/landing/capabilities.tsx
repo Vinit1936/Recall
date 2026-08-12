@@ -35,7 +35,7 @@ export function Capabilities() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="capabilities" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 40px 120px' }}>
+    <section data-capabilities-section id="capabilities" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 40px 120px' }}>
       <div ref={ref}>
         {/* Section Header */}
         <div
@@ -53,6 +53,7 @@ export function Capabilities() {
 
         {/* 2×2 Grid — 1px border gap */}
         <div
+          data-capabilities-grid
           className="capabilities-v2-grid"
           style={{
             display: 'grid',
@@ -71,6 +72,7 @@ export function Capabilities() {
                 ease: [0.16, 1, 0.3, 1],
                 delay: i * 0.08,
               }}
+              data-capability-card
               className="capability-card"
               style={{
                 background: '#080808',

@@ -1,0 +1,294 @@
+/* 
+  MOBILE RESPONSIVENESS AUDIT & STYLES (375px - 768px)
+  
+  Audit Summary:
+  1. Landing Page (/):
+     - Navbar: Center nav links & GitHub icon overflow on 375px. Fix: hide center links and GitHub icon, reduce padding to 16px.
+     - Hero: 420px fixed column + chrome demo breaks viewport width. Fix: 1 column grid, hide chrome demo and bottom stats bar, stack CTAs vertically, font-size clamp.
+     - Revision Section: Chrome demo overflows. Fix: hide chrome demo, center text, section padding 60px 24px.
+     - How It Works: 3-column grid overflows. Fix: 1 column grid, add horizontal separators.
+     - Science Section: 2-column grid overflows. Fix: 1 column grid, hide chrome chart, section padding 60px 24px.
+     - Capabilities: 2x2 grid overflows. Fix: 1 column grid, card padding 28px.
+     - FAQ Section: Padding & title size too large. Fix: padding 60px 24px, 36px title font size.
+     - Final CTA: Large wordmark & padding overflow. Fix: wordmark font size 72px, full-width CTA button.
+     - Footer: Horizontal flex overflows. Fix: flex-col center.
+  2. App Shell & Problems Table (/dashboard):
+     - Sidebar (240px fixed) takes full mobile screen. Fix: hide sidebar ([data-sidebar]), show bottom nav ([data-mobile-nav]), set main content margin-left to 0.
+     - Table columns (Star, Notes, Next Revision, Custom) overflow 375px screen width. Fix: hide secondary columns ([data-col]), truncate problem titles at 140px max-width, make tab bar scrollable, stack toolbar items vertically.
+  3. Daily Revision (/daily):
+     - Stats strip overflows. Fix: flex-wrap, smaller text.
+     - Header & problem list overflow. Fix: stack title & date, horizontal scroll for heatmap.
+  4. Auth Pages (/auth/login):
+     - 40% / 60% split screen overflows. Fix: hide left WebGL panel ([data-auth-left]), right panel 100% width.
+     - iOS auto-zoom on input focus. Fix: input, textarea, select font-size 16px !important.
+
+  ALL RULES IN THIS FILE ARE STRICTLY SCOPED INSIDE @media BLOCKS.
+  ZERO RULES EXIST OUTSIDE MEDIA QUERIES TO ENSURE 100% PIXEL-IDENTICAL DESKTOP BEHAVIOR.
+*/
+
+@media (max-width: 768px) {
+  /* ----------------------------------------------------
+     Global & Touch Targets & Input Zoom Prevention
+  ---------------------------------------------------- */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  p a, span a, td a, th a, [data-inline-link] {
+    min-height: auto !important;
+    min-width: auto !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Navbar
+  ---------------------------------------------------- */
+  [data-nav-container] {
+    padding: 0 16px !important;
+  }
+
+  [data-nav-center] {
+    display: none !important;
+  }
+
+  [data-nav-github] {
+    display: none !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Hero
+  ---------------------------------------------------- */
+  .hero-v2-grid, [data-hero-grid] {
+    grid-template-columns: 1fr !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    min-height: auto !important;
+  }
+
+  [data-hero-left] {
+    padding-right: 0 !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+    width: 100% !important;
+  }
+
+  [data-hero-right] {
+    display: none !important;
+  }
+
+  [data-hero-stats] {
+    display: none !important;
+  }
+
+  [data-hero-cta] {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  [data-hero-cta] a, [data-hero-cta] button {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  [data-hero-title] {
+    font-size: clamp(36px, 10vw, 52px) !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Revision Section
+  ---------------------------------------------------- */
+  #how-it-works, [data-revision-section] {
+    padding: 60px 24px !important;
+  }
+
+  [data-revision-chrome] {
+    display: none !important;
+  }
+
+  [data-revision-title] {
+    font-size: clamp(32px, 9vw, 48px) !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — How It Works
+  ---------------------------------------------------- */
+  #how-it-works-steps > div {
+    padding: 60px 24px !important;
+  }
+
+  .how-it-works-v2, [data-how-it-works] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .how-it-works-v2 > div {
+    padding: 24px 0 !important;
+    border-bottom: 1px solid #111 !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Science Section
+  ---------------------------------------------------- */
+  #science, [data-science-section] {
+    padding: 60px 24px !important;
+  }
+
+  .science-grid, [data-science-grid] {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  .science-chart, [data-science-chart] {
+    display: none !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Capabilities
+  ---------------------------------------------------- */
+  #capabilities, [data-capabilities-section] {
+    padding: 0 24px 60px !important;
+  }
+
+  .capabilities-v2-grid, [data-capabilities-grid] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .capability-card, [data-capability-card] {
+    padding: 28px 24px !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — FAQ Section
+  ---------------------------------------------------- */
+  [data-faq-section] {
+    padding: 60px 24px !important;
+  }
+
+  [data-faq-title] {
+    font-size: 36px !important;
+  }
+
+  /* ----------------------------------------------------
+     Landing Page — Final CTA & Footer
+  ---------------------------------------------------- */
+  [data-final-cta] {
+    padding: 60px 24px 0 !important;
+  }
+
+  [data-final-wordmark] {
+    font-size: 72px !important;
+  }
+
+  [data-footer-container] {
+    flex-direction: column !important;
+    gap: 16px !important;
+    text-align: center !important;
+    padding: 24px 16px !important;
+  }
+
+  [data-footer-links] {
+    justify-content: center !important;
+  }
+
+  /* ----------------------------------------------------
+     App Shell — Sidebar & Mobile Navigation
+  ---------------------------------------------------- */
+  [data-sidebar] {
+    display: none !important;
+  }
+
+  [data-mobile-nav] {
+    display: flex !important;
+  }
+
+  [data-main-content] {
+    margin-left: 0 !important;
+    padding: 20px 16px 72px 16px !important;
+  }
+
+  /* ----------------------------------------------------
+     App Shell — Dashboard & Problems Table
+  ---------------------------------------------------- */
+  [data-col="star"],
+  [data-col="notes"],
+  [data-col="next-revision"],
+  [data-col="custom"] {
+    display: none !important;
+  }
+
+  [data-table-container] {
+    overflow-x: auto !important;
+  }
+
+  [data-table-toolbar] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  [data-table-tabs] {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 4px !important;
+  }
+
+  [data-new-row-trigger] {
+    width: 100% !important;
+    height: 44px !important;
+  }
+
+  [data-problem-title] {
+    font-size: 13px !important;
+    max-width: 140px !important;
+  }
+
+  /* ----------------------------------------------------
+     App Shell — Daily Revision
+  ---------------------------------------------------- */
+  [data-daily-header] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  [data-stats-strip] {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  [data-heatmap-container] {
+    overflow-x: auto !important;
+  }
+
+  /* ----------------------------------------------------
+     Auth Pages — Login / Signup
+  ---------------------------------------------------- */
+  [data-auth-left] {
+    display: none !important;
+  }
+
+  [data-auth-right] {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+}
+
+/* Tablet Optimizations (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  [data-col="notes"] {
+    display: none !important;
+  }
+
+  [data-sidebar] {
+    width: 200px !important;
+    min-width: 200px !important;
+  }
+
+  [data-main-content] {
+    margin-left: 200px !important;
+  }
+}

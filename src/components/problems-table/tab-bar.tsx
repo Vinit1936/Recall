@@ -36,6 +36,7 @@ const TABS: { key: TabKey; label: string; isSmallIcon?: boolean; platform?: stri
 export function TabBar({ activeTab, onChange }: TabBarProps) {
   return (
     <div
+      data-table-tabs
       style={{
         display: 'flex',
         alignItems: 'center',

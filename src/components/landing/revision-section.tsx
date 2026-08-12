@@ -14,6 +14,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
 
   return (
     <section
+      data-revision-section
       id="how-it-works"
       style={{ maxWidth: '1280px', margin: '0 auto', padding: '120px 40px' }}
     >
@@ -38,7 +39,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
             Daily Revision
           </div>
 
-          <h2 style={{ margin: 0 }}>
+          <h2 data-revision-title style={{ margin: 0 }}>
             <span
               style={{
                 display: 'block',
@@ -96,6 +97,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
 
         {/* Chrome demo — centered, contained */}
         <motion.div
+          data-revision-chrome
           initial={{ opacity: 0, y: 40, scale: 0.98 }}
           animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.98 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
