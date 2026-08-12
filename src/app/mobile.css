@@ -282,13 +282,30 @@
   /* ----------------------------------------------------
      Auth Pages — Login / Signup
   ---------------------------------------------------- */
+  [data-auth-container] {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    flex-direction: column !important;
+  }
+
   [data-auth-left] {
     display: none !important;
   }
 
   [data-auth-right] {
     width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
     padding: 16px !important;
+  }
+
+  [data-auth-card] {
+    height: auto !important;
+    min-height: auto !important;
+    padding: 28px 20px !important;
+    border-radius: 16px !important;
+    box-sizing: border-box !important;
   }
 
   [data-desktop-demo] {
@@ -305,6 +322,15 @@
 
 /* Tablet Optimizations (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
+  [data-auth-left] {
+    display: none !important;
+  }
+
+  [data-auth-right] {
+    width: 100% !important;
+    padding: 24px 16px !important;
+  }
+
   [data-col="notes"] {
     display: none !important;
   }

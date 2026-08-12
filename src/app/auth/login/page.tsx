@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import downloadImg from '../../../../utils/download.jpg';
 // @ts-ignore
 import GridDistortion from '@/components/ui/grid-distortion';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { MobileAuth } from '@/components/auth/mobile-auth';
 
 type Tab = 'signin' | 'signup';
 
@@ -162,6 +164,7 @@ function Divider() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [tab, setTab] = useState<Tab>('signin');
 
   // Sign in state
@@ -264,94 +267,102 @@ function LoginContent() {
 
   const isAnyLoading = siLoading || suLoading || oauthLoading !== null;
 
+  if (isMobile) {
+    return <MobileAuth />;
+  }
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#09090b' }}>
-      {/* Left panel — smaller width (40%) in a box with 24px corner radius */}
-      <div
-        data-auth-left
-        style={{
-          width: '40%',
-          height: '100vh',
-          padding: '20px 10px 20px 20px',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+    <div data-auth-container style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#09090b' }}>
+      {/* Left panel — smaller width (40%) in a box with 24px corner radius (Desktop Only) */}
+      {!isMobile && (
         <div
+          data-auth-left
           style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            borderRadius: 24,
-            overflow: 'hidden',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-            background: '#0a0a0b',
+            width: '40%',
+            height: '100vh',
+            padding: '20px 10px 20px 20px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {/* Interactive Three.js WebGL GridDistortion */}
-          <GridDistortion
-            imageSrc={downloadImg.src || '/login-bg.jpg'}
-            grid={15}
-            mouse={0.1}
-            strength={0.15}
-            relaxation={0.9}
-          />
-
-          {/* Dark gradient overlay for contrast */}
           <div
             style={{
-              position: 'absolute',
-              inset: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(10, 10, 11, 0.1) 0%, rgba(10, 10, 11, 0.85) 100%)',
-            }}
-          />
-
-          {/* Bottom Tagline Overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              padding: '36px',
-              pointerEvents: 'none',
-              zIndex: 2,
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              borderRadius: 24,
+              overflow: 'hidden',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+              background: '#0a0a0b',
             }}
           >
-            <h2
+            {/* Interactive Three.js WebGL GridDistortion */}
+            <GridDistortion
+              imageSrc={downloadImg.src || '/login-bg.jpg'}
+              grid={15}
+              mouse={0.1}
+              strength={0.15}
+              relaxation={0.9}
+            />
+
+            {/* Dark gradient overlay for contrast */}
+            <div
               style={{
-                fontFamily: 'var(--font-geist-sans), sans-serif',
-                fontSize: '24px',
-                fontWeight: 600,
-                color: '#ffffff',
-                letterSpacing: '-0.02em',
-                margin: 0,
-                lineHeight: 1.3,
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                background: 'linear-gradient(180deg, rgba(10, 10, 11, 0.1) 0%, rgba(10, 10, 11, 0.85) 100%)',
+              }}
+            />
+
+            {/* Bottom Tagline Overlay */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                padding: '36px',
+                pointerEvents: 'none',
+                zIndex: 2,
               }}
             >
-              Solve once.<br />
-              <span style={{ color: '#a1a1aa', fontWeight: 400 }}>Remember forever.</span>
-            </h2>
+              <h2
+                style={{
+                  fontFamily: 'var(--font-geist-sans), sans-serif',
+                  fontSize: '24px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  letterSpacing: '-0.02em',
+                  margin: 0,
+                  lineHeight: 1.3,
+                }}
+              >
+                Solve once.<br />
+                <span style={{ color: '#a1a1aa', fontWeight: 400 }}>Remember forever.</span>
+              </h2>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Right panel — larger form area (60%) in a matching box with 24px corner radius */}
       <div
         data-auth-right
         style={{
-          width: '60%',
-          height: '100vh',
-          padding: '20px 20px 20px 10px',
+          width: isMobile ? '100%' : '60%',
+          height: isMobile ? 'auto' : '100vh',
+          minHeight: isMobile ? '100vh' : undefined,
+          padding: isMobile ? '16px' : '20px 20px 20px 10px',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
         <div
+          data-auth-card
           style={{
             width: '100%',
             height: '100%',
