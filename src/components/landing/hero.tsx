@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Chrome } from './chrome';
 import type { ComponentType } from 'react';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { TableDemoMobile } from './table-demo-mobile';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -19,6 +21,8 @@ interface HeroProps {
 }
 
 export function Hero({ TableDemo }: HeroProps) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
   return (
     <section style={{ position: 'relative' }}>
       {/* Main grid */}
@@ -188,6 +192,13 @@ export function Hero({ TableDemo }: HeroProps) {
               Built by a student, for students grinding DSA
             </span>
           </motion.div>
+
+          {/* Mobile Demo — Centered below CTA */}
+          {isMobile && (
+            <div data-mobile-demo style={{ marginTop: '32px', width: '100%' }}>
+              <TableDemoMobile />
+            </div>
+          )}
         </div>
 
         {/* Right column — demo bleeds right edge */}
@@ -202,16 +213,19 @@ export function Hero({ TableDemo }: HeroProps) {
             paddingLeft: '40px',
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.97 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as const, delay: 0.5 }}
-            style={{ width: '100%', marginRight: '-40px' }}
-          >
-            <Chrome url="recallx.tech" height={480}>
-              <TableDemo />
-            </Chrome>
-          </motion.div>
+          {!isMobile && (
+            <motion.div
+              data-desktop-demo
+              initial={{ opacity: 0, x: 40, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as const, delay: 0.5 }}
+              style={{ width: '100%', marginRight: '-40px' }}
+            >
+              <Chrome url="recallx.tech" height={480}>
+                <TableDemo />
+              </Chrome>
+            </motion.div>
+          )}
         </div>
       </div>
 

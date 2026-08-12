@@ -289,6 +289,17 @@
     width: 100% !important;
     padding: 16px !important;
   }
+
+  [data-desktop-demo] {
+    display: none !important;
+  }
+}
+
+/* Safety rule for desktop viewports */
+@media (min-width: 769px) {
+  [data-mobile-demo] {
+    display: none !important;
+  }
 }
 
 /* Tablet Optimizations (769px - 1024px) */

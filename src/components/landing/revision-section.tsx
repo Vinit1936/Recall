@@ -3,6 +3,8 @@
 import { useRef, type ComponentType } from 'react';
 import { motion, useInView } from 'motion/react';
 import { Chrome } from './chrome';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { RevisionDemoMobile } from './revision-demo-mobile';
 
 interface RevisionSectionProps {
   RevisionDemo: ComponentType;
@@ -11,6 +13,7 @@ interface RevisionSectionProps {
 export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   return (
     <section
@@ -96,17 +99,24 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
         </motion.div>
 
         {/* Chrome demo — centered, contained */}
-        <motion.div
-          data-revision-chrome
-          initial={{ opacity: 0, y: 40, scale: 0.98 }}
-          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.98 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-          style={{ maxWidth: '820px', margin: '0 auto' }}
-        >
-          <Chrome url="recallx.tech/daily" height={420}>
-            <RevisionDemo />
-          </Chrome>
-        </motion.div>
+        {isMobile ? (
+          <div data-mobile-demo style={{ maxWidth: '340px', margin: '0 auto' }}>
+            <RevisionDemoMobile />
+          </div>
+        ) : (
+          <motion.div
+            data-desktop-demo
+            data-revision-chrome
+            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.98 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            style={{ maxWidth: '820px', margin: '0 auto' }}
+          >
+            <Chrome url="recallx.tech/daily" height={420}>
+              <RevisionDemo />
+            </Chrome>
+          </motion.div>
+        )}
       </div>
 
       <style>{`
