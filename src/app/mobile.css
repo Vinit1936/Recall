@@ -60,7 +60,9 @@
   }
 
   [data-nav-github] {
-    display: none !important;
+    display: inline-flex !important;
+    min-height: auto !important;
+    min-width: auto !important;
   }
 
   [data-nav-signin] {
