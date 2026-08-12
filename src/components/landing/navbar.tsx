@@ -106,6 +106,7 @@ export function Navbar() {
           </a>
 
           <Link
+            data-nav-signin
             href="/auth/login"
             style={{
               border: '1px solid #222',
