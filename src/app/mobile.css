@@ -51,6 +51,10 @@
     padding: 0 16px !important;
   }
 
+  [data-nav-logo] {
+    transform: translateY(6px) !important;
+  }
+
   [data-nav-center] {
     display: none !important;
   }

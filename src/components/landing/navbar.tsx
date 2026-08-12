@@ -36,6 +36,7 @@ export function Navbar() {
       >
         {/* Left — wordmark */}
         <Link
+          data-nav-logo
           href="/"
           style={{
             textDecoration: 'none',
