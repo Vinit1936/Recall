@@ -10,6 +10,7 @@ import { NewRow } from './new-row';
 import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Star, MoreVertical, Trash2, Download, Bookmark } from 'lucide-react';
 import { getTopicColor } from '@/lib/topic-colors';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { fetcher } from '@/lib/fetcher';
 
@@ -300,6 +301,7 @@ export function ProblemsTable() {
   const rawColumnsList: any[] = Array.isArray(rawColumns) ? rawColumns : [];
 
   const [mounted, setMounted] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const columns: any[] = mounted ? rawColumnsList : [];
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
@@ -632,7 +634,7 @@ export function ProblemsTable() {
   const TableHead = () => (
     <thead>
       <tr style={{ borderBottom: '1px solid #1c1c1c', height: 36 }}>
-        <th style={{ width: 36, padding: '0 4px', textAlign: 'center' }}>
+        <th data-cell="checkbox" style={{ width: 36, padding: '0 4px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CustomCheckbox
               checked={isAllSelected}
@@ -642,7 +644,7 @@ export function ProblemsTable() {
             />
           </div>
         </th>
-        <th style={{ width: 40, padding: '0 4px' }} />
+        <th data-cell="platform" style={{ width: 40, padding: '0 4px' }} />
         {[
           { label: 'PROBLEM', width: 340, padding: '0 16px', dataCol: 'problem' },
           { label: 'DIFFICULTY', width: 115, padding: '0 12px', dataCol: 'difficulty' },
@@ -652,7 +654,7 @@ export function ProblemsTable() {
           { label: 'NEXT REVISION', width: 140, padding: '0 12px', dataCol: 'next-revision' },
           { label: 'NOTES', width: 190, padding: '0 12px', dataCol: 'notes' },
         ].map(({ label, icon, width, center, padding, dataCol }) => (
-          <th key={label} data-col={dataCol} style={{
+          <th key={label} data-col={dataCol} data-cell={dataCol} style={{
             width,
             padding: padding ?? (center ? '0' : '0 8px'),
             textAlign: center ? 'center' : 'left',
@@ -674,11 +676,11 @@ export function ProblemsTable() {
           </th>
         ))}
         {columns.map((col) => (
-          <th key={col.id} data-col="custom" style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
+          <th key={col.id} data-col="custom" data-cell="custom" style={{ width: 140, padding: '0 8px', fontSize: 11, fontFamily: 'var(--font-geist-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
             <ColumnHeaderMenu col={col} onDelete={handleDeleteColumn} />
           </th>
         ))}
-        <th data-col="custom" style={{ width: 100, padding: '0 8px' }}>
+        <th data-col="custom" data-cell="custom" style={{ width: 100, padding: '0 8px' }}>
           <AddColumnPopover onSave={handleAddColumn} columns={columns} />
         </th>
       </tr>
@@ -853,7 +855,7 @@ export function ProblemsTable() {
   }, [allProblems]);
 
   return (
-    <div style={{ padding: '24px 32px' }}>
+    <div data-dashboard-container style={{ padding: '24px 32px' }}>
       {/* Toast notification */}
       {toast && (
         <div style={{
@@ -964,8 +966,8 @@ export function ProblemsTable() {
       )}
 
       {/* Page header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14 }}>
+      <div data-page-header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div data-breadcrumb style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 14 }}>
           <span style={{ color: '#555' }}>recall</span>
           <span style={{ color: '#333', margin: '0 8px' }}>/</span>
           <span style={{ color: '#fff', fontWeight: 500 }}>All Problems</span>
@@ -973,6 +975,7 @@ export function ProblemsTable() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
+            data-download-button
             onClick={handleExportCSV}
             title="Export problems to CSV"
             style={{
@@ -997,6 +1000,7 @@ export function ProblemsTable() {
           </button>
 
           <button
+            data-new-problem-button
             id="new-problem-btn"
             onClick={() => setShowNewRow(true)}
             style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 13, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
@@ -1022,6 +1026,8 @@ export function ProblemsTable() {
 
       {/* Table — Notion-style horizontal scroll container */}
       <div
+        data-table-container
+        data-table-scroll-container
         style={{
           overflowX: 'auto',
           maxWidth: '100%',
@@ -1031,7 +1037,7 @@ export function ProblemsTable() {
         onMouseEnter={() => setTableHovered(true)}
         onMouseLeave={() => setTableHovered(false)}
       >
-        <table style={{ width: '100%', minWidth: 1230 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table data-problems-table style={{ width: '100%', minWidth: 1230 + COLUMN_COUNT * 140, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <TableHead />
           <tbody>
             {showSkeleton ? (

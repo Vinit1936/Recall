@@ -35,18 +35,20 @@ const TABS: { key: TabKey; label: string; isSmallIcon?: boolean; platform?: stri
 
 export function TabBar({ activeTab, onChange }: TabBarProps) {
   return (
-    <div
-      data-table-tabs
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        borderBottom: '1px solid #1e1e1e',
-        overflowX: 'auto',
-        overflowY: 'hidden',
-        scrollbarWidth: 'none',
-      }}
-    >
+    <div data-tab-bar-wrapper style={{ position: 'relative' }}>
+      <div
+        data-table-tabs
+        data-tab-bar
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          borderBottom: '1px solid #1e1e1e',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          scrollbarWidth: 'none',
+        }}
+      >
       {TABS.map((tab) => {
         const isActive = tab.key === activeTab;
         const isPlatformTab = !!tab.platform;
@@ -57,6 +59,8 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
           return (
             <button
               key={tab.key}
+              data-tab-item
+              data-active={isActive ? 'true' : 'false'}
               onClick={() => onChange(tab.key)}
               title="Bookmarked problems"
               style={{
@@ -92,6 +96,9 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
         return (
           <button
             key={tab.key}
+            data-tab-item
+            data-active={isActive ? 'true' : 'false'}
+            {...(isPlatformTab ? { 'data-platform-filter-icons': 'true' } : {})}
             onClick={() => onChange(tab.key)}
             title={tab.label}
             style={{
@@ -131,6 +138,7 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
           </button>
         );
       })}
+    </div>
     </div>
   );
 }

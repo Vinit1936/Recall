@@ -577,7 +577,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Difficulty */}
-        <td style={{ width: 115, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+        <td data-cell="difficulty" style={{ width: 115, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
           {(autoFill || otherReady) && (
             <DifficultyPickerCell
               difficulty={difficulty || (autoFill?.difficulty ?? '')}
@@ -587,7 +587,7 @@ export function NewRow({ onSave, onCancel, columns }: NewRowProps) {
         </td>
 
         {/* Topic */}
-        <td style={{ width: 185, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
+        <td data-cell="topic" style={{ width: 185, padding: '0 12px', transition: 'background 0.4s', background: cellBg, position: 'relative' }}>
           {(autoFill || otherReady) && (
             <TopicPickerCell
               topic={topic || (autoFill?.topic === 'General' ? '' : (autoFill?.topic ?? ''))}

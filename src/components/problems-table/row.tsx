@@ -9,7 +9,7 @@ import { CustomCheckbox } from '@/components/ui/custom-checkbox';
 import { Bookmark, Pencil } from 'lucide-react';
 
 // Status dot + label — derives from problem.status and revisions[0].confidence
-function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: string) => void }) {
+export function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: string) => void }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
 
@@ -17,16 +17,16 @@ function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: strin
     if (problem.status === 'MASTERED') {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered</span>
+          <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+          <span data-status-label style={{ fontSize: 13, color: '#a78bfa', fontFamily: 'var(--font-geist-mono), monospace' }}>Mastered</span>
         </div>
       );
     }
     if (problem.status === 'RETIRED') {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#444', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>Retired</span>
+          <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#444', flexShrink: 0 }} />
+          <span data-status-label style={{ fontSize: 13, color: '#555', fontFamily: 'var(--font-geist-mono), monospace' }}>Retired</span>
         </div>
       );
     }
@@ -36,8 +36,8 @@ function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: strin
     if (!latestConfidence || problem.revisionCount === 0) {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>Not started</span>
+          <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#555', flexShrink: 0 }} />
+          <span data-status-label style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>Not started</span>
         </div>
       );
     }
@@ -45,23 +45,23 @@ function StatusCell({ problem, onSave }: { problem: any; onSave?: (status: strin
     if (latestConfidence === 'CLEAN') {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: '#4ade80', fontFamily: 'var(--font-geist-mono), monospace' }}>Clean</span>
+          <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
+          <span data-status-label style={{ fontSize: 13, color: '#4ade80', fontFamily: 'var(--font-geist-mono), monospace' }}>Clean</span>
         </div>
       );
     }
     if (latestConfidence === 'SHAKY') {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: '#fb923c', fontFamily: 'var(--font-geist-mono), monospace' }}>Shaky</span>
+          <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#fb923c', flexShrink: 0 }} />
+          <span data-status-label style={{ fontSize: 13, color: '#fb923c', fontFamily: 'var(--font-geist-mono), monospace' }}>Shaky</span>
         </div>
       );
     }
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: '#f87171', fontFamily: 'var(--font-geist-mono), monospace' }}>Struggled</span>
+        <div data-status-dot style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
+        <span data-status-label style={{ fontSize: 13, color: '#f87171', fontFamily: 'var(--font-geist-mono), monospace' }}>Struggled</span>
       </div>
     );
   };
@@ -405,7 +405,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       }}
     >
       {/* Checkbox cell */}
-      <td style={{ width: 36, textAlign: 'center', padding: '0 4px' }}>
+      <td data-cell="checkbox" style={{ width: 36, textAlign: 'center', padding: '0 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <CustomCheckbox
             checked={isSelected}
@@ -417,14 +417,14 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       </td>
 
       {/* Platform logo cell */}
-      <td style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
+      <td data-cell="platform" style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <PlatformLogo platform={problem.platform} />
         </div>
       </td>
 
       {/* Problem cell: number + title */}
-      <td style={{ width: 340, padding: '0 16px' }}>
+      <td data-cell="problem" style={{ width: 340, padding: '0 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
           {(problem.platform === 'LEETCODE' || problem.platform === 'CODEFORCES') && problem.problemNumber > 0 && (
             <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666', fontWeight: 400, flexShrink: 0 }}>
@@ -461,7 +461,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       </td>
 
       {/* Difficulty */}
-      <td style={{ width: 115, padding: '0 12px', position: 'relative' }}>
+      <td data-cell="difficulty" style={{ width: 115, padding: '0 12px', position: 'relative' }}>
         <DifficultyPickerCell
           difficulty={problem.difficulty}
           onSave={(newDiff) => onDifficultySave(problem.id, newDiff)}
@@ -469,7 +469,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       </td>
 
       {/* Topic */}
-      <td style={{ width: 185, padding: '0 12px', position: 'relative' }}>
+      <td data-cell="topic" style={{ width: 185, padding: '0 12px', position: 'relative' }}>
         <TopicPickerCell
           topic={problem.topic}
           onSave={(newTopic) => onTopicSave(problem.id, newTopic)}
@@ -477,22 +477,22 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       </td>
 
       {/* Status */}
-      <td style={{ width: 140, padding: '0 12px' }}>
+      <td data-cell="status" style={{ width: 140, padding: '0 12px' }}>
         <StatusCell problem={problem} onSave={onStatusSave ? (s) => onStatusSave(problem.id, s) : undefined} />
       </td>
 
       {/* Star */}
-      <td data-col="star" style={{ width: 44, textAlign: 'center', padding: 0 }}>
+      <td data-cell="star" data-col="star" style={{ width: 44, textAlign: 'center', padding: 0 }}>
         <StarCell problem={problem} onToggle={() => onStarToggle(problem.id, problem.isFavorite)} />
       </td>
 
       {/* Next Revision */}
-      <td data-col="next-revision" style={{ width: 140, padding: '0 12px' }}>
+      <td data-cell="next-revision" data-col="next-revision" style={{ width: 140, padding: '0 12px' }}>
         <NextRevisionCell problem={problem} />
       </td>
 
       {/* Notes — Notion-style in-place editable */}
-      <td data-col="notes" style={{ width: 190, padding: '0 12px' }}>
+      <td data-cell="notes" data-col="notes" style={{ width: 190, padding: '0 12px' }}>
         <InlineEditCell
           initialValue={problem.notes ?? ''}
           maxWidth={190}
@@ -504,7 +504,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       {columns.map((col) => {
         const fields = (problem.customFields as Record<string, string>) ?? {};
         return (
-          <td key={col.id} data-col="custom" style={{ width: 140, padding: '0 8px' }}>
+          <td key={col.id} data-cell="custom" data-col="custom" style={{ width: 140, padding: '0 8px' }}>
             <InlineEditCell
               initialValue={fields[col.name] ?? ''}
               maxWidth={140}
@@ -515,7 +515,7 @@ export function ProblemRow({ problem, columns, isSelected, isHighlighted, onTogg
       })}
 
       {/* Trailing cell for Add Column column alignment */}
-      <td data-col="custom" style={{ width: 100 }} />
+      <td data-cell="custom" data-col="custom" style={{ width: 100 }} />
     </tr>
   );
 }

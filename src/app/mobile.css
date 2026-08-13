@@ -226,39 +226,263 @@
   }
 
   /* ----------------------------------------------------
-     App Shell — Dashboard & Problems Table
+     App Shell — Dashboard & Problems Table (Notion-style horizontal scroll)
   ---------------------------------------------------- */
-  [data-col="star"],
-  [data-col="notes"],
-  [data-col="next-revision"],
-  [data-col="custom"] {
+  [data-dashboard-container] {
+    padding: 16px 12px 88px 12px !important;
+  }
+
+  [data-page-header] {
+    padding: 4px 0 16px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  [data-breadcrumb] {
+    font-size: 14px !important;
+  }
+
+  [data-download-button] {
     display: none !important;
   }
 
-  [data-table-container] {
+  [data-new-problem-button] {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    height: 36px !important;
+  }
+
+  /* Tab Bar */
+  [data-tab-bar-wrapper] {
+    position: relative !important;
+    border-bottom: 1px solid #1a1a1a !important;
+  }
+
+  [data-tab-bar-wrapper]::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 1px !important;
+    width: 24px !important;
+    background: linear-gradient(to right, transparent, #0f0f0f) !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+  }
+
+  [data-tab-bar], [data-table-tabs] {
+    display: flex !important;
+    flex-direction: row !important;
     overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 4px 16px 0 0 !important;
+    border-bottom: none !important;
+  }
+
+  [data-tab-bar]::-webkit-scrollbar, [data-table-tabs]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  [data-tab-item] {
+    flex-shrink: 0 !important;
+    padding: 7px 14px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    border-radius: 0 !important;
+    transition: color 0.15s ease, box-shadow 0.15s ease !important;
+    background: transparent !important;
+  }
+
+  [data-tab-item][data-active="true"] {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+    box-shadow: inset 0 -2px 0 #ffffff !important;
+  }
+
+  [data-tab-item][data-active="false"] {
+    color: #666666 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-platform-filter-icons] {
+    display: none !important;
+  }
+
+  /* Toolbar */
+  [data-toolbar] {
+    padding: 0 0 12px 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 
   [data-table-toolbar] {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 12px !important;
+    gap: 8px !important;
   }
 
-  [data-table-tabs] {
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    padding-bottom: 4px !important;
-  }
-
-  [data-new-row-trigger] {
+  [data-search-container] {
     width: 100% !important;
-    height: 44px !important;
+    position: relative !important;
   }
 
-  [data-problem-title] {
+  [data-search-input] {
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0 14px 0 38px !important;
+    font-size: 14px !important;
+    border-radius: 7px !important;
+    box-sizing: border-box !important;
+  }
+
+  [data-search-container] svg,
+  [data-search-container] [data-search-icon],
+  [data-search-input] svg,
+  [data-search-input] [data-search-icon] {
+    width: 15px !important;
+    height: 15px !important;
+    left: 12px !important;
+  }
+
+  [data-search-shortcut-hint] {
+    display: none !important;
+  }
+
+  [data-filter-sort-row] {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  [data-filter-sort-row] > * {
+    flex: 1 !important;
+    width: 50% !important;
+  }
+
+  [data-filter-sort-row] button {
+    width: 100% !important;
+    justify-content: space-between !important;
+    height: 40px !important;
+  }
+
+  [data-redundant-sort-icon-button] {
+    display: none !important;
+  }
+
+  /* Fix 1 & Fix 6 — Table Horizontal Scroll Container & Bottom Nav Overlap */
+  [data-table-container], [data-table-scroll-container] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #2a2a2a transparent !important;
+    padding-bottom: 72px !important;
+  }
+
+  [data-table-container]::-webkit-scrollbar, [data-table-scroll-container]::-webkit-scrollbar {
+    height: 4px !important;
+  }
+  [data-table-container]::-webkit-scrollbar-thumb, [data-table-scroll-container]::-webkit-scrollbar-thumb {
+    background: #2a2a2a !important;
+    border-radius: 2px !important;
+  }
+
+  [data-problems-table] {
+    min-width: 900px !important;
+  }
+
+  /* Fix 1 & Fix 2 — Tightened Row Height & Compact Pills/Status on Mobile */
+  [data-problems-table] th {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+    height: 28px !important;
+  }
+
+  [data-problems-table] td {
+    padding: 4px 8px !important;
     font-size: 13px !important;
-    max-width: 140px !important;
+  }
+
+  [data-problems-table] tr {
+    height: 36px !important;
+  }
+
+  [data-problems-table] [data-cell="platform"] {
+    width: 36px !important;
+  }
+
+  [data-problems-table] [data-cell="platform"] img,
+  [data-problems-table] [data-cell="platform"] svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  [data-problems-table] [data-difficulty-pill],
+  [data-problems-table] [data-topic-pill] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: fit-content !important;
+    max-width: fit-content !important;
+    height: auto !important;
+    min-height: unset !important;
+    font-size: 10px !important;
+    padding: 0 !important;
+    line-height: 1.3 !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  [data-problems-table] [data-difficulty-pill] [data-pill],
+  [data-problems-table] [data-topic-pill] [data-pill],
+  [data-problems-table] [data-pill] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: fit-content !important;
+    max-width: fit-content !important;
+    height: auto !important;
+    min-height: unset !important;
+    font-size: 10px !important;
+    padding: 2px 7px !important;
+    line-height: 1.3 !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Ensure the parent table cell and wrapper div don't force the pill to stretch */
+  [data-problems-table] td[data-cell="difficulty"],
+  [data-problems-table] td[data-cell="topic"] {
+    width: auto !important;
+    max-width: 90px !important;
+    height: auto !important;
+    vertical-align: middle !important;
+  }
+
+  [data-problems-table] td[data-cell="difficulty"] > div,
+  [data-problems-table] td[data-cell="topic"] > div {
+    display: inline-flex !important;
+    width: fit-content !important;
+    max-width: fit-content !important;
+    height: auto !important;
+    align-items: center !important;
+  }
+
+  [data-problems-table] [data-status-dot] {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  [data-problems-table] [data-status-label] {
+    font-size: 10px !important;
   }
 
   /* ----------------------------------------------------

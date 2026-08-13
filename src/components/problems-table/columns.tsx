@@ -17,6 +17,7 @@ export function getDifficultyStyle(difficulty: string): { bg: string; text: stri
 export function Pill({ bg, text, border, children }: { bg: string; text: string; border?: string; children: React.ReactNode }) {
   return (
     <span
+      data-pill
       style={{
         background: bg,
         color: text,
@@ -159,6 +160,7 @@ export function DifficultyPickerCell({
   return (
     <div style={{ display: 'inline-block' }}>
       <button
+        data-difficulty-pill
         ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
@@ -298,6 +300,7 @@ export function TopicPickerCell({
   return (
     <div style={{ display: 'inline-block' }}>
       <button
+        data-topic-pill
         ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
