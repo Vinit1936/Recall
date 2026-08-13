@@ -102,6 +102,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
   return (
     <TooltipProvider delay={0}>
       <div
+        data-heatmap-wrapper
         style={{
           background: '#111112',
           border: '1px solid #1e1e1e',
@@ -111,6 +112,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
       >
         {/* LeetCode Header Stats Bar */}
         <div
+          data-heatmap-header
           style={{
             display: 'flex',
             alignItems: 'baseline',
@@ -147,7 +149,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
 
         {/* Grid Container */}
         <div data-heatmap-container style={{ overflowX: 'auto', paddingBottom: 4 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', width: 'fit-content', margin: '0 auto' }}>
+          <div data-heatmap-inner style={{ display: 'flex', flexDirection: 'column', width: 'fit-content', margin: '0 auto' }}>
             {/* Month labels */}
             <div style={{ display: 'flex', marginLeft: DAY_LABEL_W, marginBottom: 6 }}>
               {weeks.map((_, wi) => {

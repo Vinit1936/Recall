@@ -84,9 +84,9 @@ export default function SettingsPage() {
   const initial = name ? name.charAt(0).toUpperCase() : email ? email.charAt(0).toUpperCase() : 'U';
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
+    <div data-settings-container style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
       {/* Header */}
-      <div style={{ marginBottom: 36 }}>
+      <div data-settings-header style={{ marginBottom: 36 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 6 }}>
           Settings
         </h1>
@@ -100,9 +100,10 @@ export default function SettingsPage() {
           Loading settings...
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div data-settings-cards style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Card 1: Account Profile */}
           <div
+            data-settings-card
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
@@ -119,8 +120,9 @@ export default function SettingsPage() {
               <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Account Profile</div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <div data-settings-avatar-row style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
               <div
+                data-settings-avatar
                 style={{
                   width: 52,
                   height: 52,
@@ -144,12 +146,12 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420 }}>
+            <div data-settings-form style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
                   Display Name
                 </label>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div data-display-name-row style={{ display: 'flex', gap: 8 }}>
                   <input
                     type="text"
                     value={name}
@@ -197,6 +199,7 @@ export default function SettingsPage() {
                   Email Address
                 </label>
                 <input
+                  data-email-input
                   type="text"
                   value={email}
                   disabled
@@ -215,6 +218,7 @@ export default function SettingsPage() {
 
               <div style={{ marginTop: 8 }}>
                 <button
+                  data-sign-out-btn
                   onClick={() => signOut({ callbackUrl: '/' })}
                   style={{
                     background: '#181414',
@@ -236,6 +240,7 @@ export default function SettingsPage() {
 
           {/* Card 2: Preferences */}
           <div
+            data-settings-card
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
@@ -252,7 +257,7 @@ export default function SettingsPage() {
               <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Preferences</div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 420 }}>
+            <div data-settings-form style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 420 }}>
               {/* Custom Platform Dropdown */}
               <div style={{ position: 'relative' }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
@@ -261,6 +266,7 @@ export default function SettingsPage() {
 
                 {/* Trigger Button */}
                 <button
+                  data-platform-trigger
                   type="button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   style={{
@@ -360,7 +366,7 @@ export default function SettingsPage() {
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 6 }}>
                   Daily Revision Goal
                 </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div data-daily-target-grid style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {['3', '5', '10', '15'].map((targetVal) => {
                     const active = dailyTarget === targetVal;
                     return (
@@ -396,6 +402,7 @@ export default function SettingsPage() {
 
           {/* Card 3: Data Export */}
           <div
+            data-settings-card
             style={{
               background: '#111112',
               border: '1px solid #1e1e1e',
@@ -416,6 +423,7 @@ export default function SettingsPage() {
             </p>
 
             <button
+              data-export-btn
               onClick={handleExportData}
               style={{
                 background: '#19191c',

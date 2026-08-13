@@ -124,6 +124,7 @@ export default function DailyRevisionPage() {
           <AllDone key="done" streak={streak} />
         ) : (
           <motion.div
+            data-daily-table
             key="table-view"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}

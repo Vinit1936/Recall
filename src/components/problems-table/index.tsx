@@ -870,60 +870,73 @@ export function ProblemsTable() {
 
       {/* Floating action bar when rows selected */}
       {selectedIds.length > 0 && (
-        <div style={{
-          position: 'fixed',
-          bottom: 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 900,
-          background: '#1a1a1c',
-          border: '1px solid #2a2a2e',
-          borderRadius: 8,
-          padding: '8px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-        }}>
-          <span style={{ fontSize: 13, color: '#ccc', fontFamily: 'var(--font-geist-mono), monospace' }}>
-            {selectedIds.length} selected
+        <div
+          data-selection-bar
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 900,
+            background: '#1a1a1c',
+            border: '1px solid #2a2a2e',
+            borderRadius: 8,
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          }}
+        >
+          <span data-selection-count style={{ fontSize: 13, color: '#ccc', fontFamily: 'var(--font-geist-mono), monospace' }}>
+            <span className="hidden md:inline">{selectedIds.length} selected</span>
+            <span className="inline md:hidden">{selectedIds.length} sel</span>
           </span>
-          <div style={{ width: 1, height: 16, background: '#333' }} />
+          <div data-selection-divider style={{ width: 1, height: 16, background: '#333', flexShrink: 0 }} />
+
+          <div data-selection-actions style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              data-selection-btn="mastered"
+              onClick={() => handleBulkStatusChange('MASTERED')}
+              style={{
+                background: '#1a2e1a', border: '1px solid #2d5a2d',
+                borderRadius: 4, color: '#4ade80', cursor: 'pointer',
+                fontSize: 12, padding: '4px 8px', fontWeight: 500,
+              }}
+            >
+              <span className="hidden md:inline">Mark Mastered</span>
+              <span className="inline md:hidden">Mastered</span>
+            </button>
+            <button
+              data-selection-btn="active"
+              onClick={() => handleBulkStatusChange('ACTIVE')}
+              style={{
+                background: '#252525', border: '1px solid #333',
+                borderRadius: 4, color: '#ccc', cursor: 'pointer',
+                fontSize: 12, padding: '4px 8px', fontWeight: 500,
+              }}
+            >
+              <span className="hidden md:inline">Mark Active</span>
+              <span className="inline md:hidden">Active</span>
+            </button>
+            <button
+              data-selection-btn="retired"
+              onClick={() => handleBulkStatusChange('RETIRED')}
+              style={{
+                background: '#2a251a', border: '1px solid #4a3d1a',
+                borderRadius: 4, color: '#fb923c', cursor: 'pointer',
+                fontSize: 12, padding: '4px 8px', fontWeight: 500,
+              }}
+            >
+              <span className="hidden md:inline">Mark Retired</span>
+              <span className="inline md:hidden">Retired</span>
+            </button>
+          </div>
+
+          <div data-selection-divider style={{ width: 1, height: 16, background: '#333', flexShrink: 0 }} />
 
           <button
-            onClick={() => handleBulkStatusChange('MASTERED')}
-            style={{
-              background: '#1a2e1a', border: '1px solid #2d5a2d',
-              borderRadius: 4, color: '#4ade80', cursor: 'pointer',
-              fontSize: 12, padding: '4px 8px', fontWeight: 500,
-            }}
-          >
-            Mark Mastered
-          </button>
-          <button
-            onClick={() => handleBulkStatusChange('ACTIVE')}
-            style={{
-              background: '#252525', border: '1px solid #333',
-              borderRadius: 4, color: '#ccc', cursor: 'pointer',
-              fontSize: 12, padding: '4px 8px', fontWeight: 500,
-            }}
-          >
-            Mark Active
-          </button>
-          <button
-            onClick={() => handleBulkStatusChange('RETIRED')}
-            style={{
-              background: '#2a251a', border: '1px solid #4a3d1a',
-              borderRadius: 4, color: '#fb923c', cursor: 'pointer',
-              fontSize: 12, padding: '4px 8px', fontWeight: 500,
-            }}
-          >
-            Mark Retired
-          </button>
-
-          <div style={{ width: 1, height: 16, background: '#333' }} />
-
-          <button
+            data-selection-delete
             onClick={handleDeleteClick}
             style={{
               background: '#2e1212',
@@ -937,14 +950,16 @@ export function ProblemsTable() {
               alignItems: 'center',
               gap: 6,
               transition: 'background 0.15s',
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#3e1616')}
             onMouseLeave={(e) => (e.currentTarget.style.background = '#2e1212')}
           >
             <Trash2 size={13} />
-            Delete
+            <span className="hidden md:inline">Delete</span>
           </button>
           <button
+            data-selection-close
             onClick={() => setSelectedIds([])}
             style={{
               background: 'none',
@@ -957,6 +972,7 @@ export function ProblemsTable() {
               alignItems: 'center',
               justifyContent: 'center',
               lineHeight: 1,
+              flexShrink: 0,
             }}
             title="Clear selection"
           >
