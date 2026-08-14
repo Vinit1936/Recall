@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -10,45 +8,74 @@
 !.yarn/releases
 !.yarn/versions
 
-# docs
-prompt.md
-ui.md
-
-# testing
-/coverage
-
-# next.js
+# Next.js Build & Output
 /.next/
 /out/
-
-# production
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
+# Environment Variables
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# debug
+# Vercel & Turbopack
+.vercel
+.turbo
+
+# Testing & Coverage
+/coverage
+/.nyc_output
+*.lcov
+.vitest/
+
+# Debug Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
+*.log
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
-next-env.d.ts
-.claude
+next-env.d.ts.bak
 
-.agents
+# OS Metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor Configurations
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+
+# AI Agents, Prompts & Tool Metadata
+.agents/
+.claude/
+.cursor/
+.gemini/
+.windsurf/
+.copilot/
 AGENTS.md
 CLAUDE.md
-DEPLOYMENT_READINESS.md
+GEMINI.md
+skills-lock.json
 prompt.md
 ui.md
 mobile.md
+DEPLOYMENT_READINESS.md
+prompts/
+*.prompt.md
+scratch/
