@@ -153,7 +153,20 @@ export function FocusDeck({ problems, revisedIds, onRevised, onToast, onExitFocu
 
           {/* Problem Title */}
           <h2 style={{ fontSize: 24, fontWeight: 600, color: '#fff', lineHeight: 1.3, marginBottom: 24 }}>
-            {currentProblem.title}
+            {currentProblem.url ? (
+              <a
+                href={currentProblem.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#fff', textDecoration: 'none' }}
+                onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+              >
+                {currentProblem.title}
+              </a>
+            ) : (
+              currentProblem.title
+            )}
           </h2>
 
           {/* Solution / Link details preview */}

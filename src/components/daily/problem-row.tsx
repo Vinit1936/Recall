@@ -113,21 +113,43 @@ export function ProblemRevisionRow({ problem, onRevised, onToast }: ProblemRowPr
 
       {/* 2. Title */}
       <div style={{ paddingRight: 12, overflow: 'hidden' }}>
-        <span
-          style={{
-            fontSize: 13.5,
-            fontWeight: done ? 400 : 500,
-            color: done ? '#555' : '#ececec',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            display: 'block',
-            textDecoration: done ? 'line-through' : 'none',
-          }}
-          title={problem.title}
-        >
-          {problem.title}
-        </span>
+        {problem.url ? (
+          <a
+            href={problem.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={problem.title}
+            style={{
+              fontSize: 13.5,
+              fontWeight: done ? 400 : 500,
+              color: done ? '#555' : '#ececec',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+              textDecoration: done ? 'line-through' : hovered ? 'underline' : 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {problem.title}
+          </a>
+        ) : (
+          <span
+            style={{
+              fontSize: 13.5,
+              fontWeight: done ? 400 : 500,
+              color: done ? '#555' : '#ececec',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+              textDecoration: done ? 'line-through' : 'none',
+            }}
+            title={problem.title}
+          >
+            {problem.title}
+          </span>
+        )}
       </div>
 
       {/* 3. Difficulty */}
