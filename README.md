@@ -1,6 +1,6 @@
 <div align="center">
 
-# Recall
+# recall.
 
 **Spaced repetition for Data Structures & Algorithms.**
 *Solve once. Remember forever.*
