@@ -37,7 +37,7 @@ export function Navbar() {
         {/* Left — wordmark */}
         <Link
           data-nav-logo
-          href="/"
+          href="/dashboard"
           style={{
             textDecoration: 'none',
             fontFamily: 'var(--font-geist-mono), monospace',
@@ -45,6 +45,7 @@ export function Navbar() {
             fontWeight: 500,
             color: '#f0f0f0',
             letterSpacing: '-0.01em',
+            cursor: 'pointer',
           }}
         >
           recall<span style={{ color: '#ff6b00' }}>.</span>

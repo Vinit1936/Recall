@@ -59,9 +59,11 @@ export function Sidebar() {
       }}
     >
       {/* Wordmark */}
-      <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 18, fontWeight: 600, color: '#ffffff', paddingLeft: 12, marginBottom: 32, letterSpacing: '-0.02em' }}>
-        recall<span style={{ color: '#F7981E' }}>.</span>
-      </div>
+      <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+        <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 18, fontWeight: 600, color: '#ffffff', paddingLeft: 12, marginBottom: 32, letterSpacing: '-0.02em', cursor: 'pointer' }}>
+          recall<span style={{ color: '#F7981E' }}>.</span>
+        </div>
+      </Link>
 
       {/* Nav */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
