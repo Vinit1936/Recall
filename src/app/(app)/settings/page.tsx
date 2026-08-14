@@ -12,6 +12,115 @@ const PLATFORMS = [
   { id: 'CODECHEF', label: 'CodeChef' },
 ];
 
+function SettingsSkeleton() {
+  return (
+    <div data-settings-cards style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Skeleton Card 1: Account Profile */}
+      <div
+        data-settings-card
+        style={{
+          background: '#111112',
+          border: '1px solid #1e1e1e',
+          borderRadius: 10,
+          padding: 24,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <div style={{ width: 16, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+          <div style={{ width: 120, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+        </div>
+
+        <div data-settings-avatar-row style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+          <div
+            data-settings-avatar
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: '#1c1c1f',
+              border: '1px solid #28282e',
+            }}
+            className="animate-pulse"
+          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ width: 140, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+            <div style={{ width: 200, height: 12, borderRadius: 4, background: '#18181b' }} className="animate-pulse" />
+          </div>
+        </div>
+
+        <div data-settings-form style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420 }}>
+          <div>
+            <div style={{ width: 80, height: 12, borderRadius: 4, background: '#18181b', marginBottom: 8 }} className="animate-pulse" />
+            <div data-display-name-row style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, height: 36, borderRadius: 6, background: '#161618', border: '1px solid #222226' }} className="animate-pulse" />
+              <div style={{ width: 68, height: 36, borderRadius: 6, background: '#1c1c1f', border: '1px solid #222226' }} className="animate-pulse" />
+            </div>
+          </div>
+          <div>
+            <div style={{ width: 90, height: 12, borderRadius: 4, background: '#18181b', marginBottom: 8 }} className="animate-pulse" />
+            <div style={{ width: '100%', height: 36, borderRadius: 6, background: '#141415', border: '1px solid #1c1c1f' }} className="animate-pulse" />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ width: 140, height: 34, borderRadius: 6, background: '#1c1c1f', border: '1px solid #281c1c' }} className="animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      {/* Skeleton Card 2: Preferences */}
+      <div
+        data-settings-card
+        style={{
+          background: '#111112',
+          border: '1px solid #1e1e1e',
+          borderRadius: 10,
+          padding: 24,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <div style={{ width: 16, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+          <div style={{ width: 100, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+        </div>
+
+        <div data-settings-form style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 420 }}>
+          <div>
+            <div style={{ width: 140, height: 12, borderRadius: 4, background: '#18181b', marginBottom: 8 }} className="animate-pulse" />
+            <div style={{ width: '100%', height: 38, borderRadius: 6, background: '#161618', border: '1px solid #222226' }} className="animate-pulse" />
+          </div>
+          <div>
+            <div style={{ width: 120, height: 12, borderRadius: 4, background: '#18181b', marginBottom: 8 }} className="animate-pulse" />
+            <div data-daily-target-grid style={{ display: 'flex', gap: 8 }}>
+              {['1', '2', '3', '4'].map((i) => (
+                <div key={i} style={{ flex: 1, height: 34, borderRadius: 6, background: '#141416', border: '1px solid #222226' }} className="animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Skeleton Card 3: Data Backup */}
+      <div
+        data-settings-card
+        style={{
+          background: '#111112',
+          border: '1px solid #1e1e1e',
+          borderRadius: 10,
+          padding: 24,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 16, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+          <div style={{ width: 150, height: 16, borderRadius: 4, background: '#1c1c1f' }} className="animate-pulse" />
+        </div>
+        <div style={{ width: '80%', height: 12, borderRadius: 4, background: '#18181b', marginBottom: 18 }} className="animate-pulse" />
+        <div style={{ width: 170, height: 38, borderRadius: 6, background: '#19191c', border: '1px solid #2a2a30' }} className="animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
 
@@ -96,9 +205,7 @@ export default function SettingsPage() {
       </div>
 
       {loading ? (
-        <div style={{ fontSize: 13, color: '#666', fontFamily: 'var(--font-geist-mono), monospace' }}>
-          Loading settings...
-        </div>
+        <SettingsSkeleton />
       ) : (
         <div data-settings-cards style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Card 1: Account Profile */}
