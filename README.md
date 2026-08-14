@@ -90,21 +90,21 @@ Grinding hundreds of LeetCode problems without a structured revision schedule le
 
 ```mermaid
 flowchart TD
-    A[Solve Problem] --> B[Initial Schedule: +3 Days]
+    A[Solve Problem] --> B[Initial Schedule: Step 0 (+3 Days)]
     B --> C{Daily Revision Review}
     C -->|Confidence: Clean| D[Advance Step: +7d -> +14d -> +30d]
-    C -->|Confidence: Shaky| E[Repeat Current Interval]
-    C -->|Confidence: Struggled| F[Reset to Step 0: Revise in +1 Day]
-    D -->|Step 4 Passed| G[Status: Mastered 🏆]
+    C -->|Confidence: Shaky| E[Repeat Current Step Interval]
+    C -->|Confidence: Struggled| F[Reset to Step 0: Revise in +3 Days]
+    D -->|Step 3 Clean Passed| G[Status: Mastered 🏆]
     E --> C
     F --> C
 ```
 
 | Confidence Level | Effect on Schedule | Next Interval |
 | :--- | :--- | :--- |
-| **Clean** 🟢 | Strong recall. Advances to next step on ladder. | `+3d` ➔ `+7d` ➔ `+14d` ➔ `+30d` ➔ **Mastered** |
-| **Shaky** 🟡 | Partial recall. Maintains current mastery stage. | Repeats current interval duration |
-| **Struggled** 🔴 | Failed recall. Resets schedule to re-learn. | Rescheduled for tomorrow (`+1d`) |
+| **Clean** 🟢 | Strong recall. Advances to the next step on the ladder. | `+3d` (Step 0) ➔ `+7d` (Step 1) ➔ `+14d` (Step 2) ➔ `+30d` (Step 3) ➔ **Mastered** |
+| **Shaky** 🟡 | Partial recall. Repeats the current step's interval duration. | Repeats current interval (`+3d`, `+7d`, `+14d`, or `+30d`) |
+| **Struggled** 🔴 | Failed recall. Fully resets ladder back to Step 0. | Resets to Step 0 (`+3d`) |
 
 ---
 
