@@ -79,3 +79,6 @@ DEPLOYMENT_READINESS.md
 prompts/
 *.prompt.md
 scratch/
+
+# Internal Infrastructure Diagnostics
+docs/infra-diagnostic-report.md
