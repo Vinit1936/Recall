@@ -1,4 +1,4 @@
-# Recall
+# recall.
 
 **Spaced repetition for Data Structures & Algorithms. Solve once. Remember forever.**
 
@@ -16,15 +16,15 @@
 
 ## The Problem
 
-Solving a Data Structures & Algorithms problem once does not mean you will remember its core intuition weeks later under interview pressure. Without structured reinforcement, memory decays exponentially according to the forgetting curve. Recall automates spaced repetition so you review each problem right before you forget it.
+Solving a Data Structures & Algorithms problem once does not mean you will remember its core intuition weeks later under interview pressure. Without structured reinforcement, memory decays exponentially according to the forgetting curve. recall. automates spaced repetition so you review each problem right before you forget it.
 
-![Forgetting Curve & Spaced Repetition Intervals](public/forgetting-curve.png)
+![Forgetting Curve & Spaced Repetition Intervals](utils/Forgetting%20Curve.png)
 
 ---
 
 ## How It Works
 
-Recall uses a deterministic, pure spaced repetition engine (`src/lib/scheduling.ts`) to manage problem revision intervals.
+recall. uses a deterministic, pure spaced repetition engine (`src/lib/scheduling.ts`) to manage problem revision intervals.
 
 ### The Revision Ladder
 Every tracked problem climbs a 4-step interval ladder (`LADDER_DAYS = [3, 7, 14, 30]`):
@@ -58,7 +58,7 @@ When revising a previously mastered problem via "Revise again":
   - If today is pending but yesterday had a revision, the streak remains intact and counts backwards from yesterday.
   - If yesterday was missed, the streak resets to 0.
 
-<!-- DIAGRAM: revision-ladder.png -->
+![The Revision Ladder](utils/Revision%20ladder.png)
 
 ---
 
@@ -231,7 +231,7 @@ npm test
 
 Created by **Vinit Patil**
 
-- **GitHub:** [github.com/Vinit1936](https://github.com/Vinit1936) • [Recall Repository](https://github.com/Vinit1936/Recall)
+- **GitHub:** [github.com/Vinit1936](https://github.com/Vinit1936) • [recall. Repository](https://github.com/Vinit1936/Recall)
 - **Twitter / X:** [@vinitpatil193](https://twitter.com/vinitpatil193)
 - **LinkedIn:** [linkedin.com/in/vinitpatil19](https://www.linkedin.com/in/vinitpatil19/)
 
