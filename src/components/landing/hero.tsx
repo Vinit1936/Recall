@@ -35,7 +35,7 @@ export function Hero({ TableDemo }: HeroProps) {
           display: 'grid',
           gridTemplateColumns: '420px 1fr',
           gap: 0,
-          maxWidth: '1280px',
+          maxWidth: 'clamp(1280px, 92vw, 1800px)',
           margin: '0 auto',
           paddingLeft: '40px',
           alignItems: 'center',

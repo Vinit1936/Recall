@@ -19,7 +19,7 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
     <section
       data-revision-section
       id="how-it-works"
-      style={{ maxWidth: '1280px', margin: '0 auto', padding: '120px 40px' }}
+      style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '120px 40px' }}
     >
       <div ref={ref}>
         {/* Top text — centered */}

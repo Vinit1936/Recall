@@ -25,7 +25,7 @@ export function Navbar() {
       <div
         data-nav-container
         style={{
-          maxWidth: '1280px',
+          maxWidth: 'clamp(1280px, 92vw, 1800px)',
           margin: '0 auto',
           padding: '0 40px',
           height: '100%',

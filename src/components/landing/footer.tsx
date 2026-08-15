@@ -9,7 +9,7 @@ export function Footer() {
         data-footer-container
         style={{
           padding: '20px 40px',
-          maxWidth: '1280px',
+          maxWidth: 'clamp(1280px, 92vw, 1800px)',
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',

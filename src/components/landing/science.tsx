@@ -16,7 +16,7 @@ export function Science() {
   ];
 
   return (
-    <section data-science-section id="science" style={{ maxWidth: '1280px', margin: '0 auto', padding: '120px 40px' }}>
+    <section data-science-section id="science" style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '120px 40px' }}>
       <div
         ref={ref}
         data-science-grid
