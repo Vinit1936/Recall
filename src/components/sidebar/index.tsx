@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Settings } from 'lucide-react';
+import { Settings, MessageSquare } from 'lucide-react';
+import { FeedbackModal } from '@/components/feedback-modal';
 
 const navItems = [
   {
@@ -40,60 +42,115 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
-    <aside
-      data-sidebar
-      style={{
-        width: 240,
-        minWidth: 240,
-        background: '#111111',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '24px 12px',
-        zIndex: 10,
-      }}
-    >
-      {/* Wordmark */}
-      <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-        <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 18, fontWeight: 600, color: '#ffffff', paddingLeft: 12, marginBottom: 32, letterSpacing: '-0.02em', cursor: 'pointer' }}>
-          recall<span style={{ color: '#F7981E' }}>.</span>
-        </div>
-      </Link>
-
-      {/* Nav */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', borderRadius: 6, fontSize: 13.5, fontWeight: isActive ? 500 : 400, color: isActive ? '#ffffff' : '#666', background: isActive ? '#1e1e1e' : 'transparent', textDecoration: 'none', transition: 'color 0.15s, background 0.15s' }}>
-              <span style={{ color: isActive ? '#fff' : '#555' }}>{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User + Sign out */}
-      <div style={{ paddingLeft: 12, paddingRight: 12 }}>
-        {session?.user && (
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 12, color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>
-              {session.user.name || session.user.email}
-            </div>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              style={{ background: 'none', border: '1px solid #222', borderRadius: 5, color: '#555', cursor: 'pointer', fontSize: 12, padding: '4px 10px', width: '100%', textAlign: 'left', transition: 'color 0.15s, border-color 0.15s' }}
-            >
-              Sign out
-            </button>
+    <>
+      <aside
+        data-sidebar
+        style={{
+          width: 240,
+          minWidth: 240,
+          background: '#111111',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '24px 12px',
+          zIndex: 10,
+        }}
+      >
+        {/* Wordmark */}
+        <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+          <div style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 18, fontWeight: 600, color: '#ffffff', paddingLeft: 12, marginBottom: 32, letterSpacing: '-0.02em', cursor: 'pointer' }}>
+            recall<span style={{ color: '#F7981E' }}>.</span>
           </div>
-        )}
-      </div>
-    </aside>
+        </Link>
+
+        {/* Nav */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '7px 12px',
+                  borderRadius: 6,
+                  fontSize: 13.5,
+                  fontWeight: isActive ? 500 : 400,
+                  color: isActive ? '#ffffff' : '#666',
+                  background: isActive ? '#1e1e1e' : 'transparent',
+                  textDecoration: 'none',
+                  transition: 'color 0.15s, background 0.15s',
+                }}
+              >
+                <span style={{ color: isActive ? '#fff' : '#555' }}>{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
+
+          {/* Minimal Feedback Nav Item */}
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '7px 12px',
+              borderRadius: 6,
+              fontSize: 13.5,
+              fontWeight: 400,
+              color: '#666',
+              background: 'transparent',
+              border: 'none',
+              width: '100%',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'color 0.15s, background 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.background = '#1a1a1a';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#666666';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <MessageSquare size={16} style={{ color: '#555' }} />
+            <span>Feedback</span>
+          </button>
+        </nav>
+
+        {/* User + Sign out */}
+        <div style={{ paddingLeft: 12, paddingRight: 12 }}>
+          {session?.user && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 12, color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>
+                {session.user.name || session.user.email}
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                style={{ background: 'none', border: '1px solid #222', borderRadius: 5, color: '#555', cursor: 'pointer', fontSize: 12, padding: '4px 10px', width: '100%', textAlign: 'left', transition: 'color 0.15s, border-color 0.15s' }}
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Modal */}
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+    </>
   );
 }

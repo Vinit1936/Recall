@@ -40,6 +40,7 @@ export function Footer() {
         {/* Right — social links */}
         <div data-footer-links style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           {[
+            { label: 'Feedback', href: 'https://forms.gle/gZHJsswXm4G3rQ9s6' },
             { label: 'GitHub', href: 'https://github.com/Vinit1936/Recall' },
             { label: 'Twitter', href: 'https://twitter.com/vinitpatil193' },
             { label: 'Instagram', href: 'https://instagram.com/vinit.patil19' },
