@@ -18,7 +18,7 @@
 
 Solving a Data Structures & Algorithms problem once does not mean you will remember its core intuition weeks later under interview pressure. Without structured reinforcement, memory decays exponentially according to the forgetting curve. Recall automates spaced repetition so you review each problem right before you forget it.
 
-<!-- DIAGRAM: forgetting-curve.png -->
+![Forgetting Curve & Spaced Repetition Intervals](public/forgetting-curve.png)
 
 ---
 
