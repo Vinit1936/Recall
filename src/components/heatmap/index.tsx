@@ -32,6 +32,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
   const { weeks, monthLabels, todayStr, totalSubmissions, totalActiveDays, maxStreak } = useMemo(() => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -91,9 +92,53 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
     return { weeks, monthLabels, todayStr, totalSubmissions, totalActiveDays, maxStreak };
   }, [activity]);
 
-  const displaySubmissions = mounted ? totalSubmissions : 0;
-  const displayActiveDays = mounted ? totalActiveDays : 0;
-  const displayMaxStreak = mounted ? maxStreak : 0;
+  if (!mounted) {
+    return (
+      <div
+        data-heatmap-wrapper
+        style={{
+          background: '#111112',
+          border: '1px solid #1e1e1e',
+          borderRadius: 8,
+          padding: '20px 24px',
+        }}
+      >
+        <div
+          data-heatmap-header
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, fontSize: 14, color: '#aaa' }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-geist-mono), monospace' }}>
+              0
+            </span>
+            <span>revisions in the past one year</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, fontSize: 13, color: '#aaa' }}>
+            <div>
+              Total active days:{' '}
+              <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
+                0
+              </strong>
+            </div>
+            <div>
+              Max streak:{' '}
+              <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
+                0
+              </strong>
+            </div>
+          </div>
+        </div>
+        <div style={{ height: 120, background: '#141416', borderRadius: 6, opacity: 0.4 }} />
+      </div>
+    );
+  }
 
   const CELL = 11;
   const GAP = 3;
@@ -125,7 +170,7 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
           {/* Left: Total Submissions */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, fontSize: 14, color: '#aaa' }}>
             <span style={{ fontSize: 20, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-geist-mono), monospace' }}>
-              {displaySubmissions}
+              {totalSubmissions}
             </span>
             <span>revisions in the past one year</span>
           </div>
@@ -135,13 +180,13 @@ export function ContributionHeatmap({ activity }: HeatmapProps) {
             <div>
               Total active days:{' '}
               <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
-                {displayActiveDays}
+                {totalActiveDays}
               </strong>
             </div>
             <div>
               Max streak:{' '}
               <strong style={{ color: '#fff', fontWeight: 600, fontFamily: 'var(--font-geist-mono), monospace' }}>
-                {displayMaxStreak}
+                {maxStreak}
               </strong>
             </div>
           </div>

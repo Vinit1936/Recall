@@ -88,7 +88,7 @@ export default function DailyRevisionPage() {
         <h1 style={{ fontSize: 24, fontWeight: 600, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
           Daily Revision
         </h1>
-        <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666' }}>
+        <span suppressHydrationWarning style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: 13, color: '#666' }}>
           {dateLabel}
         </span>
       </div>
