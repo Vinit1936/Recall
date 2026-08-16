@@ -95,7 +95,8 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
-    const schedule = getInitialSchedule(now);
+    const solvedAt = dateSolved ? new Date(dateSolved) : now;
+    const schedule = getInitialSchedule(isNaN(solvedAt.getTime()) ? now : solvedAt);
 
     const finalProblemNumber =
       typeof (meta as any).problemNumber === 'number'

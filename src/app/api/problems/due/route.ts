@@ -4,17 +4,26 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const userId = session.user.id;
 
+    const { searchParams } = request.nextUrl;
+    const beforeParam = searchParams.get('before');
+
     const now = new Date();
-    // Use end-of-today (23:59:59.999) so ALL problems due today are included,
-    // not just those whose nextRevisionAt has already passed by the exact second.
-    // This ensures the daily revision page matches what the dashboard shows as "Today".
-    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    // If client passes its local end-of-day (e.g. ?before=ISO), use it so timezone boundaries are accurate
+    let endOfToday: Date;
+    if (beforeParam) {
+      const parsed = new Date(beforeParam);
+      endOfToday = isNaN(parsed.getTime())
+        ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+        : parsed;
+    } else {
+      endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    }
 
     const problems = await prisma.problem.findMany({
       where: { userId, status: 'ACTIVE', nextRevisionAt: { lte: endOfToday } },

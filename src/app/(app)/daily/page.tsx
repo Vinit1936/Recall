@@ -15,18 +15,24 @@ import { fetcher } from '@/lib/fetcher';
 
 export default function DailyRevisionPage() {
   const { mutate } = useSWRConfig();
-  const { data: dueProblems, isLoading: dueLoading } = useSWR('/api/problems/due', fetcher);
-  const { data: allProblems } = useSWR('/api/problems', fetcher);
-  const { data: streakData } = useSWR('/api/streak', fetcher);
-  const { data: activity } = useSWR('/api/activity', fetcher);
-
   const [mounted, setMounted] = useState(false);
-  const [revisedIds, setRevisedIds] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState('');
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const today = new Date();
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+  const dueUrl = mounted ? `/api/problems/due?before=${endOfToday.toISOString()}` : '/api/problems/due';
+  const { data: dueProblems, isLoading: dueLoading } = useSWR(dueUrl, fetcher);
+  const { data: allProblems } = useSWR('/api/problems', fetcher);
+  const { data: streakData } = useSWR('/api/streak', fetcher);
+  const { data: activity } = useSWR('/api/activity', fetcher);
+
+  const [revisedIds, setRevisedIds] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState('');
 
   const isDailyLoading = !mounted || (dueLoading && !dueProblems);
 
@@ -37,27 +43,31 @@ export default function DailyRevisionPage() {
 
   const handleRevised = (id: string) => {
     setRevisedIds((prev) => new Set(prev).add(id));
-    mutate('/api/problems/due');
+    mutate((key: any) => typeof key === 'string' && key.startsWith('/api/problems/due'));
     mutate('/api/streak');
     mutate('/api/activity');
     mutate('/api/problems');
   };
 
-  const dueList = Array.isArray(dueProblems) ? dueProblems : [];
+  const rawDueList = Array.isArray(dueProblems) ? dueProblems : [];
   const allList = Array.isArray(allProblems) ? allProblems : [];
 
+  // Overdue: strictly before today's start
+  const overdue = rawDueList.filter((p: any) => new Date(p.nextRevisionAt) < todayMidnight);
+  // Due Today: between today's start and today's end (never includes tomorrow)
+  const dueToday = rawDueList.filter((p: any) => {
+    const d = new Date(p.nextRevisionAt);
+    return d >= todayMidnight && d <= endOfToday;
+  });
+
+  const activeDueList = [...overdue, ...dueToday];
   const totalProblems = allList.length;
   const masteredCount = allList.filter((p: any) => p.status === 'MASTERED').length;
-  const dueCount = dueList.length;
+  const dueCount = activeDueList.length;
   const streak = streakData?.currentStreak ?? 0;
 
-  const today = new Date();
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const overdue = dueList.filter((p: any) => new Date(p.nextRevisionAt) < todayMidnight);
-  const dueToday = dueList.filter((p: any) => new Date(p.nextRevisionAt) >= todayMidnight);
-
-  const unrevisedDue = dueList.filter((p: any) => !revisedIds.has(p.id));
-  const allDone = dueList.length > 0 && unrevisedDue.length === 0;
+  const unrevisedDue = activeDueList.filter((p: any) => !revisedIds.has(p.id));
+  const allDone = activeDueList.length > 0 && unrevisedDue.length === 0;
   const dateLabel = format(today, 'EEEE, MMMM d');
 
   return (
@@ -114,7 +124,7 @@ export default function DailyRevisionPage() {
               ))}
             </div>
           </div>
-        ) : dueList.length === 0 ? (
+        ) : activeDueList.length === 0 ? (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <EmptyState />
           </motion.div>
