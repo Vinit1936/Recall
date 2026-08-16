@@ -35,7 +35,7 @@ export function Capabilities() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section data-capabilities-section id="capabilities" style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '0 40px 120px' }}>
+    <section data-capabilities-section id="capabilities" style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '0 40px 120px', scrollMarginTop: '60px' }}>
       <div ref={ref}>
         {/* Section Header */}
         <div

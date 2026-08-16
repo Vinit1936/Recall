@@ -27,11 +27,12 @@ export function HowItWorks() {
 
   return (
     <section
-      id="how-it-works-steps"
+      id="how-it-works"
       style={{
         background: '#080808',
         borderTop: '1px solid #111',
         borderBottom: '1px solid #111',
+        scrollMarginTop: '60px',
       }}
     >
       <div

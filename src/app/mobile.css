@@ -116,7 +116,7 @@
   /* ----------------------------------------------------
      Landing Page — Revision Section
   ---------------------------------------------------- */
-  #how-it-works, [data-revision-section] {
+  #daily-revision, #how-it-works, [data-revision-section] {
     padding: 60px 24px !important;
   }
 
@@ -131,7 +131,7 @@
   /* ----------------------------------------------------
      Landing Page — How It Works
   ---------------------------------------------------- */
-  #how-it-works-steps > div {
+  #how-it-works > div, #how-it-works-steps > div {
     padding: 60px 24px !important;
   }
 

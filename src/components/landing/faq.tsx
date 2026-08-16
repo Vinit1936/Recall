@@ -42,14 +42,17 @@ function FAQItem({
   q,
   a,
   index,
+  isOpen,
+  onToggle,
   isLast,
 }: {
   q: string;
   a: string;
   index: number;
+  isOpen: boolean;
+  onToggle: () => void;
   isLast: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const numStr = (index + 1).toString().padStart(2, '0');
 
   return (
@@ -62,8 +65,8 @@ function FAQItem({
       }}
     >
       <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
+        onClick={onToggle}
+        aria-expanded={isOpen}
         className="faq-button"
         style={{
           width: '100%',
@@ -83,7 +86,7 @@ function FAQItem({
             style={{
               fontFamily: 'var(--font-geist-mono), monospace',
               fontSize: '11px',
-              color: open ? '#ff6b00' : '#444',
+              color: isOpen ? '#ff6b00' : '#444',
               flexShrink: 0,
               transition: 'color 0.2s ease',
             }}
@@ -96,7 +99,7 @@ function FAQItem({
             style={{
               fontFamily: 'var(--font-geist-sans), sans-serif',
               fontSize: '15px',
-              color: open ? '#ffffff' : '#e0e0e0',
+              color: isOpen ? '#ffffff' : '#e0e0e0',
               fontWeight: 400,
               lineHeight: 1.45,
               transition: 'color 0.2s ease',
@@ -110,9 +113,9 @@ function FAQItem({
           style={{
             fontFamily: 'var(--font-geist-mono), monospace',
             fontSize: '15px',
-            color: open ? '#ffffff' : '#444',
+            color: isOpen ? '#ffffff' : '#444',
             flexShrink: 0,
-            transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
+            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease, color 0.2s ease',
             display: 'inline-block',
             lineHeight: 1,
@@ -124,7 +127,7 @@ function FAQItem({
       </button>
 
       <AnimatePresence initial={false}>
-        {open && (
+        {isOpen && (
           <motion.div
             key="answer"
             initial={{ height: 0, opacity: 0 }}
@@ -159,8 +162,13 @@ function FAQItem({
 }
 
 export function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+
+  const handleToggle = (index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  };
 
   return (
     <article
@@ -168,7 +176,7 @@ export function FAQ() {
       id="faq"
       itemScope
       itemType="https://schema.org/FAQPage"
-      style={{ maxWidth: '720px', margin: '0 auto', padding: '80px 32px' }}
+      style={{ maxWidth: '720px', margin: '0 auto', padding: '80px 32px', scrollMarginTop: '60px' }}
     >
       <motion.div
         ref={ref}
@@ -213,6 +221,8 @@ export function FAQ() {
               q={item.q}
               a={item.a}
               index={i}
+              isOpen={openIndex === i}
+              onToggle={() => handleToggle(i)}
               isLast={i === FAQS.length - 1}
             />
           ))}

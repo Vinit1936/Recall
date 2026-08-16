@@ -22,9 +22,7 @@ export default function DailyRevisionPage() {
 
   const [mounted, setMounted] = useState(false);
   const [revisedIds, setRevisedIds] = useState<Set<string>>(new Set());
-  const [showAllOverdue, setShowAllOverdue] = useState(false);
   const [toast, setToast] = useState('');
-  const OVERDUE_LIMIT = 3;
 
   useEffect(() => {
     setMounted(true);
@@ -153,68 +151,16 @@ export default function DailyRevisionPage() {
                     letterSpacing: '0.05em',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    gap: 6,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#f87171', opacity: 0.8 }} />
-                    Overdue ({overdue.length})
-                  </div>
-                  {overdue.length > OVERDUE_LIMIT && (
-                    <button
-                      onClick={() => setShowAllOverdue(!showAllOverdue)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#f87171',
-                        cursor: 'pointer',
-                        fontSize: 11,
-                        fontWeight: 500,
-                        textTransform: 'none',
-                        letterSpacing: 'normal',
-                      }}
-                    >
-                      {showAllOverdue ? 'Hide extra ▲' : `Show all (${overdue.length}) ▼`}
-                    </button>
-                  )}
+                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#f87171', opacity: 0.8 }} />
+                  Overdue ({overdue.length})
                 </div>
 
-                {(showAllOverdue ? overdue : overdue.slice(0, OVERDUE_LIMIT)).map((p: any) => (
+                {overdue.map((p: any) => (
                   <ProblemRevisionRow key={p.id} problem={p} onRevised={handleRevised} onToast={showToast} />
                 ))}
-
-                {overdue.length > OVERDUE_LIMIT && !showAllOverdue && (
-                  <button
-                    onClick={() => setShowAllOverdue(true)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 16px',
-                      background: '#141416',
-                      border: 'none',
-                      borderBottom: '1px solid #1c1c1e',
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: '#a1a1aa',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                      transition: 'color 0.15s, background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.background = '#18181b';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '#a1a1aa';
-                      e.currentTarget.style.background = '#141416';
-                    }}
-                  >
-                    <span>Show all {overdue.length} overdue problems (+{overdue.length - OVERDUE_LIMIT} hidden)</span>
-                    <span style={{ fontSize: 10 }}>▼</span>
-                  </button>
-                )}
               </div>
             )}
 

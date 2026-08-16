@@ -387,9 +387,11 @@ export function ProblemsTable() {
     }
     if (activeTab === 'due') {
       if (!p.nextRevisionAt) return false;
-      const revDate = new Date(p.nextRevisionAt).getTime();
-      const now = new Date().getTime();
-      if (revDate > now) return false;
+      if (p.status !== 'ACTIVE') return false;
+      const revDate = new Date(p.nextRevisionAt);
+      const now = new Date();
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      if (revDate > endOfToday) return false;
     }
     if (['LEETCODE', 'CODEFORCES', 'CODECHEF', 'GFG', 'HACKERRANK'].includes(activeTab)) {
       if (p.platform !== activeTab) return false;

@@ -11,9 +11,13 @@ export async function GET(_request: NextRequest) {
     const userId = session.user.id;
 
     const now = new Date();
+    // Use end-of-today (23:59:59.999) so ALL problems due today are included,
+    // not just those whose nextRevisionAt has already passed by the exact second.
+    // This ensures the daily revision page matches what the dashboard shows as "Today".
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     const problems = await prisma.problem.findMany({
-      where: { userId, status: 'ACTIVE', nextRevisionAt: { lte: now } },
+      where: { userId, status: 'ACTIVE', nextRevisionAt: { lte: endOfToday } },
       orderBy: { nextRevisionAt: 'asc' },
     });
 

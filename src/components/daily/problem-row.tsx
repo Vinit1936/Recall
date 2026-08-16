@@ -28,7 +28,7 @@ const CONF_BUTTONS: Record<
 > = {
   CLEAN: {
     label: 'Clean',
-    hint: '+7d',
+    hint: 'Advance',
     hoverBg: 'rgba(16, 185, 129, 0.12)',
     hoverBorder: '#10b981',
     hoverText: '#34d399',
@@ -37,7 +37,7 @@ const CONF_BUTTONS: Record<
   },
   SHAKY: {
     label: 'Shaky',
-    hint: '+3d',
+    hint: 'Repeat',
     hoverBg: 'rgba(245, 158, 11, 0.12)',
     hoverBorder: '#f59e0b',
     hoverText: '#fbbf24',
@@ -46,7 +46,7 @@ const CONF_BUTTONS: Record<
   },
   STRUGGLED: {
     label: 'Struggled',
-    hint: 'Tomorrow',
+    hint: 'Reset',
     hoverBg: 'rgba(248, 113, 113, 0.12)',
     hoverBorder: '#f87171',
     hoverText: '#f87171',

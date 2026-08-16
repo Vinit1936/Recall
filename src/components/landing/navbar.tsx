@@ -4,6 +4,28 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 
 export function Navbar() {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const targetId = href.substring(1);
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        if (typeof window !== 'undefined' && window.__lenis) {
+          window.__lenis.scrollTo(targetEl, { offset: -60, duration: 1.2 });
+        } else {
+          const navOffset = 60;
+          const elementPosition = targetEl.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+        window.history.pushState(null, '', href);
+      }
+    }
+  };
+
   return (
     <motion.nav
       initial={{ opacity: 0, y: -8 }}
@@ -53,10 +75,15 @@ export function Navbar() {
 
         {/* Center — nav links */}
         <div data-nav-center style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-          {['How it works', 'Science', 'FAQ'].map((label) => (
+          {[
+            { label: 'How it works', href: '#how-it-works' },
+            { label: 'Science', href: '#science' },
+            { label: 'FAQ', href: '#faq' },
+          ].map(({ label, href }) => (
             <a
               key={label}
-              href={`#${label.toLowerCase().replace(/ /g, '-')}`}
+              href={href}
+              onClick={(e) => handleNavClick(e, href)}
               style={{
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 fontSize: '13px',

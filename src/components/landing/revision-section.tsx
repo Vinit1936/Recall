@@ -18,8 +18,8 @@ export function RevisionSection({ RevisionDemo }: RevisionSectionProps) {
   return (
     <section
       data-revision-section
-      id="how-it-works"
-      style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '120px 40px' }}
+      id="daily-revision"
+      style={{ maxWidth: 'clamp(1280px, 92vw, 1800px)', margin: '0 auto', padding: '120px 40px', scrollMarginTop: '60px' }}
     >
       <div ref={ref}>
         {/* Top text — centered */}
