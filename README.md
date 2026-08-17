@@ -5,12 +5,16 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.19.3-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![YouTube Walkthrough](https://img.shields.io/badge/YouTube-Watch%20Demo-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://youtu.be/EF25DZDJ6gw)
 
-**Live Demo:** [recallx.tech](https://recallx.tech)
+**Live Demo:** [recallx.tech](https://recallx.tech) &nbsp;•&nbsp; **Video Walkthrough:** [YouTube (9 min)](https://youtu.be/EF25DZDJ6gw)
 
-<!-- VIDEO -->
-
-<!-- SCREENSHOT -->
+<div align="center">
+  <video src="utils/demo.mp4" controls="controls" width="100%"></video>
+  <p align="center">
+    <sub>🎥 <strong>Watch the full walkthrough</strong>: <a href="https://youtu.be/EF25DZDJ6gw"><strong>YouTube Video Walkthrough</strong></a></sub>
+  </p>
+</div>
 
 ---
 
@@ -234,5 +238,6 @@ Created by **Vinit Patil**
 - **GitHub:** [github.com/Vinit1936](https://github.com/Vinit1936) • [recall. Repository](https://github.com/Vinit1936/Recall)
 - **Twitter / X:** [@vinitpatil193](https://twitter.com/vinitpatil193)
 - **LinkedIn:** [linkedin.com/in/vinitpatil19](https://www.linkedin.com/in/vinitpatil19/)
+- **YouTube Walkthrough:** [youtu.be/EF25DZDJ6gw](https://youtu.be/EF25DZDJ6gw)
 
 *Master algorithms through structured spaced repetition.*
