@@ -10,9 +10,9 @@
 **Live Demo:** [recallx.tech](https://recallx.tech) &nbsp;•&nbsp; **Video Walkthrough:** [YouTube (9 min)](https://youtu.be/EF25DZDJ6gw)
 
 <div align="center">
-  <video src="utils/demo.mp4" controls="controls" width="100%"></video>
+  <img src="utils/demo.gif" alt="recall. Live Demo Walkthrough" width="100%" />
   <p align="center">
-    <sub>🎥 <strong>Watch the full walkthrough</strong>: <a href="https://youtu.be/EF25DZDJ6gw"><strong>YouTube Video Walkthrough</strong></a></sub>
+    <sub>🎥 <strong>Watch the full walkthrough with audio</strong>: <a href="https://youtu.be/EF25DZDJ6gw"><strong>YouTube Video (9 min)</strong></a> &nbsp;•&nbsp; <a href="utils/demo.mp4"><strong>Direct MP4 Video</strong></a></sub>
   </p>
 </div>
 
