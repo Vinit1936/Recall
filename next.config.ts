@@ -4,17 +4,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.recallx.tech',
-          },
-        ],
-        destination: 'https://recallx.tech/:path*',
-        permanent: true,
-      },
-      {
         source: '/privacy-policy',
         destination: '/privacy',
         permanent: true,
