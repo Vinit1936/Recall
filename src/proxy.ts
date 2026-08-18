@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export default auth((req) => {
   const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = !!req.auth?.user;
 
   const isAuthRoute = nextUrl.pathname.startsWith('/auth');
   const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
@@ -13,8 +13,11 @@ export default auth((req) => {
     nextUrl.pathname.startsWith('/daily') ||
     nextUrl.pathname.startsWith('/settings');
 
-  // If user is already logged in and visits landing page (/) or auth pages, redirect to dashboard
-  if ((nextUrl.pathname === '/' || isAuthRoute) && isLoggedIn) {
+  // If user has an explicit auth error (e.g. SessionRequired), do not redirect back to dashboard
+  const hasAuthError = isAuthRoute && nextUrl.searchParams.has('error');
+
+  // If user is already logged in and visits landing page (/) or auth pages (without error), redirect to dashboard
+  if ((nextUrl.pathname === '/' || isAuthRoute) && isLoggedIn && !hasAuthError) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
@@ -40,5 +43,8 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.svg).*)'],
+  matcher: [
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|.*\\.webp).*)',
+  ],
 };
+
