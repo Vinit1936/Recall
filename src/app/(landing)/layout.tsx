@@ -10,21 +10,35 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Recall — Never Forget What You Solved',
+  title: 'Recall — Master LeetCode & DSA with Spaced Repetition',
   description:
-    'Spaced repetition tracker for DSA problems. Automatically schedules LeetCode, Codeforces, GFG, HackerRank, and CodeChef problems for revision at +3, +7, +14, +30 day intervals.',
+    'Retain every algorithm you solve. Recall uses automated spaced repetition (+3, +7, +14, +30 days) to help software engineers master LeetCode, Codeforces, HackerRank, GFG, and CodeChef for technical interviews.',
   keywords: [
     'DSA revision',
     'spaced repetition',
     'LeetCode tracker',
+    'LeetCode spaced repetition',
     'Codeforces tracker',
+    'GeeksforGeeks tracker',
+    'HackerRank tracker',
+    'CodeChef tracker',
     'DSA preparation',
     'coding interview prep',
     'algorithm revision',
+    'Blind 75 revision',
+    'NeetCode 150',
+    'NeetCode 250',
+    'Striver SDE sheet',
+    'Striver A2Z DSA',
+    'Grind 75',
+    'active recall coding',
+    'Ebbinghaus forgetting curve',
+    'dynamic programming practice',
+    'FAANG interview prep',
   ],
   openGraph: {
-    title: 'Recall — Never Forget What You Solved',
-    description: 'Spaced repetition tracker for DSA problems.',
+    title: 'Recall — Master LeetCode & DSA with Spaced Repetition',
+    description: 'Spaced repetition tracker for DSA problems (+3, +7, +14, +30 day intervals).',
     type: 'website',
   },
 };
