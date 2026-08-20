@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { Play } from 'lucide-react';
 import { Chrome } from './chrome';
 import type { ComponentType } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -171,6 +172,47 @@ export function Hero({ TableDemo }: HeroProps) {
             >
               Start tracking free →
             </Link>
+
+            <a
+              href="https://youtu.be/EF25DZDJ6gw"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-hero-video-demo
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#d4d4d4',
+                fontSize: '13px',
+                fontWeight: 500,
+                height: '40px',
+                padding: '0 18px',
+                borderRadius: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                textDecoration: 'none',
+                fontFamily: 'var(--font-geist-sans), sans-serif',
+                transition: 'all 0.15s ease',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                backdropFilter: 'blur(8px)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.22)';
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = '#d4d4d4';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <Play size={13} fill="currentColor" style={{ opacity: 0.85 }} />
+              How to use
+            </a>
           </motion.div>
 
           {/* Social proof */}
