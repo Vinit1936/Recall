@@ -12,13 +12,17 @@ import GridDistortion from '@/components/ui/grid-distortion';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { MobileAuth } from '@/components/auth/mobile-auth';
 
+import { OtpInput } from '@/components/auth/otp-input';
+
 type Tab = 'signin' | 'signup';
+type AuthMode = 'form' | 'verify';
 
 const errorMessages: Record<string, string> = {
   OAuthAccountNotLinked: 'This email is already registered with a different sign-in method. Try signing in with the method you used originally.',
   OAuthCallback: 'Something went wrong with the OAuth login. Please try again.',
   OAuthSignin: 'Could not start the OAuth sign-in flow. Please try again.',
   CredentialsSignin: 'Invalid email or password.',
+  EmailNotVerified: 'Your email is not verified yet. Please enter the verification code sent to your email.',
   SessionRequired: 'Please sign in to access this page.',
   Default: 'An unexpected error occurred. Please try again.',
 };
@@ -166,6 +170,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [tab, setTab] = useState<Tab>('signin');
+  const [mode, setMode] = useState<AuthMode>('form');
 
   // Sign in state
   const [siEmail, setSiEmail] = useState('');
@@ -180,10 +185,29 @@ function LoginContent() {
   const [suError, setSuError] = useState('');
   const [suLoading, setSuLoading] = useState(false);
 
+  // Verification state
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [verifyPassword, setVerifyPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
+  const [resendSuccess, setResendSuccess] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+
   // OAuth loading state
   const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
 
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
+  // Cooldown countdown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     const errorParam = searchParams.get('error');
@@ -210,7 +234,7 @@ function LoginContent() {
     setSiLoading(true);
     try {
       const res = await signIn('credentials', {
-        email: siEmail,
+        email: siEmail.trim().toLowerCase(),
         password: siPassword,
         callbackUrl,
         redirect: false,
@@ -245,18 +269,29 @@ function LoginContent() {
         setSuError(json.error ?? 'Sign up failed.');
         return;
       }
-      // Auto sign in
-      const loginRes = await signIn('credentials', {
-        email: suEmail,
-        password: suPassword,
-        callbackUrl,
-        redirect: false,
-      });
-      if (loginRes?.error) {
-        setSuError('Account created but sign in failed. Please sign in manually.');
-        setTab('signin');
+
+      if (json.requiresVerification) {
+        setVerifyEmail(suEmail.trim().toLowerCase());
+        setVerifyPassword(suPassword);
+        setOtp('');
+        setVerifyError('');
+        setResendSuccess('');
+        setResendCooldown(60);
+        setMode('verify');
       } else {
-        window.location.href = callbackUrl;
+        // Direct sign-in fallback if verification is bypassed
+        const loginRes = await signIn('credentials', {
+          email: suEmail,
+          password: suPassword,
+          callbackUrl,
+          redirect: false,
+        });
+        if (loginRes?.error) {
+          setSuError('Account created but sign in failed. Please sign in manually.');
+          setTab('signin');
+        } else {
+          window.location.href = callbackUrl;
+        }
       }
     } catch {
       setSuError('Something went wrong. Please try again.');
@@ -265,7 +300,111 @@ function LoginContent() {
     }
   };
 
-  const isAnyLoading = siLoading || suLoading || oauthLoading !== null;
+  const handleVerifyCode = async (codeToVerify?: string) => {
+    const code = codeToVerify || otp;
+    if (code.length !== 6) {
+      setVerifyError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    setVerifyError('');
+    setResendSuccess('');
+    setVerifyLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmail, code }),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        setVerifyError(json.error || 'Verification failed. Please check the code.');
+        return;
+      }
+
+      // If we have the password in memory, log them in automatically
+      if (verifyPassword) {
+        const loginRes = await signIn('credentials', {
+          email: verifyEmail,
+          password: verifyPassword,
+          callbackUrl,
+          redirect: false,
+        });
+        if (loginRes?.error) {
+          setMode('form');
+          setTab('signin');
+          setSiEmail(verifyEmail);
+          setSiError('Email verified! Please sign in with your password.');
+        } else {
+          window.location.href = callbackUrl;
+        }
+      } else {
+        // Switch back to sign in
+        setMode('form');
+        setTab('signin');
+        setSiEmail(verifyEmail);
+        setSiError('');
+      }
+    } catch {
+      setVerifyError('Something went wrong. Please try again.');
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setVerifyError('');
+    setResendSuccess('');
+
+    try {
+      const res = await fetch('/api/auth/resend-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmail }),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        setVerifyError(json.error || 'Failed to resend code.');
+      } else {
+        setResendSuccess('New verification code sent to your inbox!');
+        setResendCooldown(60);
+      }
+    } catch {
+      setVerifyError('Failed to resend code. Please try again.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handlePromptVerifyFromLogin = (email: string) => {
+    setVerifyEmail(email.trim().toLowerCase());
+    setVerifyPassword(siPassword);
+    setOtp('');
+    setVerifyError('');
+    setResendSuccess('');
+    setMode('verify');
+    // Request a fresh code
+    fetch('/api/auth/resend-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success) {
+          setResendSuccess('Verification code sent to your email.');
+          setResendCooldown(60);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const isAnyLoading = siLoading || suLoading || verifyLoading || oauthLoading !== null;
 
   if (isMobile) {
     return <MobileAuth />;
@@ -378,179 +517,348 @@ function LoginContent() {
           }}
         >
           <div style={{ width: '100%', maxWidth: 400 }}>
-            {/* Tab switcher */}
-            <div style={{ display: 'flex', marginBottom: 28, borderBottom: '1px solid #1e1e1e', paddingBottom: 0, position: 'relative' }}>
-              <button
-                onClick={() => setTab('signin')}
-                disabled={isAnyLoading}
-                style={{
-                  background: 'none',
-                  borderWidth: 0,
-                  outline: 'none',
-                  cursor: isAnyLoading ? 'not-allowed' : 'pointer',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: tab === 'signin' ? '#ffffff' : '#666666',
-                  padding: '0 0 10px 0',
-                  marginRight: 24,
-                  position: 'relative',
-                  transition: 'color 0.15s ease',
-                }}
+            {mode === 'verify' ? (
+              /* Verification View */
+              <motion.div
+                key="verify-screen"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
               >
-                Sign in
-                {tab === 'signin' && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    style={{
-                      position: 'absolute',
-                      bottom: -1,
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      background: '#ffffff',
-                      borderRadius: 1,
+                <div style={{ marginBottom: 20 }}>
+                  <button
+                    onClick={() => {
+                      setMode('form');
+                      setVerifyError('');
+                      setResendSuccess('');
                     }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </button>
-
-              <button
-                onClick={() => setTab('signup')}
-                disabled={isAnyLoading}
-                style={{
-                  background: 'none',
-                  borderWidth: 0,
-                  outline: 'none',
-                  cursor: isAnyLoading ? 'not-allowed' : 'pointer',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: tab === 'signup' ? '#ffffff' : '#666666',
-                  padding: '0 0 10px 0',
-                  position: 'relative',
-                  transition: 'color 0.15s ease',
-                }}
-              >
-                Sign up
-                {tab === 'signup' && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
                     style={{
-                      position: 'absolute',
-                      bottom: -1,
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      background: '#ffffff',
-                      borderRadius: 1,
+                      background: 'none',
+                      border: 'none',
+                      color: '#888888',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: 0,
+                      marginBottom: 16,
+                      transition: 'color 0.15s',
                     }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </button>
-            </div>
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#888888')}
+                  >
+                    ← Back to signup
+                  </button>
 
-            {/* Smooth Form Content Transition */}
-            <AnimatePresence mode="wait">
-              {tab === 'signin' ? (
-                <motion.div
-                  key="signin"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {siError && (
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: '#f87171',
-                        background: 'rgba(248, 113, 113, 0.1)',
-                        border: '1px solid rgba(248, 113, 113, 0.2)',
-                        borderRadius: 6,
-                        padding: '10px 14px',
-                        fontFamily: 'var(--font-geist-mono), monospace',
-                        marginBottom: 16,
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {siError}
-                    </div>
-                  )}
-                  <Input label="Email" type="email" value={siEmail} onChange={setSiEmail} placeholder="you@example.com" />
-                  <Input label="Password" type="password" value={siPassword} onChange={setSiPassword} placeholder="••••••••" />
-                  <PrimaryButton onClick={handleSignIn} loading={siLoading} disabled={isAnyLoading}>Sign in →</PrimaryButton>
-                  <Divider />
-                  <OAuthButton
-                    provider="google"
-                    label="Continue with Google"
-                    onClick={() => handleOAuthSignIn('google')}
-                    loading={oauthLoading === 'google'}
-                    disabled={isAnyLoading}
-                  />
-                  <OAuthButton
-                    provider="github"
-                    label="Continue with GitHub"
-                    onClick={() => handleOAuthSignIn('github')}
-                    loading={oauthLoading === 'github'}
-                    disabled={isAnyLoading}
-                  />
-                  <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
-                    Don&apos;t have an account?{' '}
-                    <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
+                  <h1
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 600,
+                      color: '#ffffff',
+                      letterSpacing: '-0.02em',
+                      margin: '0 0 6px 0',
+                    }}
+                  >
+                    Check your email
+                  </h1>
+                  <p style={{ fontSize: 13, color: '#888888', margin: 0, lineHeight: 1.5 }}>
+                    We sent a 6-digit verification code to <strong style={{ color: '#ffffff' }}>{verifyEmail}</strong>. Enter it below to verify your account.
+                  </p>
+                </div>
+
+                {verifyError && (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: '#f87171',
+                      background: 'rgba(248, 113, 113, 0.1)',
+                      border: '1px solid rgba(248, 113, 113, 0.2)',
+                      borderRadius: 6,
+                      padding: '10px 14px',
+                      fontFamily: 'var(--font-geist-mono), monospace',
+                      marginBottom: 16,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {verifyError}
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="signup"
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {suError && (
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: '#f87171',
-                        background: 'rgba(248, 113, 113, 0.1)',
-                        border: '1px solid rgba(248, 113, 113, 0.2)',
-                        borderRadius: 6,
-                        padding: '10px 14px',
-                        fontFamily: 'var(--font-geist-mono), monospace',
-                        marginBottom: 16,
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {suError}
-                    </div>
-                  )}
-                  <Input label="Name (optional)" type="text" value={suName} onChange={setSuName} placeholder="Your name" />
-                  <Input label="Email" type="email" value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
-                  <Input label="Password (min 8 characters)" type="password" value={suPassword} onChange={setSuPassword} placeholder="••••••••" />
-                  <PrimaryButton onClick={handleSignUp} loading={suLoading} disabled={isAnyLoading}>Create account →</PrimaryButton>
-                  <Divider />
-                  <OAuthButton
-                    provider="google"
-                    label="Continue with Google"
-                    onClick={() => handleOAuthSignIn('google')}
-                    loading={oauthLoading === 'google'}
-                    disabled={isAnyLoading}
-                  />
-                  <OAuthButton
-                    provider="github"
-                    label="Continue with GitHub"
-                    onClick={() => handleOAuthSignIn('github')}
-                    loading={oauthLoading === 'github'}
-                    disabled={isAnyLoading}
-                  />
-                  <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
-                    Already have an account?{' '}
-                    <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>
+                )}
+
+                {resendSuccess && (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: '#4ade80',
+                      background: 'rgba(74, 222, 128, 0.1)',
+                      border: '1px solid rgba(74, 222, 128, 0.2)',
+                      borderRadius: 6,
+                      padding: '10px 14px',
+                      marginBottom: 16,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {resendSuccess}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+
+                <OtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  onComplete={(code) => handleVerifyCode(code)}
+                  disabled={verifyLoading}
+                  error={!!verifyError}
+                  autoFocus
+                />
+
+                <PrimaryButton
+                  onClick={() => handleVerifyCode()}
+                  loading={verifyLoading}
+                  disabled={otp.length !== 6 || verifyLoading}
+                >
+                  Verify & Continue →
+                </PrimaryButton>
+
+                <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#71717a' }}>
+                  {resendCooldown > 0 ? (
+                    <span>Resend code in <strong style={{ color: '#a1a1aa' }}>{resendCooldown}s</strong></span>
+                  ) : (
+                    <span>
+                      Didn&apos;t receive the code?{' '}
+                      <button
+                        onClick={handleResendCode}
+                        disabled={resendLoading}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          textDecoration: 'underline',
+                          padding: 0,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {resendLoading ? 'Sending...' : 'Resend code'}
+                      </button>
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ marginTop: 12, textAlign: 'center', fontSize: 12, color: '#52525b' }}>
+                  Entered the wrong email?{' '}
+                  <button
+                    onClick={() => setMode('form')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#a1a1aa',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      textDecoration: 'underline',
+                      padding: 0,
+                    }}
+                  >
+                    Change email
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              /* Standard Auth Form */
+              <div>
+                {/* Tab switcher */}
+                <div style={{ display: 'flex', marginBottom: 28, borderBottom: '1px solid #1e1e1e', paddingBottom: 0, position: 'relative' }}>
+                  <button
+                    onClick={() => setTab('signin')}
+                    disabled={isAnyLoading}
+                    style={{
+                      background: 'none',
+                      borderWidth: 0,
+                      outline: 'none',
+                      cursor: isAnyLoading ? 'not-allowed' : 'pointer',
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: tab === 'signin' ? '#ffffff' : '#666666',
+                      padding: '0 0 10px 0',
+                      marginRight: 24,
+                      position: 'relative',
+                      transition: 'color 0.15s ease',
+                    }}
+                  >
+                    Sign in
+                    {tab === 'signin' && (
+                      <motion.div
+                        layoutId="activeTabIndicator"
+                        style={{
+                          position: 'absolute',
+                          bottom: -1,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          background: '#ffffff',
+                          borderRadius: 1,
+                        }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setTab('signup')}
+                    disabled={isAnyLoading}
+                    style={{
+                      background: 'none',
+                      borderWidth: 0,
+                      outline: 'none',
+                      cursor: isAnyLoading ? 'not-allowed' : 'pointer',
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: tab === 'signup' ? '#ffffff' : '#666666',
+                      padding: '0 0 10px 0',
+                      position: 'relative',
+                      transition: 'color 0.15s ease',
+                    }}
+                  >
+                    Sign up
+                    {tab === 'signup' && (
+                      <motion.div
+                        layoutId="activeTabIndicator"
+                        style={{
+                          position: 'absolute',
+                          bottom: -1,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          background: '#ffffff',
+                          borderRadius: 1,
+                        }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                </div>
+
+                {/* Smooth Form Content Transition */}
+                <AnimatePresence mode="wait">
+                  {tab === 'signin' ? (
+                    <motion.div
+                      key="signin"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {siError && (
+                        <div
+                          style={{
+                            fontSize: 13,
+                            color: '#f87171',
+                            background: 'rgba(248, 113, 113, 0.1)',
+                            border: '1px solid rgba(248, 113, 113, 0.2)',
+                            borderRadius: 6,
+                            padding: '10px 14px',
+                            marginBottom: 16,
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          <div>{siError}</div>
+                          {siEmail && (
+                            <button
+                              onClick={() => handlePromptVerifyFromLogin(siEmail)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#ffffff',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                                fontSize: 12,
+                                padding: 0,
+                                marginTop: 6,
+                                display: 'block',
+                              }}
+                            >
+                              Haven&apos;t verified your email yet? Enter verification code →
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <Input label="Email" type="email" value={siEmail} onChange={setSiEmail} placeholder="you@example.com" />
+                      <Input label="Password" type="password" value={siPassword} onChange={setSiPassword} placeholder="••••••••" />
+                      <PrimaryButton onClick={handleSignIn} loading={siLoading} disabled={isAnyLoading}>Sign in →</PrimaryButton>
+                      <Divider />
+                      <OAuthButton
+                        provider="google"
+                        label="Continue with Google"
+                        onClick={() => handleOAuthSignIn('google')}
+                        loading={oauthLoading === 'google'}
+                        disabled={isAnyLoading}
+                      />
+                      <OAuthButton
+                        provider="github"
+                        label="Continue with GitHub"
+                        onClick={() => handleOAuthSignIn('github')}
+                        loading={oauthLoading === 'github'}
+                        disabled={isAnyLoading}
+                      />
+                      <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
+                        Don&apos;t have an account?{' '}
+                        <button onClick={() => setTab('signup')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign up</button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="signup"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {suError && (
+                        <div
+                          style={{
+                            fontSize: 13,
+                            color: '#f87171',
+                            background: 'rgba(248, 113, 113, 0.1)',
+                            border: '1px solid rgba(248, 113, 113, 0.2)',
+                            borderRadius: 6,
+                            padding: '10px 14px',
+                            fontFamily: 'var(--font-geist-mono), monospace',
+                            marginBottom: 16,
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {suError}
+                        </div>
+                      )}
+                      <Input label="Name (optional)" type="text" value={suName} onChange={setSuName} placeholder="Your name" />
+                      <Input label="Email" type="email" value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
+                      <Input label="Password (min 8 characters)" type="password" value={suPassword} onChange={setSuPassword} placeholder="••••••••" />
+                      <PrimaryButton onClick={handleSignUp} loading={suLoading} disabled={isAnyLoading}>Create account →</PrimaryButton>
+                      <Divider />
+                      <OAuthButton
+                        provider="google"
+                        label="Continue with Google"
+                        onClick={() => handleOAuthSignIn('google')}
+                        loading={oauthLoading === 'google'}
+                        disabled={isAnyLoading}
+                      />
+                      <OAuthButton
+                        provider="github"
+                        label="Continue with GitHub"
+                        onClick={() => handleOAuthSignIn('github')}
+                        loading={oauthLoading === 'github'}
+                        disabled={isAnyLoading}
+                      />
+                      <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#555' }}>
+                        Already have an account?{' '}
+                        <button onClick={() => setTab('signin')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>Sign in</button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         </div>
       </div>

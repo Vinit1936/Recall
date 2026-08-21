@@ -34,8 +34,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+        const normalizedEmail = (credentials.email as string).toLowerCase().trim()
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: normalizedEmail },
         })
         if (!user || !user.password) return null
         const passwordMatch = await bcrypt.compare(
@@ -43,6 +44,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.password
         )
         if (!passwordMatch) return null
+
+        // Block login if email has not been verified
+        if (!user.emailVerified) {
+          throw new Error('EmailNotVerified')
+        }
+
         return user
       },
     }),
@@ -50,20 +57,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       try {
-        // Always allow credentials
-        if (!account || account.provider === 'credentials') return true
+        if (!account || account.provider === 'credentials') {
+          if (!user?.email) return false
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase().trim() },
+            select: { emailVerified: true },
+          })
+          if (!dbUser?.emailVerified) {
+            return false
+          }
+          return true
+        }
 
         if (!user.email) return false
 
+        const normalizedEmail = user.email.toLowerCase().trim()
+
         // Find if a user with this email already exists
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: { email: normalizedEmail },
           include: { accounts: true },
         })
 
         if (!existingUser) {
           // New user — let NextAuth create them normally
           return true
+        }
+
+        // If existing user was unverified before connecting OAuth, mark them verified now
+        if (!existingUser.emailVerified) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { emailVerified: new Date() },
+          })
         }
 
         // User exists — check if this specific OAuth account is already linked
@@ -78,7 +104,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (linkedAccount) {
           // Account already linked — this is a returning user from a different browser
-          // Allow them through
           return true
         }
 
