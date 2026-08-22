@@ -10,9 +10,11 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Recall — Master LeetCode & DSA with Spaced Repetition',
+  title: {
+    absolute: 'Recall — Never Forget What You Solved',
+  },
   description:
-    'Retain every algorithm you solve. Recall uses automated spaced repetition (+3, +7, +14, +30 days) to help software engineers master LeetCode, Codeforces, HackerRank, GFG, and CodeChef for technical interviews.',
+    'Automated spaced repetition queue for LeetCode, Codeforces, GFG, HackerRank, and CodeChef. Never forget what you solved.',
   keywords: [
     'DSA revision',
     'spaced repetition',
@@ -37,9 +39,38 @@ export const metadata: Metadata = {
     'FAANG interview prep',
   ],
   openGraph: {
-    title: 'Recall — Master LeetCode & DSA with Spaced Repetition',
-    description: 'Spaced repetition tracker for DSA problems (+3, +7, +14, +30 day intervals).',
     type: 'website',
+    url: 'https://recallx.tech',
+    siteName: 'Recall',
+    title: 'Recall — Never Forget What You Solved',
+    description:
+      'Automated spaced repetition queue for LeetCode, Codeforces, GFG, HackerRank, and CodeChef.',
+    images: [
+      {
+        url: 'https://recallx.tech/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Recall — Never Forget What You Solved',
+        type: 'image/png',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Recall — Never Forget What You Solved',
+    description:
+      'Automated spaced repetition queue for LeetCode, Codeforces, GFG, HackerRank, and CodeChef.',
+    images: ['https://recallx.tech/og-image.png'],
+    creator: '@vinitpatil193',
+    site: '@vinitpatil193',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 

@@ -25,11 +25,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Recall — Spaced Repetition for LeetCode & DSA Problems',
-    template: '%s | Recall — Master DSA Retain Forever',
+    default: 'Recall — Never Forget What You Solved',
+    template: '%s | Recall',
   },
   description:
-    'Never forget a problem you solved. Recall uses cognitive spaced repetition (3, 7, 14, 30-day intervals) to help developers retain LeetCode, Codeforces, HackerRank, GeeksForGeeks, and CodeChef solutions for FAANG coding interviews.',
+    'Never forget what you solved. Recall uses cognitive spaced repetition (3, 7, 14, 30-day intervals) to help developers retain LeetCode, Codeforces, HackerRank, GeeksForGeeks, and CodeChef solutions for FAANG coding interviews.',
   applicationName: 'Recall',
   keywords: [
     // Core Brand & Intent
@@ -165,27 +165,27 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'Recall',
-    title: 'Recall — Spaced Repetition for LeetCode & DSA Problems',
+    title: 'Recall — Never Forget What You Solved',
     description:
-      'Never forget a problem you solved. Automated spaced repetition queue (+3, +7, +14, +30 days) for LeetCode, Codeforces, HackerRank, GFG, and CodeChef.',
+      'Never forget what you solved. Automated spaced repetition queue (+3, +7, +14, +30 days) for LeetCode, Codeforces, HackerRank, GFG, and CodeChef.',
     images: [
       {
-        url: `${siteUrl}/download.jpg`,
+        url: `${siteUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Recall — Spaced Repetition for LeetCode and DSA Problems',
-        type: 'image/jpeg',
+        alt: 'Recall — Never Forget What You Solved',
+        type: 'image/png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Recall — Spaced Repetition for LeetCode & DSA Problems',
+    title: 'Recall — Never Forget What You Solved',
     description:
-      'Never forget a problem you solved. Automated spaced repetition queue for LeetCode, Codeforces, HackerRank, GFG, and CodeChef.',
+      'Automated spaced repetition queue for LeetCode, Codeforces, GFG, HackerRank, and CodeChef.',
     creator: '@vinitpatil193',
     site: '@vinitpatil193',
-    images: [`${siteUrl}/download.jpg`],
+    images: [`${siteUrl}/og-image.png`],
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
@@ -194,11 +194,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
     ],
-    shortcut: '/icon.png',
-    apple: '/icon.png',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 
