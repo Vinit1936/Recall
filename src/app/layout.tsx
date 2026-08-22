@@ -195,6 +195,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-48.png', type: 'image/png', sizes: '48x48' },
       { url: '/icon.png', type: 'image/png', sizes: '32x32' },
     ],
     shortcut: '/favicon.ico',
@@ -212,6 +213,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         '@id': `${siteUrl}/#website`,
         url: siteUrl,
         name: 'Recall',
+        alternateName: ['Recall', 'Recall DSA', 'Recallx', 'recallx.tech'],
         description: 'Spaced Repetition & Revision System for LeetCode & DSA Problems',
         inLanguage: 'en-US',
         publisher: {
@@ -221,7 +223,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           url: siteUrl,
           logo: {
             '@type': 'ImageObject',
-            url: `${siteUrl}/icon.png`,
+            url: `${siteUrl}/icon-512.png`,
+            width: 512,
+            height: 512,
           },
         },
       },
