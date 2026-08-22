@@ -5,6 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.19.3-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 **Live Demo:** [recallx.tech](https://recallx.tech) &nbsp;•&nbsp; **Video Demo:** [YouTube Walkthrough](https://youtu.be/EF25DZDJ6gw)
 
@@ -230,5 +231,11 @@ Created by **Vinit Patil**
 - **GitHub:** [github.com/Vinit1936](https://github.com/Vinit1936) • [recall. Repository](https://github.com/Vinit1936/Recall)
 - **Twitter / X:** [@vinitpatil193](https://twitter.com/vinitpatil193)
 - **LinkedIn:** [linkedin.com/in/vinitpatil19](https://www.linkedin.com/in/vinitpatil19/)
+
+---
+
+## License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 *Master algorithms through structured spaced repetition.*
